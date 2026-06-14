@@ -1,0 +1,1791 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ config.STORE_NAME or 'Patagonia Sur SpA' }} – Exportación Chile → México</title>
+  <meta name="description" content="Exportamos frutas, productos del mar y vinos premium del sur de Chile hacia México. Patagonia Sur SpA.">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌿</text></svg>">
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --black: #111111;
+      --gray: #666666;
+      --gray-light: #f2f2f2;
+      --gray-mid: #e8e8e8;
+      --white: #ffffff;
+      --accent: #587232;
+      --accent-hover: #465C28;
+      --orange: #EA942A;
+      --cream: #F7F3EA;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      color: var(--black);
+      background: var(--white);
+      font-size: 16px;
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    a { text-decoration: none; color: inherit; }
+    img { max-width: 100%; display: block; }
+
+    /* ── HEADER (Aconcagua: blanco, limpio) ── */
+    .af-header {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
+      background: var(--white);
+      border-bottom: 1px solid var(--gray-mid);
+      height: 72px;
+      display: flex; align-items: center;
+    }
+    .af-header .container {
+      display: flex; align-items: center; justify-content: space-between;
+      width: 100%; max-width: 1280px; margin: 0 auto; padding: 0 2rem;
+    }
+    .af-logo {
+      font-weight: 800; font-size: 1rem;
+      letter-spacing: .12em; text-transform: uppercase;
+      color: var(--black);
+    }
+    .af-logo span { color: var(--accent); }
+    .af-nav { display: flex; align-items: center; gap: 2rem; list-style: none; }
+    .af-nav a {
+      font-size: .8rem; font-weight: 500;
+      color: var(--black); letter-spacing: .02em;
+      transition: color .2s;
+    }
+    .af-nav a:hover { color: var(--accent); }
+    .af-menu-btn {
+      display: none; background: none; border: none;
+      font-size: 1.4rem; cursor: pointer; color: var(--black);
+    }
+
+    /* ── HERO (carrusel frutas / mar / vinos) ── */
+    .af-hero {
+      position: relative; height: 100vh; min-height: 640px;
+      display: flex; align-items: flex-end;
+      overflow: hidden; margin-top: 72px;
+    }
+    .af-hero-carousel {
+      position: absolute; inset: 0; z-index: 0;
+    }
+    .af-hero-carousel .carousel,
+    .af-hero-carousel .carousel-inner,
+    .af-hero-carousel .carousel-item { height: 100%; }
+    .af-hero-carousel .carousel-item {
+      background-size: cover; background-position: center;
+    }
+    .af-hero-overlay {
+      position: absolute; inset: 0; z-index: 1;
+      background: linear-gradient(to top, rgba(0,0,0,.78) 0%, rgba(0,0,0,.35) 50%, rgba(0,0,0,.15) 100%);
+      pointer-events: none;
+    }
+    .af-hero-tag {
+      display: inline-block;
+      font-size: .7rem; font-weight: 700;
+      letter-spacing: .2em; text-transform: uppercase;
+      color: var(--white); background: rgba(88,114,50,.85);
+      padding: .4rem 1rem; margin-bottom: 1rem;
+    }
+    .af-hero-content {
+      position: relative; z-index: 2;
+      padding: 0 2rem 6rem;
+      max-width: 1280px; margin: 0 auto; width: 100%;
+    }
+    .af-hero-indicators {
+      position: absolute; bottom: 2.5rem; left: 50%;
+      transform: translateX(-50%); z-index: 3;
+      display: flex; gap: .6rem; list-style: none;
+      margin: 0; padding: 0; right: auto;
+    }
+    .af-hero-indicators li {
+      width: auto; height: auto; margin: 0;
+      background: none; border: none; text-indent: 0;
+    }
+    .af-hero-indicators button {
+      width: 10px; height: 10px; border-radius: 50%;
+      border: 2px solid rgba(255,255,255,.5);
+      background: transparent; padding: 0;
+      cursor: pointer; transition: all .3s;
+      opacity: 1;
+    }
+    .af-hero-indicators button.active,
+    .af-hero-indicators button:hover {
+      background: var(--white); border-color: var(--white);
+    }
+    .af-hero-arrows {
+      position: absolute; top: 50%; transform: translateY(-50%);
+      z-index: 3; width: 100%; pointer-events: none;
+      display: flex; justify-content: space-between;
+      padding: 0 1.5rem;
+    }
+    .af-hero-arrows button {
+      width: 48px; height: 48px; border-radius: 50%;
+      border: 1px solid rgba(255,255,255,.35);
+      background: rgba(0,0,0,.25); color: var(--white);
+      cursor: pointer; pointer-events: all;
+      display: flex; align-items: center; justify-content: center;
+      transition: all .25s; backdrop-filter: blur(4px);
+    }
+    .af-hero-arrows button:hover {
+      background: rgba(255,255,255,.2); border-color: var(--white);
+    }
+    .af-hero-label {
+      font-size: .75rem; font-weight: 700;
+      letter-spacing: .25em; text-transform: uppercase;
+      color: rgba(255,255,255,.7); margin-bottom: 1rem;
+    }
+    .af-hero-title {
+      font-size: clamp(2.5rem, 6vw, 4.5rem);
+      font-weight: 800; line-height: 1.05;
+      color: var(--white); margin-bottom: 1.5rem;
+      max-width: 700px;
+    }
+    .af-hero-desc {
+      font-size: 1.1rem; font-weight: 400;
+      color: rgba(255,255,255,.85);
+      max-width: 520px; margin-bottom: 2.5rem;
+      line-height: 1.7;
+    }
+    .af-btn {
+      display: inline-flex; align-items: center; gap: .5rem;
+      background: var(--white); color: var(--black);
+      font-size: .8rem; font-weight: 600;
+      letter-spacing: .06em; text-transform: uppercase;
+      padding: 1rem 2rem; border: none;
+      cursor: pointer; transition: all .25s;
+    }
+    .af-btn:hover { background: var(--accent); color: var(--white); }
+    .af-btn-outline {
+      display: inline-flex; align-items: center; gap: .5rem;
+      background: transparent; color: var(--black);
+      font-size: .8rem; font-weight: 600;
+      letter-spacing: .06em; text-transform: uppercase;
+      padding: .85rem 0; border: none; border-bottom: 2px solid var(--black);
+      cursor: pointer; transition: all .25s;
+    }
+    .af-btn-outline:hover { color: var(--accent); border-color: var(--accent); }
+
+    /* ── NOSOTROS — stats + pilares ── */
+    .af-about {
+      padding: 6rem 2rem;
+      background: var(--gray-light);
+    }
+    .af-about-inner {
+      max-width: 1280px; margin: 0 auto;
+    }
+    .af-about-header {
+      text-align: center; max-width: 680px;
+      margin: 0 auto 3.5rem;
+    }
+    .af-about-header h2 {
+      font-size: clamp(1.75rem, 3.5vw, 2.5rem);
+      font-weight: 800; line-height: 1.2;
+      color: var(--black); margin-top: .75rem;
+    }
+    .af-about-stats {
+      display: grid; grid-template-columns: repeat(3, 1fr);
+      gap: 1.5rem; margin-bottom: 3rem;
+    }
+    .af-about-stat {
+      background: var(--white);
+      border: 1px solid var(--gray-mid);
+      padding: 2.5rem 2rem; text-align: center;
+      transition: transform .3s, box-shadow .3s;
+    }
+    .af-about-stat:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 16px 40px rgba(0,0,0,.08);
+    }
+    .af-about-stat .stat-num {
+      font-size: clamp(2.5rem, 5vw, 3.5rem);
+      font-weight: 800; line-height: 1;
+      color: var(--accent); display: block;
+      margin-bottom: .5rem;
+    }
+    .af-about-stat .stat-lbl {
+      font-size: .8rem; font-weight: 600;
+      color: var(--gray); line-height: 1.4;
+    }
+    .af-about-pillars {
+      display: grid; grid-template-columns: repeat(3, 1fr);
+      gap: 1.5rem;
+    }
+    .af-about-pillar {
+      background: var(--white);
+      padding: 2rem;
+      border-top: 3px solid var(--accent);
+      box-shadow: 0 4px 20px rgba(0,0,0,.04);
+      transition: transform .3s, box-shadow .3s;
+    }
+    .af-about-pillar:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 16px 40px rgba(0,0,0,.08);
+    }
+    .af-about-pillar .pillar-icon {
+      width: 48px; height: 48px;
+      background: rgba(88,114,50,.1);
+      color: var(--accent);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.1rem; margin-bottom: 1.25rem;
+    }
+    .af-about-pillar h4 {
+      font-size: 1.05rem; font-weight: 700;
+      margin-bottom: .75rem; color: var(--black);
+    }
+    .af-about-pillar p {
+      font-size: .9rem; color: var(--gray);
+      line-height: 1.75; margin: 0;
+    }
+    .af-about-pillar p strong { color: var(--black); font-weight: 600; }
+    .af-about-cta {
+      margin-top: 3rem; text-align: center;
+      display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;
+    }
+
+    /* ── MUNDO — imagen local con parallax fijo ── */
+    .af-world {
+      position: relative; min-height: 560px;
+      display: flex; align-items: center;
+      overflow: hidden;
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      background-attachment: fixed;
+    }
+    .af-world-overlay {
+      position: absolute; inset: 0;
+      background: rgba(0,0,0,.55);
+    }
+    .af-world-content {
+      position: relative; z-index: 2;
+      max-width: 1280px; margin: 0 auto;
+      padding: 5rem 2rem; width: 100%;
+      display: grid; grid-template-columns: 1fr 1fr; gap: 4rem;
+      align-items: center;
+    }
+    .af-world-content h3 {
+      font-size: .75rem; font-weight: 700;
+      letter-spacing: .2em; text-transform: uppercase;
+      color: rgba(255,255,255,.6); margin-bottom: 1rem;
+    }
+    .af-world-content h2 {
+      font-size: clamp(1.75rem, 3.5vw, 2.5rem);
+      font-weight: 800; color: var(--white);
+      line-height: 1.2; margin-bottom: 1.5rem;
+    }
+    .af-world-content p {
+      font-size: 1rem; color: rgba(255,255,255,.8);
+      line-height: 1.8;
+    }
+    .af-world-content p strong { color: var(--white); }
+
+    /*
+    ── SEGUIMIENTO RADAR Chile → México (desactivado temporalmente)
+    .af-track {
+      background: #0a1210;
+      padding: 5rem 2rem;
+      color: #c8e6c9;
+      font-family: 'Consolas', 'Courier New', monospace;
+    }
+    .af-track-inner { max-width: 1280px; margin: 0 auto; }
+    .af-track-header {
+      text-align: center; margin-bottom: 3rem;
+    }
+    .af-track-header .af-section-label { color: rgba(88,180,120,.7); }
+    .af-track-header h2 {
+      font-family: 'Inter', sans-serif;
+      font-size: clamp(1.75rem, 3.5vw, 2.5rem);
+      font-weight: 800; color: #fff; margin: .75rem 0 1rem;
+    }
+    .af-track-header p {
+      font-family: 'Inter', sans-serif;
+      color: rgba(200,230,201,.6); font-size: .95rem;
+      max-width: 560px; margin: 0 auto;
+    }
+    .af-track-layout {
+      display: grid; grid-template-columns: 1.4fr 1fr;
+      gap: 2rem; align-items: stretch;
+    }
+    .af-radar {
+      position: relative;
+      background: radial-gradient(ellipse at center, #0f1f18 0%, #0a1210 70%);
+      border: 1px solid rgba(88,114,50,.35);
+      border-radius: 4px;
+      overflow: hidden;
+      min-height: 420px;
+    }
+    .af-radar::before {
+      content: ''; position: absolute; inset: 0;
+      background-image:
+        linear-gradient(rgba(88,114,50,.08) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(88,114,50,.08) 1px, transparent 1px);
+      background-size: 40px 40px;
+      pointer-events: none;
+    }
+    .af-radar-sweep {
+      position: absolute; width: 50%; height: 50%;
+      top: 50%; left: 0; transform-origin: 100% 0%;
+      background: conic-gradient(from 0deg, transparent 0deg, rgba(88,180,120,.25) 40deg, transparent 80deg);
+      animation: radarSweep 4s linear infinite;
+      pointer-events: none; z-index: 2;
+    }
+    @keyframes radarSweep {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+    .af-radar-svg {
+      width: 100%; height: 100%;
+      min-height: 420px;
+      display: block;
+      position: relative; z-index: 1;
+    }
+    .af-radar-svg .route-bg {
+      fill: none; stroke: rgba(88,114,50,.2);
+      stroke-width: 6; stroke-linecap: round;
+    }
+    .af-radar-svg .route-line {
+      fill: none; stroke: #587232;
+      stroke-width: 2.5; stroke-linecap: round;
+      stroke-dasharray: 8 6;
+      animation: routeDash 1s linear infinite;
+    }
+    @keyframes routeDash { to { stroke-dashoffset: -14; } }
+    .af-radar-svg .route-progress {
+      fill: none; stroke: #7dd87d;
+      stroke-width: 3; stroke-linecap: round;
+      filter: drop-shadow(0 0 6px rgba(125,216,125,.6));
+    }
+    .af-radar-svg .land {
+      fill: rgba(88,114,50,.12);
+      stroke: rgba(88,114,50,.35);
+      stroke-width: 1;
+    }
+    .af-radar-svg .port-label {
+      font-size: 11px; font-weight: 700;
+      fill: rgba(200,230,201,.85);
+      font-family: 'Inter', sans-serif;
+      letter-spacing: .05em;
+    }
+    .af-radar-svg .port-dot {
+      fill: #7dd87d;
+    }
+    .af-radar-svg .port-pulse {
+      fill: none; stroke: #7dd87d;
+      stroke-width: 1.5; opacity: .8;
+      animation: portPulse 2s ease-out infinite;
+    }
+    @keyframes portPulse {
+      0% { r: 4; opacity: .9; }
+      100% { r: 22; opacity: 0; }
+    }
+    .af-radar-svg #trackShip {
+      filter: drop-shadow(0 0 8px rgba(125,216,125,.9));
+    }
+    .af-radar-live {
+      position: absolute; top: 12px; left: 14px; z-index: 3;
+      display: flex; align-items: center; gap: 6px;
+      font-size: .65rem; font-weight: 700;
+      letter-spacing: .15em; color: #7dd87d;
+    }
+    .af-radar-live .dot {
+      width: 7px; height: 7px; border-radius: 50%;
+      background: #7dd87d;
+      animation: liveBlink 1.2s ease infinite;
+    }
+    @keyframes liveBlink {
+      0%, 100% { opacity: 1; box-shadow: 0 0 8px #7dd87d; }
+      50% { opacity: .3; box-shadow: none; }
+    }
+    .af-radar-scale {
+      position: absolute; bottom: 12px; right: 14px; z-index: 3;
+      font-size: .6rem; color: rgba(200,230,201,.45);
+      letter-spacing: .08em;
+    }
+
+    .af-track-panel {
+      background: rgba(15,31,24,.85);
+      border: 1px solid rgba(88,114,50,.35);
+      border-radius: 4px;
+      padding: 1.75rem;
+      display: flex; flex-direction: column; gap: 1.25rem;
+    }
+    .af-track-panel h3 {
+      font-family: 'Inter', sans-serif;
+      font-size: .7rem; font-weight: 700;
+      letter-spacing: .2em; text-transform: uppercase;
+      color: rgba(200,230,201,.5); margin: 0;
+    }
+    .af-track-status {
+      display: flex; align-items: center; gap: .75rem;
+      padding-bottom: 1rem;
+      border-bottom: 1px solid rgba(88,114,50,.25);
+    }
+    .af-track-status .status-badge {
+      font-size: .65rem; font-weight: 700;
+      letter-spacing: .1em; text-transform: uppercase;
+      padding: .35rem .75rem;
+      background: rgba(88,114,50,.3);
+      color: #7dd87d;
+      border: 1px solid rgba(125,216,125,.4);
+    }
+    .af-track-status .status-text {
+      font-size: .85rem; color: #fff;
+      font-family: 'Inter', sans-serif; font-weight: 600;
+    }
+    .af-track-row {
+      display: flex; justify-content: space-between; align-items: baseline;
+      font-size: .75rem; gap: 1rem;
+    }
+    .af-track-row .lbl { color: rgba(200,230,201,.45); flex-shrink: 0; }
+    .af-track-row .val { color: #7dd87d; font-weight: 600; text-align: right; }
+    .af-track-progress-wrap { margin-top: .25rem; }
+    .af-track-progress-bar {
+      height: 4px; background: rgba(88,114,50,.25);
+      border-radius: 2px; overflow: hidden; margin-top: .5rem;
+    }
+    .af-track-progress-fill {
+      height: 100%; background: linear-gradient(90deg, #587232, #7dd87d);
+      width: 0%; transition: width .3s linear;
+      box-shadow: 0 0 10px rgba(125,216,125,.5);
+    }
+    .af-track-coords {
+      background: rgba(0,0,0,.3);
+      border: 1px solid rgba(88,114,50,.2);
+      padding: 1rem;
+      font-size: .72rem; line-height: 1.8;
+    }
+    .af-track-coords .coord-line { color: rgba(200,230,201,.5); }
+    .af-track-coords .coord-val { color: #7dd87d; }
+    */
+
+    /* ── PRODUCTOS (Somos más que...) ── */
+    .af-products {
+      padding: 6rem 2rem;
+      max-width: 1280px; margin: 0 auto;
+    }
+    .af-section-label {
+      font-size: .75rem; font-weight: 700;
+      letter-spacing: .2em; text-transform: uppercase;
+      color: var(--gray); margin-bottom: .75rem;
+    }
+    .af-section-title {
+      font-size: clamp(2rem, 4vw, 3rem);
+      font-weight: 800; line-height: 1.1;
+      color: var(--black); margin-bottom: 3rem;
+    }
+    .af-product-grid {
+      display: grid; grid-template-columns: repeat(3, 1fr);
+      gap: 1.5rem;
+    }
+    .af-product-card {
+      position: relative; overflow: hidden;
+      aspect-ratio: 3/4; cursor: pointer;
+      group: af-product;
+    }
+    .af-product-card img {
+      width: 100%; height: 100%; object-fit: cover;
+      transition: transform .6s ease;
+    }
+    .af-product-card:hover img { transform: scale(1.05); }
+    .af-product-card .overlay {
+      position: absolute; inset: 0;
+      background: linear-gradient(to top, rgba(0,0,0,.8) 0%, transparent 60%);
+      display: flex; flex-direction: column; justify-content: flex-end;
+      padding: 2rem;
+    }
+    .af-product-card h3 {
+      font-size: 1.25rem; font-weight: 700;
+      color: var(--white); margin-bottom: .5rem;
+    }
+    .af-product-card p {
+      font-size: .85rem; color: rgba(255,255,255,.75);
+      margin-bottom: 1rem; line-height: 1.5;
+    }
+    .af-product-card .link {
+      font-size: .75rem; font-weight: 600;
+      letter-spacing: .08em; text-transform: uppercase;
+      color: var(--white); border-bottom: 1px solid rgba(255,255,255,.5);
+      display: inline-block; padding-bottom: 2px;
+      transition: border-color .2s;
+    }
+    .af-product-card:hover .link { border-color: var(--white); }
+
+    /* ── TESTIMONIOS (Aconcagua carousel) ── */
+    .af-testimonials {
+      background: var(--gray-light);
+      padding: 6rem 2rem;
+    }
+    .af-testi-inner {
+      max-width: 900px; margin: 0 auto;
+      text-align: center; position: relative;
+    }
+    .af-testi-quote {
+      font-size: clamp(1.1rem, 2.5vw, 1.5rem);
+      font-weight: 400; line-height: 1.7;
+      color: var(--black); margin-bottom: 2.5rem;
+      font-style: italic;
+    }
+    .af-testi-author {
+      font-size: .9rem; font-weight: 700;
+      color: var(--black); margin-bottom: .25rem;
+    }
+    .af-testi-role {
+      font-size: .8rem; color: var(--gray);
+    }
+    .af-testi-nav {
+      display: flex; justify-content: center;
+      align-items: center; gap: 1.5rem; margin-top: 3rem;
+    }
+    .af-testi-nav button {
+      width: 44px; height: 44px; border-radius: 50%;
+      border: 1px solid var(--gray-mid); background: var(--white);
+      cursor: pointer; display: flex; align-items: center; justify-content: center;
+      transition: all .2s; color: var(--black);
+    }
+    .af-testi-nav button:hover { background: var(--black); color: var(--white); border-color: var(--black); }
+    .af-testi-dots { display: flex; gap: .5rem; }
+    .af-testi-dots span {
+      width: 8px; height: 8px; border-radius: 50%;
+      background: var(--gray-mid); cursor: pointer;
+      transition: background .2s, transform .2s;
+    }
+    .af-testi-dots span.active { background: var(--black); transform: scale(1.2); }
+
+    /* ── LÍNEAS / MARCAS — parallax fondo (igual que certificaciones) ── */
+    .af-brands {
+      position: relative;
+      padding: 6rem 2rem;
+      overflow: hidden;
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      background-attachment: fixed;
+    }
+    .af-brands-overlay {
+      position: absolute; inset: 0;
+      background: rgba(0,0,0,.6);
+    }
+    .af-brands-inner {
+      position: relative; z-index: 2;
+      max-width: 1280px; margin: 0 auto;
+    }
+    .af-brands-inner .af-section-label {
+      color: rgba(255,255,255,.65);
+    }
+    .af-brands-inner .af-section-title {
+      color: var(--white);
+      margin-bottom: 0;
+    }
+    .af-brand-row {
+      display: grid; grid-template-columns: repeat(3, 1fr);
+      gap: 1.5rem; margin-top: 2rem;
+    }
+    .af-line-card {
+      display: block; background: var(--white);
+      border: 1px solid rgba(255,255,255,.15);
+      overflow: hidden;
+      transition: transform .35s ease, box-shadow .35s ease, border-color .35s;
+    }
+    .af-line-card:hover {
+      transform: translateY(-6px);
+      box-shadow: 0 20px 50px rgba(0,0,0,.35);
+      border-color: transparent;
+    }
+    .af-line-card .line-img {
+      position: relative; overflow: hidden;
+      aspect-ratio: 4/3;
+      background: var(--gray-light);
+      display: flex; align-items: center; justify-content: center;
+      padding: 1.5rem;
+    }
+    .af-line-card .line-img img {
+      width: 100%; height: 100%;
+      object-fit: contain;
+      transition: transform .5s ease;
+    }
+    .af-line-card:hover .line-img img { transform: scale(1.06); }
+    .af-line-card .line-tag {
+      position: absolute; top: 1rem; left: 1rem; z-index: 2;
+      font-size: .65rem; font-weight: 700;
+      letter-spacing: .15em; text-transform: uppercase;
+      background: var(--accent); color: var(--white);
+      padding: .35rem .75rem;
+    }
+    .af-line-card .line-body {
+      padding: 1.75rem 1.5rem 1.5rem;
+    }
+    .af-line-card h4 {
+      font-size: 1.15rem; font-weight: 700;
+      margin-bottom: .6rem; color: var(--black);
+    }
+    .af-line-card p {
+      font-size: .9rem; color: var(--gray);
+      line-height: 1.65; margin-bottom: 1.25rem;
+    }
+    .af-line-card .line-link {
+      font-size: .75rem; font-weight: 700;
+      letter-spacing: .08em; text-transform: uppercase;
+      color: var(--accent);
+      display: inline-flex; align-items: center; gap: .5rem;
+      transition: gap .25s;
+    }
+    .af-line-card:hover .line-link { gap: .85rem; }
+    .af-brands-cta { margin-top: 3rem; text-align: center; }
+    .af-btn-outline-light {
+      display: inline-flex; align-items: center; gap: .5rem;
+      background: transparent; color: var(--white);
+      font-size: .8rem; font-weight: 600;
+      letter-spacing: .06em; text-transform: uppercase;
+      padding: .85rem 0; border: none; border-bottom: 2px solid var(--white);
+      cursor: pointer; transition: all .25s; text-decoration: none;
+    }
+    .af-btn-outline-light:hover { color: var(--orange); border-color: var(--orange); }
+
+    /* ── CERTIFICACIONES — parallax fondo ── */
+    .af-certs {
+      position: relative;
+      padding: 5rem 2rem;
+      overflow: hidden;
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      background-attachment: fixed;
+    }
+    .af-certs-overlay {
+      position: absolute; inset: 0;
+      background: rgba(0,0,0,.6);
+    }
+    .af-certs-inner {
+      position: relative; z-index: 2;
+      max-width: 1280px; margin: 0 auto;
+    }
+    .af-certs-inner .af-section-label {
+      color: rgba(255,255,255,.65);
+    }
+    .af-certs-inner .af-section-title {
+      color: var(--white);
+      margin-bottom: 0;
+    }
+    .af-certs-grid {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 1.5rem; margin-top: 3rem;
+    }
+    .af-cert-item {
+      background: rgba(255,255,255,.95);
+      padding: 2rem 1rem; text-align: center;
+      border: 1px solid rgba(255,255,255,.2);
+      backdrop-filter: blur(4px);
+      transition: transform .3s, box-shadow .3s;
+    }
+    .af-cert-item:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 12px 32px rgba(0,0,0,.25);
+    }
+    .af-cert-item .cert-icon {
+      font-size: 1.5rem; color: var(--accent);
+      margin-bottom: 1rem;
+    }
+    .af-cert-item span {
+      font-size: .7rem; font-weight: 600;
+      color: var(--gray); line-height: 1.4;
+      display: block;
+    }
+
+    /* ── CONTACTO — diseño nuevo ── */
+    .af-contact {
+      background: linear-gradient(165deg, var(--cream) 0%, #fff 45%, #f8faf5 100%);
+      padding: 5rem 2rem 6rem;
+      position: relative;
+      overflow: hidden;
+    }
+    .af-contact::before {
+      content: '';
+      position: absolute;
+      top: -120px; right: -80px;
+      width: 400px; height: 400px;
+      background: radial-gradient(circle, rgba(88,114,50,.08) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .af-contact-wrap {
+      max-width: 1180px; margin: 0 auto;
+      position: relative; z-index: 1;
+    }
+    .af-contact-header {
+      text-align: center;
+      max-width: 620px; margin: 0 auto 3rem;
+    }
+    .af-contact-header .af-section-label { color: var(--accent); }
+    .af-contact-header h2 {
+      font-size: clamp(2rem, 4vw, 2.85rem);
+      font-weight: 800; margin: .5rem 0 1rem;
+      letter-spacing: -.02em;
+    }
+    .af-contact-header p {
+      color: var(--gray); line-height: 1.75; font-size: 1.05rem;
+    }
+    .af-contact-steps {
+      display: flex; justify-content: center; gap: .5rem;
+      flex-wrap: wrap; margin-top: 1.75rem;
+    }
+    .af-contact-step {
+      display: inline-flex; align-items: center; gap: .45rem;
+      font-size: .72rem; font-weight: 600;
+      color: var(--gray); background: var(--white);
+      border: 1px solid var(--gray-mid);
+      padding: .5rem 1rem; border-radius: 99px;
+    }
+    .af-contact-step i { color: var(--accent); font-size: .7rem; }
+    .af-contact-step.active {
+      background: var(--accent); color: var(--white); border-color: var(--accent);
+    }
+    .af-contact-step.active i { color: var(--white); }
+
+    .af-contact-layout {
+      display: grid;
+      grid-template-columns: minmax(280px, .95fr) 1.15fr;
+      gap: 1.75rem; align-items: stretch;
+    }
+
+    .af-contact-aside {
+      background: linear-gradient(145deg, #1a1a1a 0%, #2a3320 55%, var(--accent) 120%);
+      border-radius: 20px;
+      padding: 2.25rem;
+      color: var(--white);
+      display: flex; flex-direction: column;
+      box-shadow: 0 20px 50px rgba(17,17,17,.18);
+      position: relative; overflow: hidden;
+    }
+    .af-contact-aside::after {
+      content: '';
+      position: absolute; bottom: -40px; right: -40px;
+      width: 180px; height: 180px;
+      background: rgba(234,148,42,.15);
+      border-radius: 50%;
+      pointer-events: none;
+    }
+    .af-contact-aside .aside-tag {
+      font-size: .65rem; font-weight: 700;
+      letter-spacing: .18em; text-transform: uppercase;
+      color: rgba(255,255,255,.45); margin-bottom: 1rem;
+    }
+    .af-contact-aside h3 {
+      font-size: 1.55rem; font-weight: 800;
+      line-height: 1.2; margin-bottom: .75rem;
+    }
+    .af-contact-aside .aside-desc {
+      font-size: .88rem; color: rgba(255,255,255,.7);
+      line-height: 1.65; margin-bottom: 2rem;
+    }
+    .af-contact-route {
+      display: flex; align-items: center; gap: .65rem;
+      background: rgba(255,255,255,.08);
+      border: 1px solid rgba(255,255,255,.12);
+      border-radius: 12px;
+      padding: .85rem 1rem;
+      margin-bottom: 1.75rem;
+      font-size: .8rem; font-weight: 600;
+    }
+    .af-contact-route i { color: var(--orange); }
+    .af-contact-route .route-arrow { color: rgba(255,255,255,.35); font-size: .65rem; }
+
+    .af-contact-list { list-style: none; margin-bottom: 2rem; }
+    .af-contact-list li {
+      display: flex; align-items: flex-start; gap: 1rem;
+      padding: 1rem 0;
+      border-bottom: 1px solid rgba(255,255,255,.1);
+    }
+    .af-contact-list li:last-child { border-bottom: none; }
+    .af-contact-list .cl-icon {
+      width: 42px; height: 42px; flex-shrink: 0;
+      background: rgba(255,255,255,.1);
+      border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: .95rem; color: var(--orange);
+    }
+    .af-contact-list strong {
+      display: block; font-size: .68rem; font-weight: 700;
+      letter-spacing: .1em; text-transform: uppercase;
+      color: rgba(255,255,255,.45); margin-bottom: .25rem;
+    }
+    .af-contact-list span,
+    .af-contact-list a {
+      font-size: .92rem; color: var(--white); line-height: 1.4;
+    }
+    .af-contact-list a:hover { color: #c8e6a0; }
+
+    .af-contact-trust {
+      display: grid; grid-template-columns: repeat(3, 1fr);
+      gap: .65rem; margin-bottom: 1.75rem;
+    }
+    .af-contact-trust-item {
+      text-align: center;
+      background: rgba(255,255,255,.06);
+      border-radius: 10px;
+      padding: .75rem .5rem;
+      font-size: .62rem; font-weight: 700;
+      letter-spacing: .04em; text-transform: uppercase;
+      color: rgba(255,255,255,.75);
+      line-height: 1.35;
+    }
+    .af-contact-trust-item i {
+      display: block; font-size: 1rem;
+      color: var(--orange); margin-bottom: .35rem;
+    }
+
+    .af-contact-quick {
+      display: flex; gap: .65rem; flex-wrap: wrap; margin-top: auto;
+    }
+    .af-contact-quick .af-btn {
+      flex: 1; min-width: 120px; justify-content: center;
+      font-size: .78rem; padding: .85rem 1rem;
+      border-radius: 12px;
+    }
+    .af-btn-whatsapp {
+      background: #25D366 !important; color: var(--white) !important;
+    }
+    .af-btn-whatsapp:hover { background: #1fb855 !important; }
+    .af-btn-call {
+      background: rgba(255,255,255,.1) !important;
+      color: var(--white) !important;
+      border: 1px solid rgba(255,255,255,.25) !important;
+    }
+    .af-btn-call:hover {
+      background: rgba(255,255,255,.18) !important;
+    }
+
+    .af-form-card {
+      background: var(--white);
+      border-radius: 20px;
+      padding: 2.5rem;
+      box-shadow: 0 16px 48px rgba(17,17,17,.08);
+      border: 1px solid rgba(88,114,50,.08);
+    }
+    .af-form-card .form-head {
+      margin-bottom: 1.75rem;
+    }
+    .af-form-card .form-head-top {
+      display: flex; align-items: flex-start; justify-content: space-between;
+      gap: 1rem; margin-bottom: .5rem;
+    }
+    .af-form-card .form-head h3 {
+      font-size: 1.45rem; font-weight: 800;
+      letter-spacing: -.02em;
+    }
+    .af-form-card .form-head-badge {
+      flex-shrink: 0;
+      font-size: .65rem; font-weight: 700;
+      letter-spacing: .06em; text-transform: uppercase;
+      background: #eef3e8; color: var(--accent);
+      padding: .4rem .75rem; border-radius: 99px;
+    }
+    .af-form-card .form-head p {
+      font-size: .9rem; color: var(--gray); margin: 0;
+      line-height: 1.6;
+    }
+
+    .cf-flash {
+      display: flex; align-items: center; gap: .65rem;
+      padding: .9rem 1.1rem; border-radius: 12px;
+      font-size: .88rem; font-weight: 500;
+      margin-bottom: 1.25rem;
+    }
+    .cf-flash.success { background: #ecfdf5; color: #15803d; border: 1px solid #a7f3d0; }
+    .cf-flash.danger, .cf-flash.error { background: #fff1f2; color: #be123c; border: 1px solid #fecdd3; }
+
+    .cf-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.15rem;
+    }
+    .cf-field { margin-bottom: 0; }
+    .cf-field.full { grid-column: 1 / -1; }
+    .cf-field label {
+      display: block;
+      font-size: .72rem; font-weight: 700;
+      letter-spacing: .06em; text-transform: uppercase;
+      color: var(--gray); margin-bottom: .45rem;
+    }
+    .cf-input-wrap {
+      position: relative;
+      display: flex; align-items: stretch;
+    }
+    .cf-input-wrap > i {
+      position: absolute; left: 1rem; top: 50%;
+      transform: translateY(-50%);
+      color: #9ca3af; font-size: .85rem;
+      pointer-events: none; z-index: 1;
+      transition: color .2s;
+    }
+    .cf-input-wrap.textarea-icon > i {
+      top: 1.1rem; transform: none;
+    }
+    .cf-input-wrap .form-control {
+      width: 100%;
+      border: 1.5px solid var(--gray-mid);
+      border-radius: 12px;
+      padding: .95rem 1rem .95rem 2.75rem;
+      font-size: .92rem;
+      background: #fafafa;
+      transition: border-color .2s, background .2s, box-shadow .2s;
+    }
+    .cf-input-wrap .form-control:focus {
+      border-color: var(--accent);
+      background: var(--white);
+      box-shadow: 0 0 0 4px rgba(88,114,50,.1);
+      outline: none;
+    }
+    .cf-input-wrap:focus-within > i { color: var(--accent); }
+    .cf-input-wrap .form-control::placeholder { color: #b0b0b0; }
+    .cf-input-wrap textarea.form-control {
+      min-height: 130px; resize: vertical;
+      padding-top: 1rem;
+    }
+
+    .cf-chips-label {
+      font-size: .72rem; font-weight: 700;
+      letter-spacing: .06em; text-transform: uppercase;
+      color: var(--gray); margin-bottom: .5rem;
+    }
+    .cf-chips {
+      display: flex; flex-wrap: wrap; gap: .45rem;
+      margin-bottom: .65rem;
+    }
+    .cf-chip {
+      font-size: .72rem; font-weight: 600;
+      padding: .4rem .85rem;
+      border-radius: 99px;
+      border: 1px solid var(--gray-mid);
+      background: var(--white);
+      color: var(--gray);
+      cursor: pointer;
+      transition: all .2s;
+      font-family: inherit;
+    }
+    .cf-chip:hover, .cf-chip.selected {
+      border-color: var(--accent);
+      background: #eef3e8;
+      color: var(--accent);
+    }
+    .cf-chip i { margin-right: .3rem; font-size: .65rem; }
+
+    .af-btn-submit {
+      width: 100%;
+      display: inline-flex; align-items: center; justify-content: center; gap: .5rem;
+      background: linear-gradient(135deg, var(--accent) 0%, var(--accent-hover) 100%);
+      color: var(--white);
+      font-size: .85rem; font-weight: 700;
+      letter-spacing: .04em; text-transform: uppercase;
+      padding: 1.15rem 2rem;
+      border: none; border-radius: 12px;
+      cursor: pointer; font-family: inherit;
+      transition: transform .2s, box-shadow .2s;
+      margin-top: .5rem;
+    }
+    .af-btn-submit:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 28px rgba(88,114,50,.35);
+    }
+    .af-form-note {
+      display: flex; align-items: center; justify-content: center; gap: .4rem;
+      font-size: .75rem; color: var(--gray);
+      text-align: center; margin-top: 1rem;
+    }
+    .af-form-note i { color: var(--accent); font-size: .7rem; }
+
+    /* ── FOOTER (Aconcagua) ── */
+    .af-footer {
+      background: var(--black); color: rgba(255,255,255,.6);
+      padding: 4rem 2rem 2rem;
+    }
+    .af-footer-inner {
+      max-width: 1280px; margin: 0 auto;
+      display: grid; grid-template-columns: 2fr 1fr 1fr;
+      gap: 4rem; margin-bottom: 3rem;
+    }
+    .af-footer h5 {
+      color: var(--white); font-size: .75rem;
+      font-weight: 700; letter-spacing: .15em;
+      text-transform: uppercase; margin-bottom: 1.5rem;
+    }
+    .af-footer ul { list-style: none; }
+    .af-footer ul li { margin-bottom: .75rem; }
+    .af-footer a {
+      font-size: .85rem; color: rgba(255,255,255,.6);
+      transition: color .2s;
+    }
+    .af-footer a:hover { color: var(--white); }
+    .af-footer-logo {
+      font-weight: 800; font-size: .9rem;
+      letter-spacing: .12em; text-transform: uppercase;
+      color: var(--white); margin-bottom: 1rem;
+    }
+    .af-footer p { font-size: .85rem; line-height: 1.7; }
+    .af-footer-social { display: flex; gap: 1rem; margin-top: 1.5rem; }
+    .af-footer-social a {
+      width: 36px; height: 36px;
+      border: 1px solid rgba(255,255,255,.2);
+      display: flex; align-items: center; justify-content: center;
+      font-size: .9rem; transition: all .2s;
+    }
+    .af-footer-social a:hover { background: var(--white); color: var(--black); }
+    .af-footer-bottom {
+      max-width: 1280px; margin: 0 auto;
+      border-top: 1px solid rgba(255,255,255,.1);
+      padding-top: 2rem; text-align: center;
+      font-size: .75rem; color: rgba(255,255,255,.4);
+    }
+
+    /* ── MOBILE MENU ── */
+    .af-mobile-nav {
+      display: none; position: fixed; inset: 0; z-index: 2000;
+      background: var(--white); padding: 5rem 2rem 2rem;
+      flex-direction: column; gap: 0;
+    }
+    .af-mobile-nav.open { display: flex; }
+    .af-mobile-nav a {
+      font-size: 1.1rem; font-weight: 600;
+      padding: 1.25rem 0; border-bottom: 1px solid var(--gray-mid);
+    }
+    .af-mobile-close {
+      position: absolute; top: 1.25rem; right: 1.5rem;
+      background: none; border: none; font-size: 1.5rem; cursor: pointer;
+    }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 1024px) {
+      .af-about-stats { grid-template-columns: 1fr; }
+      .af-about-pillars { grid-template-columns: 1fr; }
+      .af-world-content { grid-template-columns: 1fr; }
+      /* .af-track-layout { grid-template-columns: 1fr; } */
+      .af-product-grid { grid-template-columns: 1fr 1fr; }
+      .af-brand-row { grid-template-columns: 1fr; }
+      .af-certs-grid { grid-template-columns: repeat(3, 1fr); }
+      .af-contact-layout { grid-template-columns: 1fr; }
+      .af-contact-trust { grid-template-columns: 1fr; }
+      .cf-grid { grid-template-columns: 1fr; }
+      .af-footer-inner { grid-template-columns: 1fr 1fr; }
+    }
+    @media (max-width: 768px) {
+      .af-nav { display: none; }
+      .af-menu-btn { display: block; }
+      .af-hero-content { padding-bottom: 4rem; }
+      .af-product-grid { grid-template-columns: 1fr; }
+      .af-certs-grid { grid-template-columns: repeat(2, 1fr); }
+      .af-footer-inner { grid-template-columns: 1fr; }
+      .af-form-card { padding: 1.75rem 1.25rem; }
+      .af-contact-aside { padding: 1.75rem 1.25rem; }
+      .af-world { background-attachment: scroll; }
+      .af-certs { background-attachment: scroll; }
+      .af-brands { background-attachment: scroll; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- HEADER -->
+  <header class="af-header">
+    <div class="container">
+      <a href="{{ url_for('main.index') }}" class="af-logo">Patagonia <span>Sur</span></a>
+      <nav>
+        <ul class="af-nav">
+          <li><a href="#nosotros">Conócenos</a></li>
+          <li><a href="#mundo">Patagonia en el mundo</a></li>
+          <li><a href="#productos">Productos</a></li>
+          <li><a href="#certificaciones">Certificaciones</a></li>
+          <li><a href="#contacto">Contáctenos</a></li>
+        </ul>
+      </nav>
+      <button class="af-menu-btn" id="menuOpen" aria-label="Menú"><i class="fas fa-bars"></i></button>
+    </div>
+  </header>
+
+  <!-- MOBILE NAV -->
+  <div class="af-mobile-nav" id="mobileNav">
+    <button class="af-mobile-close" id="menuClose"><i class="fas fa-times"></i></button>
+    <a href="#nosotros" class="mob-link">Conócenos</a>
+    <a href="#mundo" class="mob-link">Patagonia en el mundo</a>
+    <a href="#productos" class="mob-link">Productos</a>
+    <a href="#certificaciones" class="mob-link">Certificaciones</a>
+    <a href="#contacto" class="mob-link">Contáctenos</a>
+  </div>
+
+  <!-- HERO -->
+  <section class="af-hero" id="inicio">
+    <div class="af-hero-carousel">
+      <div id="heroCarousel" class="carousel slide carousel-fade h-100" data-bs-ride="carousel" data-bs-interval="5500" data-bs-pause="false">
+        <div class="carousel-inner h-100">
+          <div class="carousel-item active h-100"
+               style="background-image:url('{{ url_for('static', filename='img/hero-frutas2.jpg') }}')"
+               data-tag="Frutas frescas"></div>
+          <div class="carousel-item h-100"
+               style="background-image:url('{{ url_for('static', filename='img/bolsas.png') }}')"
+               data-tag="Productos del mar"></div>
+          <div class="carousel-item h-100"
+               style="background-image:url('{{ url_for('static', filename='img/vino3.png') }}')"
+               data-tag="Vinos premium"></div>
+               <div class="carousel-item h-100"
+               style="background-image:url('{{ url_for('static', filename='img/home.png') }}')"
+               data-tag="Vinos premium"></div>
+        </div>
+      </div>
+    </div>
+    <div class="af-hero-overlay"></div>
+
+    <div class="af-hero-arrows d-none d-md-flex">
+      <button type="button" data-bs-target="#heroCarousel" data-bs-slide="prev" aria-label="Anterior">
+        <i class="fas fa-chevron-left"></i>
+      </button>
+      <button type="button" data-bs-target="#heroCarousel" data-bs-slide="next" aria-label="Siguiente">
+        <i class="fas fa-chevron-right"></i>
+      </button>
+    </div>
+
+    <ol class="af-hero-indicators carousel-indicators" id="heroIndicators">
+      <li><button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="0" class="active" aria-label="Frutas"></button></li>
+      <li><button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="1" aria-label="Mar"></button></li>
+      <li><button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="2" aria-label="Vinos"></button></li>
+    </ol>
+
+    <div class="af-hero-content">
+      <span class="af-hero-tag" id="heroTag">Frutas frescas</span>
+      <p class="af-hero-label">{{ config.STORE_NAME or 'Patagonia Sur SpA' }}</p>
+      <h1 class="af-hero-title">Exportación de productos del sur de Chile hacia México y el mundo.</h1>
+      <p class="af-hero-desc">
+        Somos una empresa exportadora de frutas, productos del mar y vinos premium del sur de Chile a 
+      </p>
+      <a href="#nosotros" class="af-btn">Conócenos</a>
+    </div>
+  </section>
+
+  <!-- QUIÉNES SOMOS -->
+  <section class="af-about" id="nosotros">
+    <div class="af-about-inner">
+      <div class="af-about-header">
+        <p class="af-section-label">Quiénes somos</p>
+        <h2>Conectamos el sur de Chile con el mercado mexicano</h2>
+      </div>
+
+      <div class="af-about-stats">
+        <div class="af-about-stat">
+          <span class="stat-num">+15</span>
+          <span class="stat-lbl">Ciudades en México<br>y red de distribución</span>
+        </div>
+        <div class="af-about-stat">
+          <span class="stat-num">+10</span>
+          <span class="stat-lbl">Años de experiencia<br>en exportación</span>
+        </div>
+        <div class="af-about-stat">
+          <span class="stat-num">100%</span>
+          <span class="stat-lbl">Trazabilidad<br>origen a destino</span>
+        </div>
+      </div>
+
+      <div class="af-about-pillars">
+        <div class="af-about-pillar">
+          <div class="pillar-icon"><i class="fas fa-history"></i></div>
+          <h4>Experiencia</h4>
+          <p><strong>+10 años conectando el sur de Chile con México</strong> con frutas frescas, productos del mar y vinos de alta calidad para importadores, HORECA y retail.</p>
+        </div>
+        <div class="af-about-pillar">
+          <div class="pillar-icon"><i class="fas fa-shipping-fast"></i></div>
+          <h4>Líderes</h4>
+          <p>En exportación de frutas, mariscos y vinos patagónicos, así como también <strong>en logística de cadena de frío y trazabilidad</strong> de origen a destino.</p>
+        </div>
+        <div class="af-about-pillar">
+          <div class="pillar-icon"><i class="fas fa-award"></i></div>
+          <h4>Calidad</h4>
+          <p>Desde nuestros campos y costas hasta tu almacén en México, <strong>controlamos el 100% de la cadena exportadora</strong> con documentación SAG, SENASICA y NOM.</p>
+        </div>
+      </div>
+
+      <div class="af-about-cta">
+        <a href="#contacto" class="af-btn" style="background:var(--accent);color:#fff">Contacto comercial</a>
+        <a href="#productos" class="af-btn-outline">Ver productos</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- MUNDO — imagen local parallax -->
+  <section class="af-world" id="mundo"
+    style="background-image: url('{{ url_for('static', filename='img/bolsas.png') }}');">
+    <div class="af-world-overlay"></div>
+    <div class="af-world-content">
+      <div>
+        <h3>Patagonia Sur en Chile y el mundo</h3>
+        <h2>Con presencia activa en el mercado mexicano</h2>
+      </div>
+      <div>
+        <p>Con cobertura en <strong>+15 ciudades en México</strong>, somos el partner exportador que conecta la calidad patagónica con importadores, distribuidores y cadenas especializadas en frutas, mariscos y vinos chilenos.</p>
+      </div>
+    </div>
+  </section>
+
+  {# SEGUIMIENTO RADAR — desactivado temporalmente #}
+  {% if false %}
+  <section class="af-track" id="seguimiento">
+    <div class="af-track-inner">
+      <div class="af-track-header">
+        <p class="af-section-label">Logística en tiempo real</p>
+        <h2>Seguimiento de embarque</h2>
+        <p>Monitoreo de ruta marítima Valparaíso → Manzanillo con trazabilidad y cadena de frío activa.</p>
+      </div>
+
+      <div class="af-track-layout">
+        <div class="af-radar">
+          <div class="af-radar-live"><span class="dot"></span> LIVE TRACKING</div>
+          <div class="af-radar-sweep"></div>
+          <div class="af-radar-scale">Escala · Pacífico Sur</div>
+          <svg class="af-radar-svg" viewBox="0 0 800 420" xmlns="http://www.w3.org/2000/svg">
+            <!-- Continentes estilizados -->
+            <path class="land" d="M40,380 L40,200 Q80,180 120,220 L140,300 Q100,360 60,380 Z"/>
+            <path class="land" d="M520,80 L780,60 L790,200 Q700,240 600,220 L520,180 Q500,120 520,80 Z"/>
+            <text class="port-label" x="95" y="365">CHILE</text>
+            <text class="port-label" x="640" y="75">MÉXICO</text>
+
+            <!-- Ruta marítima -->
+            <path id="trackRouteBg" class="route-bg"
+              d="M 145,310 C 250,280 350,220 450,180 S 600,130 655,115"/>
+            <path id="trackRoute" class="route-line"
+              d="M 145,310 C 250,280 350,220 450,180 S 600,130 655,115"/>
+            <path id="trackRouteDone" class="route-progress"
+              d="M 145,310 C 250,280 350,220 450,180 S 600,130 655,115"/>
+
+            <!-- Puerto origen Valparaíso -->
+            <circle class="port-dot" cx="145" cy="310" r="5"/>
+            <circle class="port-pulse" cx="145" cy="310" r="4"/>
+            <text class="port-label" x="155" y="328">Valparaíso, CL</text>
+
+            <!-- Puerto destino Manzanillo -->
+            <circle class="port-dot" cx="655" cy="115" r="5"/>
+            <circle class="port-pulse" cx="655" cy="115" r="4" style="animation-delay:.8s"/>
+            <text class="port-label" x="580" y="108">Manzanillo, MX</text>
+
+            <!-- Barco -->
+            <g id="trackShip" transform="translate(145,310)">
+              <polygon points="0,-10 8,8 -8,8" fill="#7dd87d"/>
+              <rect x="-3" y="6" width="6" height="4" fill="#587232"/>
+            </g>
+          </svg>
+        </div>
+
+        <div class="af-track-panel">
+          <h3>Panel de control</h3>
+          <div class="af-track-status">
+            <span class="status-badge" id="trackStatusBadge">EN TRÁNSITO</span>
+            <span class="status-text" id="trackStatusText">Navegando hacia México</span>
+          </div>
+          <div class="af-track-row">
+            <span class="lbl">Ruta</span>
+            <span class="val">Valparaíso → Manzanillo</span>
+          </div>
+          <div class="af-track-row">
+            <span class="lbl">Embarcación</span>
+            <span class="val">Reefer · PS-EXPORT</span>
+          </div>
+          <div class="af-track-row">
+            <span class="lbl">Velocidad</span>
+            <span class="val" id="trackSpeed">18.2 nudos</span>
+          </div>
+          <div class="af-track-row">
+            <span class="lbl">Temperatura</span>
+            <span class="val" id="trackTemp">-2.0 °C</span>
+          </div>
+          <div class="af-track-progress-wrap">
+            <div class="af-track-row">
+              <span class="lbl">Progreso</span>
+              <span class="val" id="trackProgress">0%</span>
+            </div>
+            <div class="af-track-progress-bar">
+              <div class="af-track-progress-fill" id="trackProgressBar"></div>
+            </div>
+          </div>
+          <div class="af-track-row">
+            <span class="lbl">ETA destino</span>
+            <span class="val" id="trackEta">—</span>
+          </div>
+          <div class="af-track-coords">
+            <div class="coord-line">LAT <span class="coord-val" id="trackLat">-33.0472°</span></div>
+            <div class="coord-line">LON <span class="coord-val" id="trackLon">-71.6127°</span></div>
+            <div class="coord-line">UTC <span class="coord-val" id="trackUtc">—</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+  {% endif %}
+
+  <!-- PRODUCTOS -->
+  <section class="af-products" id="productos">
+    <p class="af-section-label">Nuestros productos</p>
+    <h2 class="af-section-title">Somos más que frutas</h2>
+    <div class="af-product-grid">
+      <a href="#contacto" class="af-product-card">
+        <img src="{{ url_for('static', filename='img/frutas.png') }}" alt="Frutas frescas">
+        <div class="overlay">
+          <h3>Frutas Frescas</h3>
+          <p>Manzanas, cítricos, uvas, berries y frutas procesadas con cadena de frío garantizada.</p>
+          <span class="link">Conoce más</span>
+        </div>
+      </a>
+      <a href="#contacto" class="af-product-card">
+        <img src="{{ url_for('static', filename='img/mariscos.png') }}" alt="Productos del mar">
+        <div class="overlay">
+          <h3>Productos del Mar</h3>
+          <p>Salmón, mariscos y pescados del sur de Chile. Fresco, congelado IQF y valor agregado.</p>
+          <span class="link">Conoce más</span>
+        </div>
+      </a>
+      <a href="#contacto" class="af-product-card">
+        <img src="https://images.unsplash.com/photo-1510812431401-41d2bd2722f3?w=600&q=80" alt="Vinos premium">
+        <div class="overlay">
+          <h3>Vinos Premium</h3>
+          <p>Tintos, blancos y espumantes con denominación de origen. Etiquetado NOM México.</p>
+          <span class="link">Conoce más</span>
+        </div>
+      </a>
+    </div>
+  </section>
+
+  <!-- TESTIMONIOS -->
+  <section class="af-testimonials" id="testimonios">
+    <div class="af-testi-inner">
+      <p class="af-section-label">Testimonios</p>
+      <div id="testiSlides">
+        <div class="testi-item" data-i="0">
+          <p class="af-testi-quote">"Excelente calidad en frutas y cumplimiento de documentación. La cadena de frío llegó perfecta a CDMX. Un partner confiable para importación."</p>
+          <div class="af-testi-author">Importador CDMX</div>
+          <div class="af-testi-role">Distribución mayorista</div>
+        </div>
+        <div class="testi-item d-none" data-i="1">
+          <p class="af-testi-quote">"Patagonia Sur nos provee salmón y mariscos con trazabilidad total. Muy confiables para HORECA en Cancún y la Riviera Maya."</p>
+          <div class="af-testi-author">Cadena HORECA</div>
+          <div class="af-testi-role">Riviera Maya, México</div>
+        </div>
+        <div class="testi-item d-none" data-i="2">
+          <p class="af-testi-quote">"Los vinos chilenos llegan con etiquetado correcto para NOM. Partner ideal para retail especializado en Guadalajara."</p>
+          <div class="af-testi-author">Retail Jalisco</div>
+          <div class="af-testi-role">Importador de vinos</div>
+        </div>
+      </div>
+      <div class="af-testi-nav">
+        <button id="testiPrev" aria-label="Anterior"><i class="fas fa-chevron-left"></i></button>
+        <div class="af-testi-dots" id="testiDots">
+          <span class="active" data-i="0"></span>
+          <span data-i="1"></span>
+          <span data-i="2"></span>
+        </div>
+        <button id="testiNext" aria-label="Siguiente"><i class="fas fa-chevron-right"></i></button>
+      </div>
+    </div>
+  </section>
+
+  <!-- LÍNEAS DE PRODUCTO -->
+  <section class="af-brands" id="lineas"
+    style="background-image: url('{{ url_for('static', filename='img/patagonia-mundo.jpg') }}');">
+    <div class="af-brands-overlay"></div>
+    <div class="af-brands-inner">
+      <p class="af-section-label">Líneas de exportación</p>
+      <h2 class="af-section-title">Nuestras líneas</h2>
+      <div class="af-brand-row">
+        <a href="#contacto" class="af-line-card text-decoration-none">
+          <div class="line-img">
+            <img src="{{ url_for('static', filename='img/frutas.png') }}" alt="Frutas y berries">
+            <span class="line-tag">Línea 01</span>
+          </div>
+          <div class="line-body">
+            <h4>Frutas & Berries</h4>
+            <p>Frescas, procesadas e IQF para retail y foodservice. Manzanas, cítricos, uvas y berries con cadena de frío.</p>
+            <span class="line-link">Saber más <i class="fas fa-arrow-right"></i></span>
+          </div>
+        </a>
+        <a href="#contacto" class="af-line-card text-decoration-none">
+          <div class="line-img">
+            <img src="{{ url_for('static', filename='img/mariscos.png') }}" alt="Mar y salmón">
+            <span class="line-tag">Línea 02</span>
+          </div>
+          <div class="line-body">
+            <h4>Mar & Salmón</h4>
+            <p>Origen patagónico con estándares HACCP y BRC. Salmón, mariscos y pescados fresco o congelado IQF.</p>
+            <span class="line-link">Saber más <i class="fas fa-arrow-right"></i></span>
+          </div>
+        </a>
+        <a href="#contacto" class="af-line-card text-decoration-none">
+          <div class="line-img">
+            <img src="{{ url_for('static', filename='img/vino2.png') }}" alt="Vinos D.O.">
+            <span class="line-tag">Línea 03</span>
+          </div>
+          <div class="line-body">
+            <h4>Vinos D.O.</h4>
+            <p>Premium chilenos con distribución mayorista en MX. Tintos, blancos y espumantes con etiquetado NOM.</p>
+            <span class="line-link">Saber más <i class="fas fa-arrow-right"></i></span>
+          </div>
+        </a>
+      </div>
+      <div class="af-brands-cta">
+        <a href="#contacto" class="af-btn-outline-light">Ver catálogo completo</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- CERTIFICACIONES -->
+  <section class="af-certs" id="certificaciones"
+    style="background-image: url('{{ url_for('static', filename='img/1.png') }}');">
+    <div class="af-certs-overlay"></div>
+    <div class="af-certs-inner">
+      <p class="af-section-label">Estándares</p>
+      <h2 class="af-section-title">Certificaciones</h2>
+      <div class="af-certs-grid">
+        <div class="af-cert-item">
+          <div class="cert-icon"><i class="fas fa-shield-alt"></i></div>
+          <span>Norma mundial de seguridad alimentaria HACCP</span>
+        </div>
+        <div class="af-cert-item">
+          <div class="cert-icon"><i class="fas fa-certificate"></i></div>
+          <span>BRCGS Grado AA+</span>
+        </div>
+        <div class="af-cert-item">
+          <div class="cert-icon"><i class="fas fa-leaf"></i></div>
+          <span>Global GAP</span>
+        </div>
+        <div class="af-cert-item">
+          <div class="cert-icon"><i class="fas fa-file-contract"></i></div>
+          <span>SAG / SENASICA</span>
+        </div>
+        <div class="af-cert-item">
+          <div class="cert-icon"><i class="fas fa-check-double"></i></div>
+          <span>Certificado NOM México</span>
+        </div>
+        <div class="af-cert-item">
+          <div class="cert-icon"><i class="fas fa-snowflake"></i></div>
+          <span>Cadena de frío certificada</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CONTACTO -->
+  <section class="af-contact" id="contacto">
+    <div class="af-contact-wrap">
+      <div class="af-contact-header">
+        <p class="af-section-label">Contacto comercial</p>
+        <h2>Contáctenos</h2>
+        <p>Cuéntanos qué productos necesitas importar en México. Te respondemos en 48 horas con catálogo, precios FOB/CIF y calendario de embarque.</p>
+        <div class="af-contact-steps">
+          <span class="af-contact-step active"><i class="fas fa-user"></i> Tus datos</span>
+          <span class="af-contact-step"><i class="fas fa-comment-dots"></i> Tu consulta</span>
+          <span class="af-contact-step"><i class="fas fa-clock"></i> Respuesta 48h</span>
+        </div>
+      </div>
+
+      <div class="af-contact-layout">
+        <aside class="af-contact-aside">
+          <p class="aside-tag">Patagonia Sur SpA</p>
+          <h3>Exportación Chile → México</h3>
+          <p class="aside-desc">Frutas, mariscos y vinos premium con trazabilidad, cadena de frío y documentación aduanera completa.</p>
+
+          <div class="af-contact-route">
+            <i class="fas fa-location-dot"></i> Chile
+            <i class="fas fa-arrow-right route-arrow"></i>
+            <i class="fas fa-ship" style="color:rgba(255,255,255,.5);"></i>
+            <i class="fas fa-arrow-right route-arrow"></i>
+            <i class="fas fa-anchor"></i> México
+          </div>
+
+          <ul class="af-contact-list">
+            <li>
+              <div class="cl-icon"><i class="fas fa-map-marker-alt"></i></div>
+              <div>
+                <strong>Origen</strong>
+                <span>Sur de Chile · Patagonia</span>
+              </div>
+            </li>
+            <li>
+              <div class="cl-icon"><i class="fas fa-phone"></i></div>
+              <div>
+                <strong>Teléfono</strong>
+                <a href="tel:+56920576206">+56 9 2057 6206</a>
+              </div>
+            </li>
+            <li>
+              <div class="cl-icon"><i class="fas fa-envelope"></i></div>
+              <div>
+                <strong>Email</strong>
+                <a href="mailto:{{ config.CONTACT_EMAIL or 'contacto@patagoniasur.cl' }}">{{ config.CONTACT_EMAIL or 'contacto@patagoniasur.cl' }}</a>
+              </div>
+            </li>
+            <li>
+              <div class="cl-icon"><i class="fab fa-instagram"></i></div>
+              <div>
+                <strong>Instagram</strong>
+                <a href="https://www.instagram.com/patagoniasurspa" target="_blank" rel="noopener">@patagoniasurspa</a>
+              </div>
+            </li>
+          </ul>
+
+          <div class="af-contact-trust">
+            <div class="af-contact-trust-item"><i class="fas fa-bolt"></i>Respuesta 48h</div>
+            <div class="af-contact-trust-item"><i class="fas fa-file-invoice"></i>FOB / CIF</div>
+            <div class="af-contact-trust-item"><i class="fas fa-handshake"></i>Sin compromiso</div>
+          </div>
+
+          <div class="af-contact-quick">
+            <a href="https://wa.me/{{ config.WHATSAPP_PHONE }}?text={{ 'Hola Patagonia Sur, quiero cotizar exportación a México.'|urlencode }}"
+               class="af-btn af-btn-whatsapp" target="_blank" rel="noopener">
+              <i class="fab fa-whatsapp"></i> WhatsApp
+            </a>
+            <a href="tel:+56920576206" class="af-btn af-btn-call">
+              <i class="fas fa-phone"></i> Llamar
+            </a>
+          </div>
+        </aside>
+
+        <div class="af-form-card">
+          <form method="POST" action="{{ url_for('main.contacto') }}" id="contactForm">
+            {{ form.hidden_tag() }}
+
+            {% with messages = get_flashed_messages(with_categories=true) %}
+              {% if messages %}
+                {% for category, message in messages %}
+                <div class="cf-flash {{ category }}">
+                  <i class="fas fa-{{ 'check-circle' if category == 'success' else 'exclamation-circle' }}"></i>
+                  {{ message }}
+                </div>
+                {% endfor %}
+              {% endif %}
+            {% endwith %}
+
+            <div class="form-head">
+              <div class="form-head-top">
+                <h3>Solicita tu cotización</h3>
+                <span class="form-head-badge"><i class="fas fa-lock"></i> Seguro</span>
+              </div>
+              <p>Completa el formulario y un ejecutivo comercial te contactará a la brevedad.</p>
+            </div>
+
+            <div class="cf-grid">
+              <div class="cf-field">
+                <label for="cf-nombre">Nombre *</label>
+                <div class="cf-input-wrap">
+                  <i class="fas fa-user"></i>
+                  {{ form.nombre(class="form-control", id="cf-nombre", placeholder="Tu nombre completo") }}
+                </div>
+              </div>
+              <div class="cf-field">
+                <label for="cf-email">Email *</label>
+                <div class="cf-input-wrap">
+                  <i class="fas fa-envelope"></i>
+                  {{ form.email(class="form-control", id="cf-email", placeholder="correo@empresa.com") }}
+                </div>
+              </div>
+              <div class="cf-field">
+                <label for="cf-telefono">Teléfono</label>
+                <div class="cf-input-wrap">
+                  <i class="fas fa-phone"></i>
+                  {{ form.telefono(class="form-control", id="cf-telefono", placeholder="+52 / +56 ...") }}
+                </div>
+              </div>
+              <div class="cf-field">
+                <label for="cf-empresa">Empresa</label>
+                <div class="cf-input-wrap">
+                  <i class="fas fa-building"></i>
+                  {{ form.empresa(class="form-control", id="cf-empresa", placeholder="Nombre de tu empresa") }}
+                </div>
+              </div>
+              <div class="cf-field full">
+                <p class="cf-chips-label">Productos de interés <span style="font-weight:400;text-transform:none;letter-spacing:0;">(opcional)</span></p>
+                <div class="cf-chips" id="productChips">
+                  <button type="button" class="cf-chip" data-product="Frutas y berries"><i class="fas fa-apple-whole"></i>Frutas</button>
+                  <button type="button" class="cf-chip" data-product="Mariscos y salmón"><i class="fas fa-fish"></i>Mariscos</button>
+                  <button type="button" class="cf-chip" data-product="Vinos premium"><i class="fas fa-wine-glass"></i>Vinos</button>
+                </div>
+                <label for="cf-mensaje">Mensaje *</label>
+                <div class="cf-input-wrap textarea-icon">
+                  <i class="fas fa-comment-dots"></i>
+                  {{ form.mensaje(class="form-control", id="cf-mensaje", rows="5", placeholder="Volúmenes estimados, ciudad destino en México, incoterm preferido...") }}
+                </div>
+              </div>
+              <div class="cf-field full">
+                <button type="submit" class="af-btn-submit">
+                  <i class="fas fa-paper-plane"></i> Enviar solicitud
+                </button>
+                <p class="af-form-note">
+                  <i class="fas fa-shield-halved"></i>
+                  Tus datos están protegidos y solo se usan para responder tu consulta comercial.
+                </p>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="af-footer">
+    <div class="af-footer-inner">
+      <div>
+        <div class="af-footer-logo">Patagonia Sur</div>
+        <p>Exportación de frutas, productos del mar y vinos del sur de Chile hacia México.</p>
+        <div class="af-footer-social">
+          <a href="https://www.instagram.com/patagoniasurspa" target="_blank" rel="noopener"><i class="fab fa-instagram"></i></a>
+          <a href="https://wa.me/{{ config.WHATSAPP_PHONE }}" target="_blank" rel="noopener"><i class="fab fa-whatsapp"></i></a>
+          <a href="#"><i class="fab fa-linkedin-in"></i></a>
+        </div>
+      </div>
+      <div>
+        <h5>Nuestros contenidos</h5>
+        <ul>
+          <li><a href="#nosotros">Conócenos</a></li>
+          <li><a href="#mundo">Patagonia en el mundo</a></li>
+          <li><a href="#productos">Productos</a></li>
+          <li><a href="#certificaciones">Certificaciones</a></li>
+          <li><a href="#contacto">Contáctenos</a></li>
+        </ul>
+      </div>
+      <div>
+        <h5>Legales</h5>
+        <ul>
+          <li><a href="#">Política de privacidad</a></li>
+          <li><a href="https://wa.me/{{ config.WHATSAPP_PHONE }}" target="_blank" rel="noopener">WhatsApp</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="af-footer-bottom">
+      © {{ config.STORE_NAME or 'Patagonia Sur SpA' }} · Exportación Chile–México
+    </div>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    /* Hero carousel — etiqueta por slide */
+    (function () {
+      const carousel = document.getElementById('heroCarousel');
+      const heroTag = document.getElementById('heroTag');
+      if (!carousel || !heroTag) return;
+      carousel.addEventListener('slid.bs.carousel', (e) => {
+        const slide = e.relatedTarget;
+        const tag = slide?.dataset?.tag;
+        if (tag) heroTag.textContent = tag;
+      });
+    })();
+
+    /* Mobile menu */
+    const mobileNav = document.getElementById('mobileNav');
+    document.getElementById('menuOpen').addEventListener('click', () => mobileNav.classList.add('open'));
+    document.getElementById('menuClose').addEventListener('click', () => mobileNav.classList.remove('open'));
+    document.querySelectorAll('.mob-link').forEach(l => l.addEventListener('click', () => mobileNav.classList.remove('open')));
+
+    /* Chips de producto en formulario contacto */
+    (function () {
+      const chips = document.querySelectorAll('.cf-chip');
+      const mensaje = document.getElementById('cf-mensaje');
+      if (!chips.length || !mensaje) return;
+      chips.forEach(chip => {
+        chip.addEventListener('click', () => {
+          const prod = chip.dataset.product;
+          chip.classList.toggle('selected');
+          const selected = [...document.querySelectorAll('.cf-chip.selected')]
+            .map(c => c.dataset.product);
+          const base = mensaje.value.replace(/^Interés en:.*\n\n?/, '').trim();
+          if (selected.length) {
+            mensaje.value = 'Interés en: ' + selected.join(', ') + (base ? '\n\n' + base : '');
+          } else {
+            mensaje.value = base;
+          }
+        });
+      });
+    })();
+
+    /* Testimonials */
+    let ti = 0;
+    const slides = document.querySelectorAll('.testi-item');
+    const dots = document.querySelectorAll('#testiDots span');
+    function showTesti(n) {
+      ti = (n + slides.length) % slides.length;
+      slides.forEach(s => s.classList.add('d-none'));
+      dots.forEach(d => d.classList.remove('active'));
+      slides[ti].classList.remove('d-none');
+      dots[ti].classList.add('active');
+    }
+    document.getElementById('testiPrev').addEventListener('click', () => showTesti(ti - 1));
+    document.getElementById('testiNext').addEventListener('click', () => showTesti(ti + 1));
+    dots.forEach(d => d.addEventListener('click', () => showTesti(+d.dataset.i)));
+    setInterval(() => showTesti(ti + 1), 8000);
+
+    /*
+    Seguimiento radar — desactivado temporalmente
+    (function () {
+      const route = document.getElementById('trackRoute');
+      const routeDone = document.getElementById('trackRouteDone');
+      const ship = document.getElementById('trackShip');
+      if (!route || !ship) return;
+
+      const totalLen = route.getTotalLength();
+      routeDone.style.strokeDasharray = totalLen;
+      routeDone.style.strokeDashoffset = totalLen;
+
+      const orig = { lat: -33.0472, lon: -71.6127 };
+      const dest = { lat: 19.0522, lon: -104.3158 };
+      const duration = 22000;
+      let startTime = null;
+
+      function lerp(a, b, t) { return a + (b - a) * t; }
+
+      function tick(ts) {
+        if (!startTime) startTime = ts;
+        let t = ((ts - startTime) % duration) / duration;
+
+        const pos = route.getPointAtLength(t * totalLen);
+        const ahead = route.getPointAtLength(Math.min(t * totalLen + 3, totalLen));
+        const angle = Math.atan2(ahead.y - pos.y, ahead.x - pos.x) * 180 / Math.PI + 90;
+        ship.setAttribute('transform', `translate(${pos.x},${pos.y}) rotate(${angle})`);
+
+        routeDone.style.strokeDashoffset = totalLen * (1 - t);
+        const pct = Math.round(t * 100);
+        document.getElementById('trackProgress').textContent = pct + '%';
+        document.getElementById('trackProgressBar').style.width = pct + '%';
+
+        const lat = lerp(orig.lat, dest.lat, t);
+        const lon = lerp(orig.lon, dest.lon, t);
+        document.getElementById('trackLat').textContent = lat.toFixed(4) + '°';
+        document.getElementById('trackLon').textContent = lon.toFixed(4) + '°';
+
+        const etaDays = ((1 - t) * 14).toFixed(1);
+        document.getElementById('trackEta').textContent =
+          t > 0.95 ? 'Arribo inminente' : etaDays + ' días (est.)';
+
+        const now = new Date();
+        document.getElementById('trackUtc').textContent =
+          now.toISOString().slice(11, 19) + ' UTC';
+
+        const badge = document.getElementById('trackStatusBadge');
+        const status = document.getElementById('trackStatusText');
+        if (t < 0.05) {
+          badge.textContent = 'ZARPE';
+          status.textContent = 'Saliendo de Valparaíso, Chile';
+        } else if (t > 0.92) {
+          badge.textContent = 'ARRIBO';
+          status.textContent = 'Aproximándose a Manzanillo, MX';
+        } else {
+          badge.textContent = 'EN TRÁNSITO';
+          status.textContent = 'Navegando hacia México';
+        }
+
+        requestAnimationFrame(tick);
+      }
+      requestAnimationFrame(tick);
+    })();
+    */
+  </script>
+</body>
+</html>

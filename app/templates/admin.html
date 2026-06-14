@@ -1,0 +1,764 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard · {{ config.STORE_NAME or 'Patagonia Sur SpA' }}</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌿</text></svg>">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --black: #0d0d0d;
+      --sidebar: #141414;
+      --gray: #6b7280;
+      --gray-light: #f4f5f7;
+      --gray-mid: #e5e7eb;
+      --white: #ffffff;
+      --cream: #F7F3EA;
+      --accent: #587232;
+      --accent-dark: #3d5023;
+      --accent-glow: rgba(88,114,50,.35);
+      --accent-light: #eef3e8;
+      --orange: #EA942A;
+      --orange-glow: rgba(234,148,42,.25);
+      --amber: #b45309;
+      --green-ok: #15803d;
+      --red: #be123c;
+      --radius: 16px;
+      --radius-sm: 10px;
+      --shadow: 0 4px 24px rgba(0,0,0,.06);
+      --shadow-lg: 0 20px 50px rgba(0,0,0,.1);
+      --sidebar-w: 260px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'Inter', -apple-system, sans-serif;
+      background: var(--gray-light);
+      color: var(--black);
+      min-height: 100vh;
+      display: flex;
+    }
+
+    /* ── Sidebar ── */
+    .sidebar {
+      width: var(--sidebar-w);
+      background: var(--sidebar);
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+      position: fixed;
+      inset: 0 auto 0 0;
+      z-index: 200;
+      border-right: 1px solid rgba(255,255,255,.06);
+    }
+    .sidebar-brand {
+      padding: 1.75rem 1.5rem;
+      display: flex; align-items: center; gap: .85rem;
+      text-decoration: none; color: inherit;
+      border-bottom: 1px solid rgba(255,255,255,.06);
+    }
+    .sidebar-brand .logo {
+      width: 42px; height: 42px;
+      background: linear-gradient(135deg, var(--accent), var(--accent-dark));
+      border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 800; font-size: .8rem;
+      box-shadow: 0 8px 20px var(--accent-glow);
+    }
+    .sidebar-brand .name { font-weight: 800; font-size: .95rem; line-height: 1.2; }
+    .sidebar-brand .sub { font-size: .6rem; color: rgba(255,255,255,.4); letter-spacing: .12em; text-transform: uppercase; }
+
+    .sidebar-nav { flex: 1; padding: 1.25rem .75rem; }
+    .nav-label {
+      font-size: .6rem; font-weight: 700; letter-spacing: .15em;
+      text-transform: uppercase; color: rgba(255,255,255,.3);
+      padding: 0 .75rem; margin-bottom: .5rem;
+    }
+    .nav-item {
+      display: flex; align-items: center; gap: .75rem;
+      padding: .75rem 1rem; border-radius: var(--radius-sm);
+      font-size: .85rem; font-weight: 500; color: rgba(255,255,255,.55);
+      text-decoration: none; transition: all .2s; margin-bottom: .25rem;
+    }
+    .nav-item i { width: 18px; text-align: center; font-size: .9rem; }
+    .nav-item:hover { background: rgba(255,255,255,.06); color: #fff; }
+    .nav-item.active {
+      background: linear-gradient(135deg, rgba(88,114,50,.35), rgba(88,114,50,.15));
+      color: #fff; font-weight: 600;
+      box-shadow: inset 0 0 0 1px rgba(88,114,50,.4);
+    }
+    .nav-item .badge-count {
+      margin-left: auto; background: var(--orange);
+      color: #fff; font-size: .65rem; font-weight: 700;
+      padding: .15rem .5rem; border-radius: 99px; min-width: 22px; text-align: center;
+    }
+
+    .sidebar-footer {
+      padding: 1rem .75rem 1.5rem;
+      border-top: 1px solid rgba(255,255,255,.06);
+    }
+    .sidebar-footer .nav-item.logout { color: #f87171; }
+    .sidebar-footer .nav-item.logout:hover { background: rgba(248,113,113,.1); color: #fca5a5; }
+
+    /* ── Main ── */
+    .main {
+      flex: 1;
+      margin-left: var(--sidebar-w);
+      min-height: 100vh;
+      background:
+        radial-gradient(ellipse 80% 50% at 50% -20%, rgba(88,114,50,.08), transparent),
+        var(--gray-light);
+    }
+    .topbar {
+      position: sticky; top: 0; z-index: 50;
+      background: rgba(244,245,247,.85);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--gray-mid);
+      padding: 1rem 2rem;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .topbar-left h2 { font-size: 1.1rem; font-weight: 700; }
+    .topbar-left p { font-size: .8rem; color: var(--gray); margin-top: .15rem; }
+    .topbar-actions { display: flex; gap: .6rem; align-items: center; }
+    .btn-top {
+      display: inline-flex; align-items: center; gap: .45rem;
+      padding: .55rem 1.1rem; border-radius: 99px;
+      font-size: .8rem; font-weight: 600; text-decoration: none;
+      transition: all .2s; border: none; cursor: pointer; font-family: inherit;
+    }
+    .btn-top.ghost {
+      background: var(--white); color: var(--black);
+      border: 1px solid var(--gray-mid);
+      box-shadow: var(--shadow);
+    }
+    .btn-top.ghost:hover { border-color: var(--accent); color: var(--accent); }
+    .btn-top.primary {
+      background: var(--black); color: #fff;
+    }
+    .btn-top.primary:hover { background: var(--accent-dark); }
+
+    .content { padding: 1.75rem 2rem 3rem; max-width: 1400px; }
+
+    /* Flash */
+    .flash-msg {
+      font-size: .85rem; padding: .9rem 1.15rem; margin-bottom: 1.5rem;
+      border-radius: var(--radius-sm); display: flex; align-items: center; gap: .6rem;
+      animation: slideDown .4s ease;
+    }
+    .flash-msg.success { background: #ecfdf5; border: 1px solid #a7f3d0; color: var(--green-ok); }
+    .flash-msg.danger, .flash-msg.error { background: #fff1f2; border: 1px solid #fecdd3; color: var(--red); }
+    .flash-msg.info { background: var(--cream); border: 1px solid var(--gray-mid); color: var(--gray); }
+
+    @keyframes slideDown { from { opacity:0; transform:translateY(-8px); } to { opacity:1; transform:translateY(0); } }
+    @keyframes fadeUp { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:translateY(0); } }
+    .anim { animation: fadeUp .5s ease both; }
+    .anim-d1 { animation-delay: .05s; }
+    .anim-d2 { animation-delay: .1s; }
+    .anim-d3 { animation-delay: .15s; }
+    .anim-d4 { animation-delay: .2s; }
+
+    /* ── Bento stats ── */
+    .bento {
+      display: grid;
+      grid-template-columns: 1.4fr 1fr 1fr;
+      grid-template-rows: auto;
+      gap: 1rem;
+      margin-bottom: 1.75rem;
+    }
+    .bento-card {
+      background: var(--white);
+      border-radius: var(--radius);
+      padding: 1.5rem;
+      box-shadow: var(--shadow);
+      border: 1px solid rgba(0,0,0,.04);
+      position: relative; overflow: hidden;
+      transition: transform .3s, box-shadow .3s;
+    }
+    .bento-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-lg); }
+
+    .bento-hero {
+      grid-row: span 1;
+      background: linear-gradient(135deg, var(--black) 0%, #1a1f14 50%, var(--accent-dark) 100%);
+      color: #fff;
+      display: flex; flex-direction: column; justify-content: space-between;
+      min-height: 160px;
+    }
+    .bento-hero::before {
+      content: '';
+      position: absolute; top: -40%; right: -20%;
+      width: 200px; height: 200px;
+      background: radial-gradient(circle, var(--accent-glow), transparent 70%);
+      pointer-events: none;
+    }
+    .bento-hero .label {
+      font-size: .65rem; font-weight: 700; letter-spacing: .15em;
+      text-transform: uppercase; color: rgba(255,255,255,.5);
+    }
+    .bento-hero .big-num {
+      font-size: 3.5rem; font-weight: 800; line-height: 1;
+      margin: .5rem 0;
+    }
+    .bento-hero .big-num span { color: var(--orange); }
+    .bento-hero .desc { font-size: .85rem; color: rgba(255,255,255,.6); max-width: 260px; }
+    .bento-hero .pulse-dot {
+      display: inline-flex; align-items: center; gap: .5rem;
+      margin-top: 1rem; font-size: .75rem; color: rgba(255,255,255,.7);
+    }
+    .pulse-dot .dot {
+      width: 8px; height: 8px; border-radius: 50%;
+      background: var(--orange);
+      box-shadow: 0 0 0 0 var(--orange-glow);
+      animation: pulse 2s infinite;
+    }
+    @keyframes pulse {
+      0% { box-shadow: 0 0 0 0 var(--orange-glow); }
+      70% { box-shadow: 0 0 0 10px transparent; }
+      100% { box-shadow: 0 0 0 0 transparent; }
+    }
+
+    .stat-mini .stat-top {
+      display: flex; justify-content: space-between; align-items: flex-start;
+    }
+    .stat-mini .stat-label {
+      font-size: .7rem; font-weight: 600; color: var(--gray);
+      text-transform: uppercase; letter-spacing: .06em;
+    }
+    .stat-mini .stat-icon {
+      width: 40px; height: 40px; border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1rem;
+    }
+    .stat-mini .stat-num { font-size: 2.25rem; font-weight: 800; margin-top: .75rem; line-height: 1; }
+    .stat-mini .stat-bar {
+      height: 4px; background: var(--gray-mid); border-radius: 99px;
+      margin-top: 1rem; overflow: hidden;
+    }
+    .stat-mini .stat-bar-fill { height: 100%; border-radius: 99px; transition: width 1s ease; }
+    .stat-mini.total .stat-icon { background: var(--accent-light); color: var(--accent); }
+    .stat-mini.total .stat-num { color: var(--black); }
+    .stat-mini.total .stat-bar-fill { background: var(--accent); width: 100%; }
+    .stat-mini.pending .stat-icon { background: #fff7ed; color: var(--orange); }
+    .stat-mini.pending .stat-num { color: var(--amber); }
+    .stat-mini.pending .stat-bar-fill { background: var(--orange); }
+    .stat-mini.read .stat-icon { background: #ecfdf5; color: var(--green-ok); }
+    .stat-mini.read .stat-num { color: var(--green-ok); }
+    .stat-mini.read .stat-bar-fill { background: var(--green-ok); }
+
+    /* ── Inbox panel ── */
+    .inbox-panel {
+      background: var(--white);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      border: 1px solid rgba(0,0,0,.04);
+      overflow: hidden;
+    }
+    .inbox-header {
+      padding: 1.25rem 1.5rem;
+      border-bottom: 1px solid var(--gray-mid);
+      display: flex; flex-wrap: wrap; gap: 1rem; align-items: center;
+    }
+    .inbox-header h3 { font-size: 1rem; font-weight: 700; flex: 1; min-width: 140px; }
+    .inbox-header h3 span { color: var(--gray); font-weight: 500; font-size: .85rem; }
+
+    .search-box {
+      flex: 1; min-width: 200px; max-width: 360px; position: relative;
+    }
+    .search-box i {
+      position: absolute; left: 1rem; top: 50%; transform: translateY(-50%);
+      color: #9ca3af; font-size: .85rem;
+    }
+    .search-box input {
+      width: 100%; padding: .7rem 1rem .7rem 2.75rem;
+      border: 1px solid var(--gray-mid); border-radius: 99px;
+      background: var(--gray-light); font-size: .85rem; font-family: inherit;
+      transition: all .2s;
+    }
+    .search-box input:focus {
+      outline: none; background: var(--white);
+      border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-glow);
+    }
+    .search-box kbd {
+      position: absolute; right: .85rem; top: 50%; transform: translateY(-50%);
+      font-size: .65rem; color: #9ca3af; background: var(--white);
+      border: 1px solid var(--gray-mid); border-radius: 4px; padding: .1rem .35rem;
+      font-family: inherit;
+    }
+
+    /* Segmented control */
+    .segmented {
+      display: inline-flex; background: var(--gray-light);
+      border-radius: 99px; padding: 4px; gap: 2px;
+    }
+    .segmented button {
+      padding: .45rem 1rem; border: none; background: transparent;
+      border-radius: 99px; font-size: .75rem; font-weight: 600;
+      color: var(--gray); cursor: pointer; transition: all .25s;
+      font-family: inherit; white-space: nowrap;
+    }
+    .segmented button:hover { color: var(--black); }
+    .segmented button.active {
+      background: var(--white); color: var(--black);
+      box-shadow: 0 2px 8px rgba(0,0,0,.08);
+    }
+    .segmented button.active[data-filter="pending"] { color: var(--amber); }
+    .segmented button.active[data-filter="read"] { color: var(--green-ok); }
+
+    /* Message list */
+    .msg-list { list-style: none; }
+    .msg-item {
+      display: grid;
+      grid-template-columns: auto 1fr auto auto;
+      gap: 1rem;
+      align-items: center;
+      padding: 1.15rem 1.5rem;
+      border-bottom: 1px solid var(--gray-light);
+      transition: background .2s;
+      position: relative;
+    }
+    .msg-item:last-child { border-bottom: none; }
+    .msg-item:hover { background: #fafbfc; }
+    .msg-item.unread {
+      background: linear-gradient(90deg, rgba(234,148,42,.06), transparent);
+    }
+    .msg-item.unread::before {
+      content: '';
+      position: absolute; left: 0; top: 0; bottom: 0;
+      width: 3px; background: var(--orange);
+    }
+    .msg-item[data-hidden="true"] { display: none; }
+
+    .avatar {
+      width: 44px; height: 44px; border-radius: 14px;
+      background: linear-gradient(135deg, var(--accent), var(--accent-dark));
+      color: #fff; font-weight: 700; font-size: .95rem;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+      box-shadow: 0 4px 12px var(--accent-glow);
+    }
+    .msg-body { min-width: 0; }
+    .msg-body-top {
+      display: flex; align-items: baseline; gap: .6rem; flex-wrap: wrap;
+      margin-bottom: .25rem;
+    }
+    .msg-name { font-weight: 700; font-size: .95rem; }
+    .msg-id { font-size: .7rem; color: #9ca3af; font-weight: 500; }
+    .msg-meta {
+      display: flex; flex-wrap: wrap; gap: .75rem;
+      font-size: .78rem; color: var(--gray); margin-bottom: .4rem;
+    }
+    .msg-meta a { color: var(--accent); text-decoration: none; font-weight: 500; }
+    .msg-meta a:hover { text-decoration: underline; }
+    .msg-meta span { display: inline-flex; align-items: center; gap: .3rem; }
+    .msg-text {
+      font-size: .85rem; color: #4b5563; line-height: 1.55;
+      display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .msg-side { text-align: right; flex-shrink: 0; }
+    .msg-date { font-size: .75rem; color: #9ca3af; white-space: nowrap; }
+    .msg-date strong { display: block; color: var(--black); font-weight: 600; }
+
+    .status-pill {
+      display: inline-flex; align-items: center; gap: .35rem;
+      font-size: .68rem; font-weight: 700; letter-spacing: .03em;
+      text-transform: uppercase; padding: .35rem .75rem;
+      border-radius: 99px; margin-top: .5rem;
+    }
+    .status-pill.pending { background: #fff7ed; color: var(--amber); }
+    .status-pill.read { background: #ecfdf5; color: var(--green-ok); }
+    .status-pill .dot-sm {
+      width: 6px; height: 6px; border-radius: 50%;
+    }
+    .status-pill.pending .dot-sm { background: var(--orange); }
+    .status-pill.read .dot-sm { background: var(--green-ok); }
+
+    .msg-actions {
+      display: flex; gap: .4rem; opacity: 0;
+      transform: translateX(8px);
+      transition: all .25s;
+    }
+    .msg-item:hover .msg-actions { opacity: 1; transform: translateX(0); }
+
+    .btn-icon {
+      width: 36px; height: 36px; border-radius: 10px;
+      border: 1px solid var(--gray-mid); background: var(--white);
+      color: var(--gray); display: flex; align-items: center; justify-content: center;
+      cursor: pointer; text-decoration: none; font-size: .82rem;
+      transition: all .2s;
+    }
+    .btn-icon:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-light); transform: scale(1.05); }
+    .btn-icon.reply:hover { border-color: #3b82f6; color: #2563eb; background: #eff6ff; }
+    .btn-icon.delete:hover { border-color: var(--red); color: var(--red); background: #fff1f2; }
+
+    .empty-state {
+      text-align: center; padding: 5rem 2rem;
+    }
+    .empty-icon {
+      width: 80px; height: 80px; margin: 0 auto 1.5rem;
+      background: var(--accent-light); border-radius: 24px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 2rem; color: var(--accent);
+    }
+    .empty-state h3 { font-size: 1.15rem; font-weight: 700; margin-bottom: .5rem; }
+    .empty-state p { color: var(--gray); font-size: .9rem; }
+
+    .no-results {
+      display: none; text-align: center; padding: 3rem;
+      color: var(--gray); font-size: .9rem;
+    }
+    .no-results.show { display: block; }
+
+    /* Mobile cards */
+    .cards-mobile { display: none; }
+
+    /* Mobile toggle */
+    .menu-toggle {
+      display: none; width: 40px; height: 40px;
+      border: 1px solid var(--gray-mid); border-radius: 10px;
+      background: var(--white); cursor: pointer; font-size: 1rem;
+    }
+    .sidebar-overlay {
+      display: none; position: fixed; inset: 0;
+      background: rgba(0,0,0,.5); z-index: 150;
+    }
+
+    @media (max-width: 1024px) {
+      .bento { grid-template-columns: 1fr 1fr; }
+      .bento-hero { grid-column: span 2; }
+      .msg-item {
+        grid-template-columns: auto 1fr;
+        grid-template-rows: auto auto;
+      }
+      .msg-side { grid-column: 2; text-align: left; }
+      .msg-actions {
+        grid-column: 1 / -1; opacity: 1; transform: none;
+        justify-content: flex-end; padding-top: .5rem;
+        border-top: 1px solid var(--gray-light);
+      }
+    }
+
+    @media (max-width: 768px) {
+      .sidebar { transform: translateX(-100%); transition: transform .3s; }
+      .sidebar.open { transform: translateX(0); }
+      .sidebar-overlay.show { display: block; }
+      .main { margin-left: 0; }
+      .menu-toggle { display: flex; align-items: center; justify-content: center; }
+      .topbar, .content { padding-left: 1rem; padding-right: 1rem; }
+      .bento { grid-template-columns: 1fr; }
+      .bento-hero { grid-column: span 1; }
+      .inbox-header { flex-direction: column; align-items: stretch; }
+      .search-box { max-width: none; }
+      .search-box kbd { display: none; }
+      .segmented { width: 100%; justify-content: center; }
+      .msg-list-desktop { display: none; }
+      .cards-mobile { display: block; padding: 1rem; }
+      .m-card {
+        background: var(--gray-light); border-radius: var(--radius-sm);
+        padding: 1.15rem; margin-bottom: .75rem;
+        border: 1px solid var(--gray-mid);
+      }
+      .m-card.unread { border-left: 3px solid var(--orange); background: #fffbeb; }
+      .m-card[data-hidden="true"] { display: none; }
+      .m-card-actions { display: flex; gap: .5rem; margin-top: 1rem; flex-wrap: wrap; }
+      .m-card-actions form, .m-card-actions a { flex: 1; min-width: 90px; }
+      .btn-m {
+        width: 100%; padding: .65rem; border-radius: var(--radius-sm);
+        font-size: .75rem; font-weight: 600; border: 1px solid var(--gray-mid);
+        background: var(--white); cursor: pointer; text-align: center;
+        text-decoration: none; display: flex; align-items: center;
+        justify-content: center; gap: .35rem; color: var(--black);
+        font-family: inherit;
+      }
+      .btn-m.green { background: var(--accent-light); border-color: var(--accent); color: var(--accent-dark); }
+      .btn-m.blue { background: #eff6ff; border-color: #93c5fd; color: #1d4ed8; }
+      .btn-m.red { color: var(--red); border-color: #fecdd3; flex: 0; min-width: 44px; }
+    }
+  </style>
+</head>
+<body>
+
+  {% set total = mensajes|length %}
+  {% set pendientes = mensajes|selectattr("leido", "equalto", False)|list|length %}
+  {% set leidos = mensajes|selectattr("leido", "equalto", True)|list|length %}
+  {% set pct_read = ((leidos / total * 100)|round|int) if total > 0 else 0 %}
+  {% set pct_pending = ((pendientes / total * 100)|round|int) if total > 0 else 0 %}
+
+  <!-- Sidebar -->
+  <aside class="sidebar" id="sidebar">
+    <a href="{{ url_for('main.index') }}" class="sidebar-brand">
+      <div class="logo">PS</div>
+      <div>
+        <div class="name">Patagonia Sur</div>
+        <div class="sub">Exportadora</div>
+      </div>
+    </a>
+    <nav class="sidebar-nav">
+      <p class="nav-label">Menú</p>
+      <a href="{{ url_for('admin.dashboard') }}" class="nav-item {% if active_nav == 'mensajes' %}active{% endif %}">
+        <i class="fas fa-inbox"></i> Mensajes
+        {% if pendientes_count and pendientes_count > 0 %}<span class="badge-count">{{ pendientes_count }}</span>{% elif pendientes > 0 %}<span class="badge-count">{{ pendientes }}</span>{% endif %}
+      </a>
+      <a href="{{ url_for('admin.carteras') }}" class="nav-item {% if active_nav == 'carteras' %}active{% endif %}">
+        <i class="fas fa-folder-tree"></i> Carteras clientes
+        {% if carteras_count %}<span class="badge-count" style="background:var(--accent);">{{ carteras_count }}</span>{% endif %}
+      </a>
+      <a href="{{ url_for('main.index') }}" target="_blank" class="nav-item">
+        <i class="fas fa-globe-americas"></i> Ver sitio web
+      </a>
+      <a href="{{ url_for('main.index') }}#contacto" target="_blank" class="nav-item">
+        <i class="fas fa-paper-plane"></i> Formulario
+      </a>
+    </nav>
+    <div class="sidebar-footer">
+      <a href="{{ url_for('admin.logout') }}" class="nav-item logout">
+        <i class="fas fa-right-from-bracket"></i> Cerrar sesión
+      </a>
+    </div>
+  </aside>
+  <div class="sidebar-overlay" id="overlay"></div>
+
+  <!-- Main -->
+  <div class="main">
+    <header class="topbar">
+      <div style="display:flex;align-items:center;gap:.75rem;">
+        <button class="menu-toggle" id="menuToggle" aria-label="Menú"><i class="fas fa-bars"></i></button>
+        <div class="topbar-left">
+          <h2>Bandeja de entrada</h2>
+          <p>Cotizaciones y consultas de exportación</p>
+        </div>
+      </div>
+      <div class="topbar-actions">
+        <a href="{{ url_for('main.index') }}" target="_blank" class="btn-top ghost">
+          <i class="fas fa-external-link-alt"></i> Sitio
+        </a>
+        <a href="{{ url_for('admin.logout') }}" class="btn-top primary">
+          <i class="fas fa-sign-out-alt"></i> Salir
+        </a>
+      </div>
+    </header>
+
+    <div class="content">
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          {% for category, message in messages %}
+            <div class="flash-msg {{ category }}">
+              <i class="fas {% if category == 'success' %}fa-circle-check{% elif category in ['error','danger'] %}fa-circle-exclamation{% else %}fa-circle-info{% endif %}"></i>
+              {{ message }}
+            </div>
+          {% endfor %}
+        {% endif %}
+      {% endwith %}
+
+      <!-- Bento stats -->
+      <div class="bento anim">
+        <div class="bento-card bento-hero anim anim-d1">
+          <div>
+            <p class="label">Requieren atención</p>
+            <div class="big-num">{{ pendientes }}<span>{% if pendientes == 1 %} msg{% else %} msgs{% endif %}</span></div>
+            <p class="desc">Solicitudes pendientes de revisión desde el formulario de contacto.</p>
+          </div>
+          {% if pendientes > 0 %}
+          <div class="pulse-dot"><span class="dot"></span> Activas ahora</div>
+          {% endif %}
+        </div>
+        <div class="bento-card stat-mini total anim anim-d2">
+          <div class="stat-top">
+            <span class="stat-label">Total recibidos</span>
+            <div class="stat-icon"><i class="fas fa-envelope"></i></div>
+          </div>
+          <div class="stat-num">{{ total }}</div>
+          <div class="stat-bar"><div class="stat-bar-fill" style="width:100%"></div></div>
+        </div>
+        <div class="bento-card stat-mini read anim anim-d3">
+          <div class="stat-top">
+            <span class="stat-label">Procesados</span>
+            <div class="stat-icon"><i class="fas fa-check-double"></i></div>
+          </div>
+          <div class="stat-num">{{ leidos }}</div>
+          <div class="stat-bar"><div class="stat-bar-fill" style="width:{{ pct_read }}%"></div></div>
+        </div>
+      </div>
+
+      <!-- Inbox -->
+      <div class="inbox-panel anim anim-d4">
+        <div class="inbox-header">
+          <h3>Consultas <span>· {{ total }} en total</span></h3>
+          <div class="search-box">
+            <i class="fas fa-search"></i>
+            <input type="text" id="searchInput" placeholder="Buscar contacto, empresa o mensaje...">
+            <kbd>/</kbd>
+          </div>
+          <div class="segmented" id="filterBtns">
+            <button class="active" data-filter="all">Todos</button>
+            <button data-filter="pending">Pendientes</button>
+            <button data-filter="read">Leídos</button>
+          </div>
+        </div>
+
+        <!-- Desktop list -->
+        <ul class="msg-list msg-list-desktop" id="msgList">
+          {% for m in mensajes %}
+          <li class="msg-item {% if not m.leido %}unread{% endif %}"
+              data-status="{{ 'read' if m.leido else 'pending' }}"
+              data-search="{{ (m.nombre ~ ' ' ~ m.email ~ ' ' ~ (m.empresa or '') ~ ' ' ~ m.mensaje)|lower }}">
+            <div class="avatar">{{ m.nombre[0]|upper if m.nombre else '?' }}</div>
+            <div class="msg-body">
+              <div class="msg-body-top">
+                <span class="msg-name">{{ m.nombre }}</span>
+                <span class="msg-id">#{{ m.id }}</span>
+              </div>
+              <div class="msg-meta">
+                <a href="mailto:{{ m.email }}"><i class="fas fa-envelope"></i> {{ m.email }}</a>
+                {% if m.telefono %}<span><i class="fas fa-phone"></i> {{ m.telefono }}</span>{% endif %}
+                {% if m.empresa %}<span><i class="fas fa-building"></i> {{ m.empresa }}</span>{% endif %}
+              </div>
+              <p class="msg-text" title="{{ m.mensaje }}">{{ m.mensaje }}</p>
+            </div>
+            <div class="msg-side">
+              <div class="msg-date">
+                <strong>{{ m.fecha.strftime("%d %b") }}</strong>
+                {{ m.fecha.strftime("%H:%M") }}
+              </div>
+              {% if m.leido %}
+                <span class="status-pill read"><span class="dot-sm"></span> Leído</span>
+              {% else %}
+                <span class="status-pill pending"><span class="dot-sm"></span> Pendiente</span>
+              {% endif %}
+            </div>
+            <div class="msg-actions">
+              <form method="POST" action="{{ url_for('admin.toggle_mensaje', id=m.id) }}">
+                <button type="submit" class="btn-icon" title="{% if m.leido %}Marcar pendiente{% else %}Marcar leído{% endif %}">
+                  <i class="fas {% if m.leido %}fa-envelope{% else %}fa-envelope-open{% endif %}"></i>
+                </button>
+              </form>
+              <a href="mailto:{{ m.email }}?subject=Re: Cotización Patagonia Sur" class="btn-icon reply" title="Responder">
+                <i class="fas fa-reply"></i>
+              </a>
+              <form method="POST" action="{{ url_for('admin.delete_mensaje', id=m.id) }}" onsubmit="return confirm('¿Eliminar este mensaje?');">
+                <button type="submit" class="btn-icon delete" title="Eliminar">
+                  <i class="fas fa-trash-alt"></i>
+                </button>
+              </form>
+            </div>
+          </li>
+          {% else %}
+          <li>
+            <div class="empty-state">
+              <div class="empty-icon"><i class="fas fa-inbox"></i></div>
+              <h3>Sin mensajes aún</h3>
+              <p>Las cotizaciones del sitio aparecerán aquí automáticamente.</p>
+            </div>
+          </li>
+          {% endfor %}
+        </ul>
+
+        <!-- Mobile cards -->
+        <div class="cards-mobile" id="msgCards">
+          {% for m in mensajes %}
+          <div class="m-card {% if not m.leido %}unread{% endif %}"
+               data-status="{{ 'read' if m.leido else 'pending' }}"
+               data-search="{{ (m.nombre ~ ' ' ~ m.email ~ ' ' ~ (m.empresa or '') ~ ' ' ~ m.mensaje)|lower }}">
+            <div style="display:flex;gap:.75rem;align-items:center;margin-bottom:.75rem;">
+              <div class="avatar" style="width:40px;height:40px;font-size:.85rem;">{{ m.nombre[0]|upper if m.nombre else '?' }}</div>
+              <div style="flex:1;">
+                <div style="font-weight:700;">{{ m.nombre }} <span style="color:#9ca3af;font-size:.7rem;">#{{ m.id }}</span></div>
+                <div style="font-size:.75rem;color:#9ca3af;">{{ m.fecha.strftime("%d/%m/%Y %H:%M") }}</div>
+              </div>
+              {% if m.leido %}
+                <span class="status-pill read"><span class="dot-sm"></span></span>
+              {% else %}
+                <span class="status-pill pending"><span class="dot-sm"></span></span>
+              {% endif %}
+            </div>
+            <div class="msg-meta" style="margin-bottom:.5rem;">
+              <a href="mailto:{{ m.email }}">{{ m.email }}</a>
+              {% if m.empresa %} · {{ m.empresa }}{% endif %}
+            </div>
+            <p class="msg-text" style="-webkit-line-clamp:4;">{{ m.mensaje }}</p>
+            <div class="m-card-actions">
+              <form method="POST" action="{{ url_for('admin.toggle_mensaje', id=m.id) }}">
+                <button type="submit" class="btn-m green">
+                  <i class="fas {% if m.leido %}fa-envelope{% else %}fa-envelope-open{% endif %}"></i>
+                  {% if m.leido %}Pendiente{% else %}Leído{% endif %}
+                </button>
+              </form>
+              <a href="mailto:{{ m.email }}" class="btn-m blue"><i class="fas fa-reply"></i> Responder</a>
+              <form method="POST" action="{{ url_for('admin.delete_mensaje', id=m.id) }}" onsubmit="return confirm('¿Eliminar?');">
+                <button type="submit" class="btn-m red"><i class="fas fa-trash-alt"></i></button>
+              </form>
+            </div>
+          </div>
+          {% else %}
+          <div class="empty-state">
+            <div class="empty-icon"><i class="fas fa-inbox"></i></div>
+            <h3>Sin mensajes aún</h3>
+            <p>Las cotizaciones del sitio aparecerán aquí.</p>
+          </div>
+          {% endfor %}
+        </div>
+
+        <p class="no-results" id="noResults">
+          <i class="fas fa-search" style="font-size:1.5rem;display:block;margin-bottom:.5rem;opacity:.4;"></i>
+          Sin resultados para tu búsqueda
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      const input = document.getElementById('searchInput');
+      const btns = document.querySelectorAll('.segmented button');
+      const items = document.querySelectorAll('[data-search]');
+      const noResults = document.getElementById('noResults');
+      let currentFilter = 'all';
+
+      function applyFilters() {
+        const q = (input?.value || '').toLowerCase().trim();
+        let visible = 0;
+        items.forEach(el => {
+          const matchSearch = !q || el.dataset.search.includes(q);
+          const matchFilter = currentFilter === 'all' || el.dataset.status === currentFilter;
+          const show = matchSearch && matchFilter;
+          el.dataset.hidden = show ? 'false' : 'true';
+          if (show) visible++;
+        });
+        if (noResults) noResults.classList.toggle('show', visible === 0 && items.length > 0);
+      }
+
+      input?.addEventListener('input', applyFilters);
+      btns.forEach(b => b.addEventListener('click', () => {
+        currentFilter = b.dataset.filter;
+        btns.forEach(x => x.classList.remove('active'));
+        b.classList.add('active');
+        applyFilters();
+      }));
+
+      /* Shortcut / para buscar */
+      document.addEventListener('keydown', e => {
+        if (e.key === '/' && document.activeElement !== input) {
+          e.preventDefault();
+          input?.focus();
+        }
+        if (e.key === 'Escape') input?.blur();
+      });
+
+      /* Mobile sidebar */
+      const sidebar = document.getElementById('sidebar');
+      const overlay = document.getElementById('overlay');
+      const toggle = document.getElementById('menuToggle');
+      toggle?.addEventListener('click', () => {
+        sidebar.classList.toggle('open');
+        overlay.classList.toggle('show');
+      });
+      overlay?.addEventListener('click', () => {
+        sidebar.classList.remove('open');
+        overlay.classList.remove('show');
+      });
+    })();
+  </script>
+</body>
+</html>

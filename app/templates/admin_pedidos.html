@@ -1,0 +1,142 @@
+{% extends "admin_layout.html" %}
+
+{% block title %}Pedidos{% endblock %}
+
+{% block topbar_title %}Pedidos{% endblock %}
+
+{% block topbar_subtitle %}Órdenes de compra confirmadas · exportación Chile → México{% endblock %}
+
+{% block topbar_actions %}
+
+  <a href="{{ url_for('admin.pedido_nueva') }}" class="btn-top accent"><i class="fas fa-cart-shopping"></i> Nuevo pedido</a>
+
+{% endblock %}
+
+
+
+{% block content %}
+
+<div class="panel">
+
+  <div class="panel-header">
+
+    <h3><i class="fas fa-box-open" style="color:var(--accent);margin-right:.5rem;"></i>{{ pedidos|length }} pedido{% if pedidos|length != 1 %}s{% endif %}</h3>
+
+  </div>
+
+  <div class="filter-bar">
+
+    <a href="{{ url_for('admin.pedidos') }}" class="filter-chip {% if not filtro_estado %}active{% endif %}">Todos</a>
+
+    {% for key, label in pedido_estados.items() %}
+
+    <a href="{{ url_for('admin.pedidos', estado=key) }}" class="filter-chip {% if filtro_estado == key %}active{% endif %}">{{ label }}</a>
+
+    {% endfor %}
+
+  </div>
+
+
+
+  {% if pedidos %}
+
+  <table class="data-table">
+
+    <thead>
+
+      <tr>
+
+        <th>Nº</th>
+
+        <th>Cliente</th>
+
+        <th>Estado</th>
+
+        <th>Total</th>
+
+        <th>Anticipo</th>
+
+        <th>Fecha pedido</th>
+
+        <th>Entrega est.</th>
+
+        <th></th>
+
+      </tr>
+
+    </thead>
+
+    <tbody>
+
+      {% for p in pedidos %}
+
+      <tr>
+
+        <td><a href="{{ url_for('admin.pedido_detalle', id=p.id) }}" class="link-row">{{ p.numero }}</a></td>
+
+        <td>
+
+          <strong>{{ p.cliente_nombre }}</strong>
+
+          {% if p.cliente_empresa %}<div style="font-size:.75rem;color:var(--gray);">{{ p.cliente_empresa }}</div>{% endif %}
+
+        </td>
+
+        <td>
+
+          <span class="estado-badge" style="background:{{ pedido_estado_colors.get(p.estado, '#eee') }}18;color:{{ pedido_estado_colors.get(p.estado, '#666') }};">
+
+            <i class="fas {{ pedido_estado_icons.get(p.estado, 'fa-circle') }}"></i>
+
+            {{ pedido_estados.get(p.estado, p.estado) }}
+
+          </span>
+
+        </td>
+
+        <td style="font-weight:700;">{{ "{:,.2f}".format(p.total) }} {{ p.moneda }}</td>
+
+        <td style="font-size:.85rem;">
+
+          {% if p.anticipo_monto %}{{ "{:,.2f}".format(p.anticipo_monto) }}{% else %}—{% endif %}
+
+        </td>
+
+        <td style="font-size:.85rem;">{{ p.fecha_pedido.strftime("%d/%m/%Y") }}</td>
+
+        <td style="font-size:.85rem;">{{ p.fecha_entrega_estimada.strftime("%d/%m/%Y") if p.fecha_entrega_estimada else '—' }}</td>
+
+        <td>
+
+          <a href="{{ url_for('admin.pedido_editar', id=p.id) }}" class="btn-icon" title="Editar"><i class="fas fa-pen"></i></a>
+
+        </td>
+
+      </tr>
+
+      {% endfor %}
+
+    </tbody>
+
+  </table>
+
+  {% else %}
+
+  <div class="empty-state">
+
+    <i class="fas fa-cart-shopping"></i>
+
+    <h3 style="font-weight:700;margin:.5rem 0;">Sin pedidos</h3>
+
+    <p style="color:var(--gray);margin-bottom:1rem;">Crea un pedido manualmente o conviértelo desde una cotización aceptada.</p>
+
+    <a href="{{ url_for('admin.pedido_nueva') }}" class="btn btn-green"><i class="fas fa-plus"></i> Crear pedido</a>
+
+  </div>
+
+  {% endif %}
+
+</div>
+
+{% endblock %}
+

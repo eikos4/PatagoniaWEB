@@ -1,0 +1,104 @@
+{% extends "admin_layout.html" %}
+{% block title %}{{ emb.numero }}{% endblock %}
+{% block topbar_title %}{{ emb.numero }}{% endblock %}
+{% block topbar_subtitle %}{{ emb.cliente_nombre }} · {{ embarque_estados.get(emb.estado, emb.estado) }}{% endblock %}
+{% block topbar_actions %}
+  <a href="{{ url_for('admin.embarque_editar', id=emb.id) }}" class="btn-top accent"><i class="fas fa-pen"></i> Editar</a>
+  <a href="{{ url_for('admin.embarques') }}" class="btn-top ghost"><i class="fas fa-arrow-left"></i> Lista</a>
+{% endblock %}
+
+{% block content %}
+<div class="status-timeline">
+  {% set orden = ['programado', 'en_transito', 'en_puerto', 'entregado'] %}
+  {% set idx_actual = orden.index(emb.estado) if emb.estado in orden else -1 %}
+  {% for key in orden %}
+  {% set label = embarque_estados.get(key, key) %}
+  <div class="timeline-step {% if emb.estado == key %}current{% elif idx_actual > loop.index0 %}done{% endif %}">
+    <div class="timeline-icon" style="{% if emb.estado == key %}background:{{ embarque_estado_colors.get(key) }};color:#fff;{% elif idx_actual > loop.index0 %}background:{{ embarque_estado_colors.get(key) }}33;color:{{ embarque_estado_colors.get(key) }};{% endif %}">
+      <i class="fas {{ embarque_estado_icons.get(key, 'fa-circle') }}"></i>
+    </div>
+    <span>{{ label }}</span>
+  </div>
+  {% if not loop.last %}<div class="timeline-line {% if idx_actual > loop.index0 %}done{% endif %}"></div>{% endif %}
+  {% endfor %}
+</div>
+
+<div class="kpi-grid" style="grid-template-columns:repeat(4,1fr);margin-bottom:1.25rem;">
+  <div class="kpi-card blue">
+    <div class="kpi-icon"><i class="fas {{ embarque_estado_icons.get(emb.estado, 'fa-ship') }}"></i></div>
+    <div class="kpi-label">Estado</div>
+    <div class="kpi-value" style="font-size:.95rem;">
+      <span class="estado-badge" style="background:{{ embarque_estado_colors.get(emb.estado, '#eee') }}18;color:{{ embarque_estado_colors.get(emb.estado, '#666') }};">
+        <i class="fas {{ embarque_estado_icons.get(emb.estado) }}"></i>
+        {{ embarque_estados.get(emb.estado, emb.estado) }}
+      </span>
+    </div>
+  </div>
+  <div class="kpi-card green">
+    <div class="kpi-icon"><i class="fas fa-location-dot"></i></div>
+    <div class="kpi-label">Origen</div>
+    <div class="kpi-value" style="font-size:1rem;">{{ emb.puerto_origen or '—' }}</div>
+    <div class="kpi-sub">Chile</div>
+  </div>
+  <div class="kpi-card orange">
+    <div class="kpi-icon"><i class="fas fa-anchor"></i></div>
+    <div class="kpi-label">Destino</div>
+    <div class="kpi-value" style="font-size:1rem;">{{ emb.puerto_destino or '—' }}</div>
+    <div class="kpi-sub">México</div>
+  </div>
+  <div class="kpi-card dark">
+    <div class="kpi-icon"><i class="fas fa-snowflake"></i></div>
+    <div class="kpi-label">Carga</div>
+    <div class="kpi-value" style="font-size:.9rem;">{{ carga_tipos.get(emb.tipo_carga, emb.tipo_carga) }}</div>
+    <div class="kpi-sub">{{ emb.temperatura or '—' }}</div>
+  </div>
+</div>
+
+<div class="grid-2">
+  <div class="panel">
+    <div class="panel-header"><h3><i class="fas fa-user" style="color:var(--accent);margin-right:.4rem;"></i>Cliente</h3></div>
+    <div class="info-grid" style="background:var(--white);border:none;">
+      <div class="info-item"><label>Nombre</label><span>{{ emb.cliente_nombre }}</span></div>
+      {% if emb.cliente_empresa %}<div class="info-item"><label>Empresa</label><span>{{ emb.cliente_empresa }}</span></div>{% endif %}
+      {% if emb.pedido %}
+      <div class="info-item full" style="grid-column:1/-1;">
+        <a href="{{ url_for('admin.pedido_detalle', id=emb.pedido.id) }}" class="btn btn-ghost" style="font-size:.75rem;">
+          <i class="fas fa-cart-shopping"></i> Pedido: {{ emb.pedido.numero }}
+        </a>
+      </div>
+      {% endif %}
+      {% if emb.cliente %}
+      <div class="info-item full" style="grid-column:1/-1;">
+        <a href="{{ url_for('admin.cartera_detalle', id=emb.cliente.id) }}" class="btn btn-ghost" style="font-size:.75rem;">
+          <i class="fas fa-users"></i> Ver ficha cliente
+        </a>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+  <div class="panel">
+    <div class="panel-header"><h3><i class="fas fa-container-storage" style="color:var(--accent);margin-right:.4rem;"></i>Logística</h3></div>
+    <div style="padding:1.25rem 1.5rem;font-size:.9rem;line-height:2;">
+      <div><i class="fas fa-building" style="width:18px;color:var(--gray);"></i> Naviera: <strong>{{ emb.naviera or '—' }}</strong></div>
+      <div><i class="fas fa-box" style="width:18px;color:var(--gray);"></i> Contenedor: <strong>{{ emb.numero_contenedor or '—' }}</strong></div>
+      <div><i class="fas fa-file-lines" style="width:18px;color:var(--gray);"></i> BL: <strong>{{ emb.numero_bl or '—' }}</strong></div>
+      <div><i class="fas fa-plane-departure" style="width:18px;color:var(--gray);"></i> ETD: <strong>{{ emb.etd.strftime("%d/%m/%Y") if emb.etd else '—' }}</strong></div>
+      <div><i class="fas fa-plane-arrival" style="width:18px;color:var(--gray);"></i> ETA: <strong>{{ emb.eta.strftime("%d/%m/%Y") if emb.eta else '—' }}</strong></div>
+      <div><i class="fas fa-calendar" style="width:18px;color:var(--gray);"></i> Registro: <strong>{{ emb.fecha_embarque.strftime("%d/%m/%Y") }}</strong></div>
+    </div>
+  </div>
+</div>
+
+{% if emb.notas %}
+<div class="panel" style="margin-top:1.25rem;">
+  <div class="panel-header"><h3><i class="fas fa-note-sticky" style="color:var(--accent);margin-right:.4rem;"></i>Notas</h3></div>
+  <div style="padding:1.25rem 1.5rem;font-size:.9rem;white-space:pre-wrap;">{{ emb.notas }}</div>
+</div>
+{% endif %}
+
+<div style="margin-top:1.25rem;display:flex;gap:.75rem;">
+  <form method="POST" action="{{ url_for('admin.embarque_eliminar', id=emb.id) }}" onsubmit="return confirm('¿Eliminar este embarque?');">
+    <button type="submit" class="btn btn-danger"><i class="fas fa-trash"></i> Eliminar</button>
+  </form>
+</div>
+{% endblock %}

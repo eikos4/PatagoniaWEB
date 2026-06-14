@@ -1,0 +1,78 @@
+{% extends "admin_layout.html" %}
+{% block title %}Clientes{% endblock %}
+{% block topbar_title %}Gestión de clientes{% endblock %}
+{% block topbar_subtitle %}Clasificación, abonos, productos y documentos{% endblock %}
+{% block topbar_actions %}
+  <a href="{{ url_for('admin.cartera_nueva') }}" class="btn-top accent"><i class="fas fa-user-plus"></i> Nuevo cliente</a>
+{% endblock %}
+
+{% block content %}
+<div class="panel">
+  <div class="panel-header">
+    <h3><i class="fas fa-users" style="color:var(--accent);margin-right:.5rem;"></i>{{ carpetas|length }} cliente{% if carpetas|length != 1 %}s{% endif %}</h3>
+  </div>
+  <div class="filter-bar">
+    <a href="{{ url_for('admin.clientes') }}" class="filter-chip {% if not filtro_estado and not filtro_producto and not filtro_abono %}active{% endif %}">Todos</a>
+    {% for key, label in cliente_estados.items() %}
+    <a href="{{ url_for('admin.clientes', estado=key) }}" class="filter-chip {% if filtro_estado == key %}active{% endif %}">{{ label }}</a>
+    {% endfor %}
+    <a href="{{ url_for('admin.clientes', con_abono=1) }}" class="filter-chip {% if filtro_abono == '1' %}active{% endif %}"><i class="fas fa-coins"></i> Con abono</a>
+    {% for p in productos %}
+    <a href="{{ url_for('admin.clientes', producto=p.id) }}" class="filter-chip {% if filtro_producto == p.id|string %}active{% endif %}">{{ p.nombre }}</a>
+    {% endfor %}
+  </div>
+
+  {% if carpetas %}
+  <div style="overflow-x:auto;">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Cliente</th>
+          <th>Empresa</th>
+          <th>Clasificación</th>
+          <th>Producto</th>
+          <th>Abonos</th>
+          <th>Archivos</th>
+          <th>País</th>
+          <th>Actualizado</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for c in carpetas %}
+        <tr>
+          <td>
+            <a href="{{ url_for('admin.cartera_detalle', id=c.id) }}" class="link-row">{{ c.nombre }}</a>
+            {% if c.contacto %}<div style="font-size:.75rem;color:var(--gray);">{{ c.contacto }}</div>{% endif %}
+          </td>
+          <td style="font-size:.85rem;">{{ c.empresa or '—' }}</td>
+          <td>
+            <span class="badge" style="background:{{ estado_colors.get(c.estado, '#eee') }}22;color:{{ estado_colors.get(c.estado, '#666') }};">
+              {{ cliente_estados.get(c.estado, c.estado) }}
+            </span>
+          </td>
+          <td style="font-size:.85rem;">{{ c.producto.nombre if c.producto else '—' }}</td>
+          <td>
+            {% if c.tiene_abono %}
+              <strong style="color:var(--green-ok);">{{ "{:,.0f}".format(c.total_abonos) }}</strong>
+              <span style="font-size:.75rem;color:var(--gray);">({{ c.abonos|length }})</span>
+            {% else %}
+              <span style="color:#ccc;">—</span>
+            {% endif %}
+          </td>
+          <td>{{ c.file_count }}</td>
+          <td style="font-size:.85rem;">{{ c.pais or '—' }}</td>
+          <td style="font-size:.8rem;color:var(--gray);">{{ c.updated_at.strftime("%d/%m/%Y") }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="empty-state">
+    <i class="fas fa-users"></i>
+    <h3 style="font-weight:700;margin-bottom:.5rem;">Sin clientes{% if filtro_estado or filtro_abono or filtro_producto %} con este filtro{% endif %}</h3>
+    <a href="{{ url_for('admin.cartera_nueva') }}" class="btn btn-green" style="margin-top:1rem;"><i class="fas fa-plus"></i> Registrar cliente</a>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

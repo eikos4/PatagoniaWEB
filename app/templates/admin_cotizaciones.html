@@ -1,0 +1,69 @@
+{% extends "admin_layout.html" %}
+{% block title %}Cotizaciones{% endblock %}
+{% block topbar_title %}Cotizaciones{% endblock %}
+{% block topbar_subtitle %}Presupuestos comerciales exportación Chile → México{% endblock %}
+{% block topbar_actions %}
+  <a href="{{ url_for('admin.cotizacion_nueva') }}" class="btn-top accent"><i class="fas fa-file-invoice"></i> Nueva cotización</a>
+{% endblock %}
+
+{% block content %}
+<div class="panel">
+  <div class="panel-header">
+    <h3><i class="fas fa-file-invoice-dollar" style="color:var(--accent);margin-right:.5rem;"></i>{{ cotizaciones|length }} cotización{% if cotizaciones|length != 1 %}es{% endif %}</h3>
+  </div>
+  <div class="filter-bar">
+    <a href="{{ url_for('admin.cotizaciones') }}" class="filter-chip {% if not filtro_estado %}active{% endif %}">Todas</a>
+    {% for key, label in cotizacion_estados.items() %}
+    <a href="{{ url_for('admin.cotizaciones', estado=key) }}" class="filter-chip {% if filtro_estado == key %}active{% endif %}">{{ label }}</a>
+    {% endfor %}
+  </div>
+
+  {% if cotizaciones %}
+  <table class="data-table">
+    <thead>
+      <tr>
+        <th>Nº</th>
+        <th>Cliente</th>
+        <th>Estado</th>
+        <th>Total</th>
+        <th>Emisión</th>
+        <th>Vencimiento</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for c in cotizaciones %}
+      <tr>
+        <td><a href="{{ url_for('admin.cotizacion_detalle', id=c.id) }}" class="link-row">{{ c.numero }}</a></td>
+        <td>
+          <strong>{{ c.cliente_nombre }}</strong>
+          {% if c.cliente_empresa %}<div style="font-size:.75rem;color:var(--gray);">{{ c.cliente_empresa }}</div>{% endif %}
+        </td>
+        <td>
+          <span class="estado-badge" style="background:{{ cotizacion_estado_colors.get(c.estado, '#eee') }}18;color:{{ cotizacion_estado_colors.get(c.estado, '#666') }};">
+            <i class="fas {{ cotizacion_estado_icons.get(c.estado, 'fa-circle') }}"></i>
+            {{ cotizacion_estados.get(c.estado, c.estado) }}
+          </span>
+        </td>
+        <td style="font-weight:700;">{{ "{:,.2f}".format(c.total) }} {{ c.moneda }}</td>
+        <td style="font-size:.85rem;">{{ c.fecha_emision.strftime("%d/%m/%Y") }}</td>
+        <td style="font-size:.85rem;">{{ c.fecha_vencimiento.strftime("%d/%m/%Y") if c.fecha_vencimiento else '—' }}</td>
+        <td>
+          <div style="display:flex;gap:.35rem;">
+            <a href="{{ url_for('admin.cotizacion_pdf', id=c.id) }}" class="btn-icon dl" title="PDF"><i class="fas fa-file-pdf"></i></a>
+            <a href="{{ url_for('admin.cotizacion_editar', id=c.id) }}" class="btn-icon" title="Editar"><i class="fas fa-pen"></i></a>
+          </div>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <div class="empty-state">
+    <i class="fas fa-file-invoice"></i>
+    <h3 style="font-weight:700;margin:.5rem 0;">Sin cotizaciones</h3>
+    <a href="{{ url_for('admin.cotizacion_nueva') }}" class="btn btn-green"><i class="fas fa-plus"></i> Crear cotización</a>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

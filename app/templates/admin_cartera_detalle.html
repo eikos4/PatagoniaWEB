@@ -1,0 +1,234 @@
+{% extends "admin_layout.html" %}
+{% block title %}{{ carpeta.nombre }}{% endblock %}
+{% block topbar_title %}{{ carpeta.nombre }}{% endblock %}
+{% block topbar_subtitle %}
+  <span class="badge" style="background:{{ estado_colors.get(carpeta.estado, '#eee') }}22;color:{{ estado_colors.get(carpeta.estado, '#666') }};font-size:.7rem;">
+    {{ cliente_estados.get(carpeta.estado, carpeta.estado) }}
+  </span>
+  {% if carpeta.producto %} · {{ carpeta.producto.nombre }}{% endif %}
+{% endblock %}
+{% block topbar_actions %}
+  <a href="{{ url_for('admin.pedido_nueva', cliente_id=carpeta.id) }}" class="btn-top" style="background:var(--orange);color:#fff;"><i class="fas fa-cart-shopping"></i> Nuevo pedido</a>
+  <a href="{{ url_for('admin.cotizacion_nueva', cliente_id=carpeta.id) }}" class="btn-top accent"><i class="fas fa-file-invoice"></i> Cotizar</a>
+  <a href="{{ url_for('admin.cartera_editar', id=carpeta.id) }}" class="btn-top ghost"><i class="fas fa-pen"></i> Editar</a>
+  <a href="{{ url_for('admin.clientes') }}" class="btn-top ghost"><i class="fas fa-arrow-left"></i> Clientes</a>
+{% endblock %}
+
+{% block content %}
+<!-- Ficha comercial -->
+<div class="panel" style="margin-bottom:1.25rem;">
+  <div class="info-grid">
+    <div class="info-item"><label>Clasificación</label>
+      <span class="badge" style="background:{{ estado_colors.get(carpeta.estado, '#eee') }}22;color:{{ estado_colors.get(carpeta.estado, '#666') }};">{{ cliente_estados.get(carpeta.estado, carpeta.estado) }}</span>
+    </div>
+    <div class="info-item"><label>Producto</label><span>{{ carpeta.producto.nombre if carpeta.producto else '—' }}</span></div>
+    {% if carpeta.valor_estimado %}
+    <div class="info-item"><label>Valor estimado</label><span>{{ "{:,.0f}".format(carpeta.valor_estimado) }} {{ carpeta.moneda_estimada }}</span></div>
+    {% endif %}
+    {% if carpeta.empresa %}<div class="info-item"><label>Empresa</label><span>{{ carpeta.empresa }}</span></div>{% endif %}
+    {% if carpeta.contacto %}<div class="info-item"><label>Contacto</label><span>{{ carpeta.contacto }}</span></div>{% endif %}
+    {% if carpeta.email %}<div class="info-item"><label>Email</label><span><a href="mailto:{{ carpeta.email }}" style="color:var(--accent);">{{ carpeta.email }}</a></span></div>{% endif %}
+    {% if carpeta.telefono %}<div class="info-item"><label>Teléfono</label><span>{{ carpeta.telefono }}</span></div>{% endif %}
+    {% if carpeta.pais %}<div class="info-item"><label>País</label><span>{{ carpeta.pais }}</span></div>{% endif %}
+  </div>
+  {% if carpeta.notas %}
+  <div style="padding:1rem 1.5rem;border-bottom:1px solid var(--gray-mid);">
+    <label style="font-size:.65rem;font-weight:700;text-transform:uppercase;color:var(--gray);">Notas</label>
+    <p style="margin-top:.5rem;font-size:.9rem;line-height:1.6;white-space:pre-wrap;">{{ carpeta.notas }}</p>
+  </div>
+  {% endif %}
+</div>
+
+<!-- Abonos -->
+<div class="panel" style="margin-bottom:1.25rem;">
+  <div class="panel-header">
+    <h3><i class="fas fa-coins" style="color:var(--orange);margin-right:.5rem;"></i>Abonos y pagos
+      {% if carpeta.tiene_abono %}<span style="font-weight:500;color:var(--gray);font-size:.85rem;">· Total {{ "{:,.0f}".format(carpeta.total_abonos) }}</span>{% endif %}
+    </h3>
+  </div>
+  {% if carpeta.abonos %}
+  <table class="data-table">
+    <thead><tr><th>Fecha</th><th>Tipo</th><th>Producto</th><th>Monto</th><th>Referencia</th><th></th></tr></thead>
+    <tbody>
+      {% for a in carpeta.abonos %}
+      <tr>
+        <td>{{ a.fecha.strftime("%d/%m/%Y") }}</td>
+        <td><span class="badge" style="background:#eff6ff;color:#2563eb;">{{ abono_tipos.get(a.tipo, a.tipo) }}</span></td>
+        <td style="font-size:.85rem;">{{ a.producto.nombre if a.producto else 'General' }}</td>
+        <td style="font-weight:700;">{{ "{:,.0f}".format(a.monto) }} {{ a.moneda }}</td>
+        <td style="font-size:.8rem;color:var(--gray);">{{ a.referencia or '—' }}</td>
+        <td>
+          <form method="POST" action="{{ url_for('admin.cartera_abono_eliminar', id=carpeta.id, abono_id=a.id) }}" onsubmit="return confirm('¿Eliminar abono?');">
+            <button type="submit" class="btn-icon del"><i class="fas fa-trash"></i></button>
+          </form>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <div class="empty-state" style="padding:2rem;"><p>Sin abonos registrados para este cliente.</p></div>
+  {% endif %}
+
+  <div style="padding:1.25rem 1.5rem;background:#fafbfc;border-top:1px solid var(--gray-mid);">
+    <p style="font-size:.75rem;font-weight:700;text-transform:uppercase;color:var(--gray);margin-bottom:1rem;"><i class="fas fa-plus-circle"></i> Registrar abono</p>
+    <form method="POST" action="{{ url_for('admin.cartera_abono', id=carpeta.id) }}">
+      {{ abono_form.hidden_tag() }}
+      <div class="form-grid" style="padding:0;">
+        <div class="form-group">
+          <label>{{ abono_form.monto.label.text }}</label>
+          {{ abono_form.monto(class="form-control", placeholder="0") }}
+        </div>
+        <div class="form-group">
+          <label>{{ abono_form.moneda.label.text }}</label>
+          {{ abono_form.moneda(class="form-control") }}
+        </div>
+        <div class="form-group">
+          <label>{{ abono_form.tipo.label.text }}</label>
+          {{ abono_form.tipo(class="form-control") }}
+        </div>
+        <div class="form-group">
+          <label>{{ abono_form.product_id.label.text }}</label>
+          {{ abono_form.product_id(class="form-control") }}
+        </div>
+        <div class="form-group">
+          <label>{{ abono_form.fecha.label.text }}</label>
+          {{ abono_form.fecha(class="form-control") }}
+        </div>
+        <div class="form-group">
+          <label>{{ abono_form.referencia.label.text }}</label>
+          {{ abono_form.referencia(class="form-control") }}
+        </div>
+        <div class="form-group full">
+          <label>{{ abono_form.notas.label.text }}</label>
+          {{ abono_form.notas(class="form-control", rows=2) }}
+        </div>
+      </div>
+      <button type="submit" class="btn btn-green" style="margin-top:.5rem;"><i class="fas fa-coins"></i> Registrar abono</button>
+    </form>
+  </div>
+</div>
+
+<!-- Pedidos -->
+<div class="panel" style="margin-bottom:1.25rem;">
+  <div class="panel-header">
+    <h3><i class="fas fa-cart-shopping" style="color:var(--accent);margin-right:.5rem;"></i>Pedidos ({{ carpeta.pedidos|length }})</h3>
+    <a href="{{ url_for('admin.pedido_nueva', cliente_id=carpeta.id) }}" class="btn btn-green" style="padding:.45rem .9rem;font-size:.75rem;"><i class="fas fa-plus"></i> Nuevo pedido</a>
+  </div>
+  {% if carpeta.pedidos %}
+  <table class="data-table">
+    <thead><tr><th>Nº</th><th>Estado</th><th>Total</th><th>Fecha</th><th></th></tr></thead>
+    <tbody>
+      {% for p in carpeta.pedidos %}
+      <tr>
+        <td><a href="{{ url_for('admin.pedido_detalle', id=p.id) }}" class="link-row">{{ p.numero }}</a></td>
+        <td>
+          <span class="estado-badge" style="background:{{ pedido_estado_colors.get(p.estado, '#eee') }}18;color:{{ pedido_estado_colors.get(p.estado, '#666') }};">
+            <i class="fas {{ pedido_estado_icons.get(p.estado, 'fa-circle') }}"></i>
+            {{ pedido_estados.get(p.estado, p.estado) }}
+          </span>
+        </td>
+        <td style="font-weight:700;">{{ "{:,.2f}".format(p.total) }} {{ p.moneda }}</td>
+        <td style="font-size:.85rem;">{{ p.fecha_pedido.strftime("%d/%m/%Y") }}</td>
+        <td><a href="{{ url_for('admin.pedido_editar', id=p.id) }}" class="btn-icon" title="Editar"><i class="fas fa-pen"></i></a></td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <div class="empty-state" style="padding:2rem;">
+    <p>Sin pedidos para este cliente.</p>
+    <a href="{{ url_for('admin.pedido_nueva', cliente_id=carpeta.id) }}" class="btn btn-ghost" style="margin-top:.5rem;font-size:.75rem;">Crear primer pedido</a>
+  </div>
+  {% endif %}
+</div>
+
+<!-- Embarques -->
+<div class="panel" style="margin-bottom:1.25rem;">
+  <div class="panel-header">
+    <h3><i class="fas fa-ship" style="color:var(--accent);margin-right:.5rem;"></i>Embarques ({{ carpeta.embarques|length }})</h3>
+    <a href="{{ url_for('admin.embarque_nuevo') }}" class="btn btn-green" style="padding:.45rem .9rem;font-size:.75rem;"><i class="fas fa-plus"></i> Nuevo embarque</a>
+  </div>
+  {% if carpeta.embarques %}
+  <table class="data-table">
+    <thead><tr><th></th><th>Nº</th><th>Pedido</th><th>Ruta</th><th>Estado</th><th>ETA</th></tr></thead>
+    <tbody>
+      {% for e in carpeta.embarques %}
+      <tr>
+        <td style="color:{{ embarque_estado_colors.get(e.estado, '#666') }};"><i class="fas {{ embarque_estado_icons.get(e.estado, 'fa-ship') }}"></i></td>
+        <td><a href="{{ url_for('admin.embarque_detalle', id=e.id) }}" class="link-row">{{ e.numero }}</a></td>
+        <td style="font-size:.85rem;">{% if e.pedido %}{{ e.pedido.numero }}{% else %}—{% endif %}</td>
+        <td style="font-size:.8rem;">{{ e.puerto_origen or '—' }} → {{ e.puerto_destino or '—' }}</td>
+        <td>
+          <span class="estado-badge" style="background:{{ embarque_estado_colors.get(e.estado, '#eee') }}18;color:{{ embarque_estado_colors.get(e.estado, '#666') }};">
+            <i class="fas {{ embarque_estado_icons.get(e.estado) }}"></i>
+            {{ embarque_estados.get(e.estado, e.estado) }}
+          </span>
+        </td>
+        <td style="font-size:.85rem;">{{ e.eta.strftime("%d/%m/%Y") if e.eta else '—' }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <div class="empty-state" style="padding:2rem;"><p>Sin embarques para este cliente.</p></div>
+  {% endif %}
+</div>
+
+<!-- Archivos -->
+<div class="panel">
+  <div class="panel-header">
+    <h3><i class="fas fa-folder" style="color:var(--accent);margin-right:.5rem;"></i>Documentos ({{ carpeta.file_count }})</h3>
+    <form method="POST" action="{{ url_for('admin.cartera_eliminar', id=carpeta.id) }}" onsubmit="return confirm('¿Eliminar cliente y todos sus datos?');">
+      <button type="submit" class="btn btn-danger"><i class="fas fa-trash"></i> Eliminar cliente</button>
+    </form>
+  </div>
+  {% if carpeta.files %}
+  <ul class="file-list">
+    {% for f in carpeta.files %}
+    <li class="file-item">
+      <div class="file-icon"><i class="fas fa-file"></i></div>
+      <div class="file-info">
+        <div class="name">{{ f.original_filename }}</div>
+        <div class="sub">{{ f.uploaded_at.strftime("%d/%m/%Y %H:%M") }} · {{ (f.size_bytes / 1024)|round(1) }} KB</div>
+      </div>
+      <div class="file-actions">
+        <a href="{{ url_for('admin.cartera_descargar', id=carpeta.id, file_id=f.id) }}" class="btn-icon dl"><i class="fas fa-download"></i></a>
+        <form method="POST" action="{{ url_for('admin.cartera_eliminar_archivo', id=carpeta.id, file_id=f.id) }}" onsubmit="return confirm('¿Eliminar?');">
+          <button type="submit" class="btn-icon del"><i class="fas fa-trash"></i></button>
+        </form>
+      </div>
+    </li>
+    {% endfor %}
+  </ul>
+  {% else %}
+  <div class="empty-state" style="padding:2rem;"><p>Sin documentos adjuntos.</p></div>
+  {% endif %}
+  <div class="upload-zone">
+    <form method="POST" action="{{ url_for('admin.cartera_upload_multiple', id=carpeta.id) }}" enctype="multipart/form-data">
+      <div class="upload-box" id="dropZone">
+        <i class="fas fa-cloud-arrow-up"></i>
+        <p><strong>Subir documentos</strong> — contratos, cotizaciones, comprobantes</p>
+        <input type="file" name="archivos" id="fileInput" multiple>
+      </div>
+      <div id="filePreview" style="margin-top:1rem;display:none;">
+        <ul id="fileList" style="list-style:none;font-size:.8rem;color:var(--gray);"></ul>
+        <button type="submit" class="btn btn-green" style="margin-top:.75rem;"><i class="fas fa-upload"></i> Subir</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+const dropZone = document.getElementById('dropZone');
+const fileInput = document.getElementById('fileInput');
+const filePreview = document.getElementById('filePreview');
+const fileList = document.getElementById('fileList');
+dropZone?.addEventListener('click', () => fileInput.click());
+fileInput?.addEventListener('change', () => {
+  if (!fileInput.files.length) return;
+  fileList.innerHTML = Array.from(fileInput.files).map(f => `<li>${f.name}</li>`).join('');
+  filePreview.style.display = 'block';
+});
+{% endblock %}

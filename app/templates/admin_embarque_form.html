@@ -1,0 +1,92 @@
+{% extends "admin_layout.html" %}
+{% block title %}{% if editing %}Editar {{ emb.numero }}{% else %}Nuevo embarque{% endif %}{% endblock %}
+{% block topbar_title %}{% if editing %}Editar embarque{% else %}Nuevo embarque{% endif %}{% endblock %}
+{% block topbar_subtitle %}{% if editing %}{{ emb.numero }}{% elif pedido_id %}Desde pedido{% else %}Registra envío marítimo Chile → México{% endif %}{% endblock %}
+{% block topbar_actions %}
+  <a href="{{ url_for('admin.embarques') }}" class="btn-top ghost"><i class="fas fa-arrow-left"></i> Volver</a>
+{% endblock %}
+
+{% block content %}
+<form method="POST">
+  {{ form.hidden_tag() }}
+  {% if pedido_id and not editing %}<input type="hidden" name="pedido_id" value="{{ pedido_id }}">{% endif %}
+
+  {% if pedido_id and not editing %}
+  <div class="alert-panel info">
+    <i class="fas fa-circle-info"></i>
+    Creando embarque desde pedido. Al guardar, el pedido se actualizará según el estado del envío.
+  </div>
+  {% endif %}
+
+  <div class="panel" style="margin-bottom:1.25rem;">
+    <div class="panel-header"><h3><i class="fas fa-cart-shopping" style="color:var(--accent);margin-right:.4rem;"></i>Pedido vinculado</h3></div>
+    <div class="form-grid" style="padding:1.25rem 1.5rem;">
+      <div class="form-group">
+        <label><i class="fas fa-link" style="color:var(--gray);margin-right:.3rem;"></i>{{ form.order_id.label.text }} *</label>
+        {{ form.order_id(class="form-control") }}
+        {% for e in form.order_id.errors %}<div class="form-errors">{{ e }}</div>{% endfor %}
+      </div>
+      <div class="form-group">
+        <label><i class="fas fa-traffic-light" style="color:var(--gray);margin-right:.3rem;"></i>{{ form.estado.label.text }}</label>
+        {{ form.estado(class="form-control") }}
+      </div>
+    </div>
+  </div>
+
+  <div class="panel" style="margin-bottom:1.25rem;">
+    <div class="panel-header"><h3><i class="fas fa-route" style="color:var(--accent);margin-right:.4rem;"></i>Ruta y fechas</h3></div>
+    <div class="form-grid">
+      <div class="form-group">
+        <label><i class="fas fa-location-dot" style="color:var(--accent);margin-right:.3rem;"></i>{{ form.puerto_origen.label.text }}</label>
+        {{ form.puerto_origen(class="form-control") }}
+      </div>
+      <div class="form-group">
+        <label><i class="fas fa-anchor" style="color:var(--orange);margin-right:.3rem;"></i>{{ form.puerto_destino.label.text }}</label>
+        {{ form.puerto_destino(class="form-control") }}
+      </div>
+      <div class="form-group">
+        <label><i class="fas fa-plane-departure" style="color:var(--gray);margin-right:.3rem;"></i>{{ form.etd.label.text }}</label>
+        {{ form.etd(class="form-control") }}
+      </div>
+      <div class="form-group">
+        <label><i class="fas fa-plane-arrival" style="color:var(--gray);margin-right:.3rem;"></i>{{ form.eta.label.text }}</label>
+        {{ form.eta(class="form-control") }}
+      </div>
+    </div>
+  </div>
+
+  <div class="panel" style="margin-bottom:1.25rem;">
+    <div class="panel-header"><h3><i class="fas fa-container-storage" style="color:var(--accent);margin-right:.4rem;"></i>Contenedor y carga</h3></div>
+    <div class="form-grid">
+      <div class="form-group">
+        <label><i class="fas fa-building" style="color:var(--gray);margin-right:.3rem;"></i>{{ form.naviera.label.text }}</label>
+        {{ form.naviera(class="form-control", placeholder="Ej: Maersk, MSC, Hapag-Lloyd") }}
+      </div>
+      <div class="form-group">
+        <label><i class="fas fa-box" style="color:var(--gray);margin-right:.3rem;"></i>{{ form.numero_contenedor.label.text }}</label>
+        {{ form.numero_contenedor(class="form-control", placeholder="Ej: MSKU1234567") }}
+      </div>
+      <div class="form-group">
+        <label><i class="fas fa-file-lines" style="color:var(--gray);margin-right:.3rem;"></i>{{ form.numero_bl.label.text }}</label>
+        {{ form.numero_bl(class="form-control") }}
+      </div>
+      <div class="form-group">
+        <label><i class="fas fa-snowflake" style="color:#2563eb;margin-right:.3rem;"></i>{{ form.tipo_carga.label.text }}</label>
+        {{ form.tipo_carga(class="form-control") }}
+      </div>
+      <div class="form-group">
+        <label><i class="fas fa-temperature-low" style="color:#2563eb;margin-right:.3rem;"></i>{{ form.temperatura.label.text }}</label>
+        {{ form.temperatura(class="form-control") }}
+      </div>
+      <div class="form-group full">
+        <label><i class="fas fa-note-sticky" style="color:var(--gray);margin-right:.3rem;"></i>{{ form.notas.label.text }}</label>
+        {{ form.notas(class="form-control", rows=3) }}
+      </div>
+    </div>
+    <div class="form-actions">
+      <button type="submit" class="btn btn-green"><i class="fas fa-ship"></i> {% if editing %}Guardar cambios{% else %}Crear embarque{% endif %}</button>
+      <a href="{{ url_for('admin.embarques') }}" class="btn btn-ghost">Cancelar</a>
+    </div>
+  </div>
+</form>
+{% endblock %}

@@ -1,0 +1,37 @@
+{% extends "admin_layout.html" %}
+{% block title %}{% if editing %}Editar producto{% else %}Nuevo producto{% endif %}{% endblock %}
+{% block topbar_title %}{% if editing %}Editar producto{% else %}Nuevo producto{% endif %}{% endblock %}
+{% block topbar_subtitle %}Línea de exportación{% endblock %}
+{% block topbar_actions %}
+  <a href="{{ url_for('admin.productos') }}" class="btn-top ghost"><i class="fas fa-arrow-left"></i> Volver</a>
+{% endblock %}
+
+{% block content %}
+<div class="panel">
+  <form method="POST">
+    {{ form.hidden_tag() }}
+    <div class="form-grid">
+      <div class="form-group full">
+        <label>{{ form.nombre.label.text }}</label>
+        {{ form.nombre(class="form-control", placeholder="Ej: Cerezas premium") }}
+      </div>
+      <div class="form-group">
+        <label>{{ form.categoria.label.text }}</label>
+        {{ form.categoria(class="form-control") }}
+      </div>
+      <div class="form-group">
+        <label>{{ form.orden.label.text }}</label>
+        {{ form.orden(class="form-control") }}
+      </div>
+      <div class="form-group full">
+        <label>{{ form.descripcion.label.text }}</label>
+        {{ form.descripcion(class="form-control", placeholder="Descripción para uso interno...") }}
+      </div>
+    </div>
+    <div class="form-actions">
+      <button type="submit" class="btn btn-green"><i class="fas fa-save"></i> Guardar</button>
+      <a href="{{ url_for('admin.productos') }}" class="btn btn-ghost">Cancelar</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

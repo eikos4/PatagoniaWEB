@@ -1,0 +1,87 @@
+{% extends "admin_layout.html" %}
+{% block title %}Embarques{% endblock %}
+{% block topbar_title %}Embarques{% endblock %}
+{% block topbar_subtitle %}Logística exportación · Chile → México{% endblock %}
+{% block topbar_actions %}
+  <a href="{{ url_for('admin.embarque_nuevo') }}" class="btn-top accent"><i class="fas fa-ship"></i> Nuevo embarque</a>
+{% endblock %}
+
+{% block content %}
+<div class="pipeline-bar">
+  <div class="pipeline-step"><i class="fas fa-file-invoice-dollar"></i><span>Cotización</span></div>
+  <i class="fas fa-chevron-right pipeline-arrow"></i>
+  <div class="pipeline-step"><i class="fas fa-cart-shopping"></i><span>Pedido</span></div>
+  <i class="fas fa-chevron-right pipeline-arrow"></i>
+  <div class="pipeline-step active"><i class="fas fa-ship"></i><span>Embarque</span></div>
+  <i class="fas fa-chevron-right pipeline-arrow"></i>
+  <div class="pipeline-step"><i class="fas fa-flag-checkered"></i><span>Entrega</span></div>
+</div>
+
+<div class="panel">
+  <div class="panel-header">
+    <h3><i class="fas fa-ship" style="color:var(--accent);margin-right:.5rem;"></i>{{ embarques|length }} embarque{% if embarques|length != 1 %}s{% endif %}</h3>
+  </div>
+  <div class="filter-bar">
+    <a href="{{ url_for('admin.embarques') }}" class="filter-chip {% if not filtro_estado %}active{% endif %}"><i class="fas fa-list"></i> Todos</a>
+    {% for key, label in embarque_estados.items() %}
+    <a href="{{ url_for('admin.embarques', estado=key) }}" class="filter-chip {% if filtro_estado == key %}active{% endif %}">
+      <i class="fas {{ embarque_estado_icons.get(key, 'fa-circle') }}"></i> {{ label }}
+    </a>
+    {% endfor %}
+  </div>
+
+  {% if embarques %}
+  <table class="data-table">
+    <thead>
+      <tr>
+        <th></th>
+        <th>Nº</th>
+        <th>Cliente / Pedido</th>
+        <th>Ruta</th>
+        <th>Estado</th>
+        <th>ETD</th>
+        <th>ETA</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for e in embarques %}
+      <tr>
+        <td style="width:36px;text-align:center;color:{{ embarque_estado_colors.get(e.estado, '#666') }};">
+          <i class="fas {{ embarque_estado_icons.get(e.estado, 'fa-ship') }}"></i>
+        </td>
+        <td><a href="{{ url_for('admin.embarque_detalle', id=e.id) }}" class="link-row">{{ e.numero }}</a></td>
+        <td>
+          <strong>{{ e.cliente_nombre }}</strong>
+          {% if e.pedido %}<div style="font-size:.75rem;color:var(--gray);"><i class="fas fa-cart-shopping" style="font-size:.65rem;"></i> {{ e.pedido.numero }}</div>{% endif %}
+        </td>
+        <td style="font-size:.8rem;">
+          <i class="fas fa-location-dot" style="color:var(--accent);font-size:.7rem;"></i> {{ e.puerto_origen or '—' }}
+          <i class="fas fa-arrow-right" style="margin:0 .25rem;font-size:.6rem;color:var(--gray);"></i>
+          <i class="fas fa-anchor" style="color:var(--orange);font-size:.7rem;"></i> {{ e.puerto_destino or '—' }}
+        </td>
+        <td>
+          <span class="estado-badge" style="background:{{ embarque_estado_colors.get(e.estado, '#eee') }}18;color:{{ embarque_estado_colors.get(e.estado, '#666') }};">
+            <i class="fas {{ embarque_estado_icons.get(e.estado, 'fa-circle') }}"></i>
+            {{ embarque_estados.get(e.estado, e.estado) }}
+          </span>
+        </td>
+        <td style="font-size:.85rem;">{{ e.etd.strftime("%d/%m/%Y") if e.etd else '—' }}</td>
+        <td style="font-size:.85rem;">{{ e.eta.strftime("%d/%m/%Y") if e.eta else '—' }}</td>
+        <td>
+          <a href="{{ url_for('admin.embarque_editar', id=e.id) }}" class="btn-icon" title="Editar"><i class="fas fa-pen"></i></a>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <div class="empty-state">
+    <i class="fas fa-ship"></i>
+    <h3 style="font-weight:700;margin:.5rem 0;">Sin embarques</h3>
+    <p style="color:var(--gray);margin-bottom:1rem;">Crea un embarque desde un pedido listo para exportar.</p>
+    <a href="{{ url_for('admin.embarque_nuevo') }}" class="btn btn-green"><i class="fas fa-plus"></i> Crear embarque</a>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

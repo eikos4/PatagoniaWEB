@@ -1,0 +1,203 @@
+{% extends "admin_layout.html" %}
+{% block title %}{% if editing %}Editar {{ cot.numero }}{% else %}Nueva cotización{% endif %}{% endblock %}
+{% block topbar_title %}{% if editing %}Editar cotización{% else %}Nueva cotización{% endif %}{% endblock %}
+{% block topbar_subtitle %}{% if editing %}{{ cot.numero }}{% else %}Completa datos del cliente y líneas de producto{% endif %}{% endblock %}
+{% block topbar_actions %}
+  <a href="{{ url_for('admin.cotizaciones') }}" class="btn-top ghost"><i class="fas fa-arrow-left"></i> Volver</a>
+  {% if editing %}
+  <a href="{{ url_for('admin.cotizacion_pdf', id=cot.id) }}" class="btn-top accent"><i class="fas fa-file-pdf"></i> Ver PDF</a>
+  {% endif %}
+{% endblock %}
+
+{% block extra_css %}
+.lineas-table { width: 100%; border-collapse: collapse; font-size: .85rem; }
+.lineas-table th { text-align: left; padding: .5rem; font-size: .65rem; text-transform: uppercase; color: var(--gray); background: var(--cream); }
+.lineas-table td { padding: .4rem; vertical-align: middle; }
+.lineas-table input, .lineas-table select { width: 100%; padding: .55rem .6rem; border: 1px solid var(--gray-mid); border-radius: 8px; font-size: .85rem; font-family: inherit; }
+.lineas-wrap { padding: 0 1.5rem 1rem; overflow-x: auto; }
+.total-preview { padding: 1rem 1.5rem; background: var(--cream); border-top: 1px solid var(--gray-mid); display: flex; justify-content: flex-end; gap: 2rem; flex-wrap: wrap; font-size: .9rem; align-items: center; }
+.total-preview .big { font-size: 1.25rem; font-weight: 800; color: var(--accent); }
+.btn-remove { width: 32px; height: 32px; border: 1px solid #fecdd3; background: #fff1f2; color: var(--red); border-radius: 8px; cursor: pointer; }
+{% endblock %}
+
+{% block content %}
+<form method="POST" id="cotForm">
+  {{ form.hidden_tag() }}
+  {% if mensaje_id %}<input type="hidden" name="mensaje_id" value="{{ mensaje_id }}">{% endif %}
+  <div class="panel" style="margin-bottom:1.25rem;">
+    <div class="panel-header"><h3><i class="fas fa-user" style="color:var(--accent);margin-right:.4rem;"></i>Datos del cliente</h3></div>
+    <div class="form-grid">
+      <div class="form-group">
+        <label>{{ form.folder_id.label.text }}</label>
+        {{ form.folder_id(class="form-control") }}
+      </div>
+      <div class="form-group">
+        <label>{{ form.cliente_nombre.label.text }} *</label>
+        {{ form.cliente_nombre(class="form-control") }}
+        {% for e in form.cliente_nombre.errors %}<div class="form-errors">{{ e }}</div>{% endfor %}
+      </div>
+      <div class="form-group">
+        <label>{{ form.cliente_empresa.label.text }}</label>
+        {{ form.cliente_empresa(class="form-control") }}
+      </div>
+      <div class="form-group">
+        <label>{{ form.cliente_email.label.text }}</label>
+        {{ form.cliente_email(class="form-control") }}
+      </div>
+      <div class="form-group">
+        <label>{{ form.cliente_telefono.label.text }}</label>
+        {{ form.cliente_telefono(class="form-control") }}
+      </div>
+      <div class="form-group">
+        <label>{{ form.cliente_pais.label.text }}</label>
+        {{ form.cliente_pais(class="form-control", placeholder="México") }}
+      </div>
+    </div>
+  </div>
+
+  <div class="panel" style="margin-bottom:1.25rem;">
+    <div class="panel-header"><h3><i class="fas fa-handshake" style="color:var(--accent);margin-right:.4rem;"></i>Condiciones</h3></div>
+    <div class="form-grid">
+      <div class="form-group">
+        <label>{{ form.estado.label.text }}</label>
+        {{ form.estado(class="form-control") }}
+      </div>
+      <div class="form-group">
+        <label>{{ form.moneda.label.text }}</label>
+        {{ form.moneda(class="form-control", id="monedaSelect") }}
+      </div>
+      <div class="form-group">
+        <label>{{ form.incoterm.label.text }}</label>
+        {{ form.incoterm(class="form-control") }}
+      </div>
+      <div class="form-group">
+        <label>{{ form.validez_dias.label.text }}</label>
+        {{ form.validez_dias(class="form-control") }}
+      </div>
+      <div class="form-group">
+        <label>{{ form.descuento_pct.label.text }}</label>
+        {{ form.descuento_pct(class="form-control", id="descuentoInput", value=form.descuento_pct.data or 0) }}
+      </div>
+      <div class="form-group full">
+        <label>{{ form.condiciones.label.text }}</label>
+        {{ form.condiciones(class="form-control", rows=4) }}
+      </div>
+      <div class="form-group full">
+        <label>{{ form.notas.label.text }}</label>
+        {{ form.notas(class="form-control", rows=2) }}
+      </div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-header">
+      <h3><i class="fas fa-list" style="color:var(--accent);margin-right:.4rem;"></i>Líneas de producto</h3>
+      <button type="button" class="btn btn-green" id="addLine" style="padding:.5rem 1rem;font-size:.75rem;"><i class="fas fa-plus"></i> Agregar línea</button>
+    </div>
+    <div class="lineas-wrap">
+      <table class="lineas-table">
+        <thead>
+          <tr>
+            <th>Descripción *</th>
+            <th>Producto catálogo</th>
+            <th>Cantidad</th>
+            <th>Unidad</th>
+            <th>Precio unit.</th>
+            <th>Subtotal</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="lineasBody"></tbody>
+      </table>
+    </div>
+    <div class="total-preview">
+      <div>Subtotal: <strong id="subtotalPreview">0</strong></div>
+      <div>Descuento: <strong id="descuentoPreview">0</strong></div>
+      <div class="big">Total: <span id="totalPreview">0</span> <span id="monedaLabel">USD</span></div>
+    </div>
+    <div class="form-actions">
+      <button type="submit" class="btn btn-green"><i class="fas fa-save"></i> {% if editing %}Guardar cambios{% else %}Crear cotización{% endif %}</button>
+      <a href="{{ url_for('admin.cotizaciones') }}" class="btn btn-ghost">Cancelar</a>
+    </div>
+  </div>
+</form>
+{% endblock %}
+
+{% block extra_js %}
+const PRODUCTOS = [
+  { id: 0, nombre: '— Seleccionar —' },
+  {% for p in productos %}{ id: {{ p.id }}, nombre: {{ p.nombre|tojson }} },{% endfor %}
+];
+const UNIDADES = {{ ['kg','cajas','pallets','litros','unidades','ton']|tojson }};
+const INITIAL = {{ lineas|tojson }};
+
+function productOptions(selected) {
+  return PRODUCTOS.map(p =>
+    `<option value="${p.id}" ${p.id == selected ? 'selected' : ''}>${p.nombre}</option>`
+  ).join('');
+}
+function unitOptions(selected) {
+  return UNIDADES.map(u =>
+    `<option value="${u}" ${u === selected ? 'selected' : ''}>${u}</option>`
+  ).join('');
+}
+
+function addLine(data = {}) {
+  const tbody = document.getElementById('lineasBody');
+  const tr = document.createElement('tr');
+  tr.innerHTML = `
+    <td><input type="text" name="linea_desc" value="${data.descripcion || ''}" placeholder="Ej: Cerezas premium calibre L" required></td>
+    <td><select name="linea_producto" class="line-prod">${productOptions(data.product_id || 0)}</select></td>
+    <td><input type="number" name="linea_cant" class="line-cant" value="${data.cantidad ?? 1}" min="0" step="any"></td>
+    <td><select name="linea_unidad">${unitOptions(data.unidad || 'kg')}</select></td>
+    <td><input type="number" name="linea_precio" class="line-precio" value="${data.precio_unitario ?? 0}" min="0" step="any"></td>
+    <td class="line-sub" style="font-weight:700;text-align:right;">0</td>
+    <td><button type="button" class="btn-remove" title="Quitar"><i class="fas fa-times"></i></button></td>
+  `;
+  tbody.appendChild(tr);
+  tr.querySelector('.btn-remove').addEventListener('click', () => { tr.remove(); recalc(); });
+  tr.querySelectorAll('input, select').forEach(el => el.addEventListener('input', recalc));
+  tr.querySelector('.line-prod').addEventListener('change', function() {
+    const p = PRODUCTOS.find(x => x.id == this.value);
+    if (p && p.id > 0) {
+      const desc = tr.querySelector('[name="linea_desc"]');
+      if (!desc.value) desc.value = p.nombre;
+    }
+  });
+  recalc();
+}
+
+function recalc() {
+  let sub = 0;
+  document.querySelectorAll('#lineasBody tr').forEach(tr => {
+    const cant = parseFloat(tr.querySelector('.line-cant')?.value) || 0;
+    const precio = parseFloat(tr.querySelector('.line-precio')?.value) || 0;
+    const s = cant * precio;
+    tr.querySelector('.line-sub').textContent = s.toLocaleString('es-CL', {maximumFractionDigits: 2});
+    sub += s;
+  });
+  const descPct = parseFloat(document.getElementById('descuentoInput')?.value) || 0;
+  const descMonto = sub * descPct / 100;
+  const total = sub - descMonto;
+  const moneda = document.getElementById('monedaSelect')?.value || 'USD';
+  document.getElementById('monedaLabel').textContent = moneda;
+  const fmt = n => n.toLocaleString('es-CL', {maximumFractionDigits: 2}) + ' ' + moneda;
+  document.getElementById('subtotalPreview').textContent = fmt(sub);
+  document.getElementById('descuentoPreview').textContent = fmt(descMonto);
+  document.getElementById('totalPreview').textContent = fmt(total);
+}
+
+document.getElementById('addLine')?.addEventListener('click', () => addLine());
+document.getElementById('descuentoInput')?.addEventListener('input', recalc);
+document.getElementById('monedaSelect')?.addEventListener('change', recalc);
+
+if (INITIAL.length) INITIAL.forEach(l => addLine(l));
+else addLine();
+
+document.getElementById('cotForm')?.addEventListener('submit', e => {
+  if (!document.querySelectorAll('#lineasBody tr').length) {
+    e.preventDefault();
+    alert('Agrega al menos una línea de producto.');
+  }
+});
+{% endblock %}

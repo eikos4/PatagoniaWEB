@@ -1,0 +1,127 @@
+{% extends "admin_layout.html" %}
+{% block title %}{{ cot.numero }}{% endblock %}
+{% block topbar_title %}{{ cot.numero }}{% endblock %}
+{% block topbar_subtitle %}{{ cot.cliente_nombre }} · {{ cotizacion_estados.get(cot.estado, cot.estado) }}{% endblock %}
+{% block topbar_actions %}
+  <a href="{{ url_for('admin.cotizacion_pdf', id=cot.id) }}" class="btn-top accent"><i class="fas fa-file-pdf"></i> Descargar PDF</a>
+  {% if cot.estado in ['aceptada', 'enviada'] or not cot.pedidos %}
+  <a href="{{ url_for('admin.cotizacion_a_pedido', id=cot.id) }}" class="btn-top" style="background:var(--orange);color:#fff;"><i class="fas fa-cart-shopping"></i> Crear pedido</a>
+  {% endif %}
+  <a href="{{ url_for('admin.cotizacion_editar', id=cot.id) }}" class="btn-top ghost"><i class="fas fa-pen"></i> Editar</a>
+  <a href="{{ url_for('admin.cotizaciones') }}" class="btn-top ghost"><i class="fas fa-arrow-left"></i> Lista</a>
+{% endblock %}
+
+{% block content %}
+<div class="kpi-grid" style="grid-template-columns:repeat(4,1fr);margin-bottom:1.25rem;">
+  <div class="kpi-card green">
+    <div class="kpi-label">Total</div>
+    <div class="kpi-value" style="font-size:1.4rem;">{{ "{:,.2f}".format(cot.total) }}</div>
+    <div class="kpi-sub">{{ cot.moneda }}</div>
+  </div>
+  <div class="kpi-card blue">
+    <div class="kpi-label">Estado</div>
+    <div class="kpi-value" style="font-size:1rem;">
+      <span class="badge" style="background:{{ cotizacion_estado_colors.get(cot.estado, '#eee') }}22;color:{{ cotizacion_estado_colors.get(cot.estado, '#666') }};">
+        {{ cotizacion_estados.get(cot.estado, cot.estado) }}
+      </span>
+    </div>
+  </div>
+  <div class="kpi-card orange">
+    <div class="kpi-label">Incoterm</div>
+    <div class="kpi-value" style="font-size:1.2rem;">{{ cot.incoterm }}</div>
+  </div>
+  <div class="kpi-card dark">
+    <div class="kpi-label">Válida hasta</div>
+    <div class="kpi-value" style="font-size:1rem;">{{ cot.fecha_vencimiento.strftime("%d/%m/%Y") if cot.fecha_vencimiento else '—' }}</div>
+  </div>
+</div>
+
+<div class="grid-2">
+  <div class="panel">
+    <div class="panel-header"><h3>Cliente</h3></div>
+    <div class="info-grid" style="background:var(--white);border:none;">
+      <div class="info-item"><label>Nombre</label><span>{{ cot.cliente_nombre }}</span></div>
+      {% if cot.cliente_empresa %}<div class="info-item"><label>Empresa</label><span>{{ cot.cliente_empresa }}</span></div>{% endif %}
+      {% if cot.cliente_email %}<div class="info-item"><label>Email</label><span>{{ cot.cliente_email }}</span></div>{% endif %}
+      {% if cot.cliente_telefono %}<div class="info-item"><label>Teléfono</label><span>{{ cot.cliente_telefono }}</span></div>{% endif %}
+      {% if cot.cliente_pais %}<div class="info-item"><label>País</label><span>{{ cot.cliente_pais }}</span></div>{% endif %}
+      {% if cot.cliente %}
+      <div class="info-item full" style="grid-column:1/-1;">
+        <a href="{{ url_for('admin.cartera_detalle', id=cot.cliente.id) }}" class="btn btn-ghost" style="margin-top:.5rem;font-size:.75rem;"><i class="fas fa-user"></i> Ver ficha cliente</a>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+  <div class="panel">
+    <div class="panel-header"><h3>Resumen</h3></div>
+    <div style="padding:1.25rem 1.5rem;font-size:.9rem;line-height:1.8;">
+      <div>Emisión: <strong>{{ cot.fecha_emision.strftime("%d/%m/%Y %H:%M") }}</strong></div>
+      <div>Subtotal: <strong>{{ "{:,.2f}".format(cot.subtotal) }} {{ cot.moneda }}</strong></div>
+      {% if cot.descuento_pct %}<div>Descuento: <strong>{{ cot.descuento_pct }}%</strong></div>{% endif %}
+      <div style="margin-top:1rem;">
+        <a href="{{ url_for('admin.cotizacion_pdf', id=cot.id) }}" class="btn btn-green"><i class="fas fa-download"></i> Descargar PDF con logo</a>
+        {% if cot.estado in ['aceptada', 'enviada'] or not cot.pedidos %}
+        <a href="{{ url_for('admin.cotizacion_a_pedido', id=cot.id) }}" class="btn btn-ghost" style="margin-left:.5rem;"><i class="fas fa-cart-shopping"></i> Convertir a pedido</a>
+        {% endif %}
+      </div>
+      {% if cot.pedidos %}
+      <div style="margin-top:.75rem;font-size:.85rem;color:var(--gray);">
+        Pedidos vinculados:
+        {% for p in cot.pedidos %}
+        <a href="{{ url_for('admin.pedido_detalle', id=p.id) }}" style="color:var(--accent);font-weight:600;">{{ p.numero }}</a>{% if not loop.last %}, {% endif %}
+        {% endfor %}
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<div class="panel" style="margin-top:1.25rem;">
+  <div class="panel-header"><h3>Detalle de líneas</h3></div>
+  <table class="data-table">
+    <thead>
+      <tr><th>#</th><th>Descripción</th><th>Cantidad</th><th>P. Unit.</th><th>Subtotal</th></tr>
+    </thead>
+    <tbody>
+      {% for l in cot.lineas %}
+      <tr>
+        <td>{{ loop.index }}</td>
+        <td>{{ l.descripcion }}{% if l.producto %} <span style="color:var(--gray);font-size:.75rem;">({{ l.producto.nombre }})</span>{% endif %}</td>
+        <td>{{ l.cantidad|round(2) }} {{ l.unidad }}</td>
+        <td>{{ "{:,.2f}".format(l.precio_unitario) }}</td>
+        <td style="font-weight:700;">{{ "{:,.2f}".format(l.subtotal) }} {{ cot.moneda }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+    <tfoot>
+      <tr>
+        <td colspan="4" style="text-align:right;font-weight:700;padding:1rem;">TOTAL</td>
+        <td style="font-weight:800;color:var(--accent);font-size:1.1rem;padding:1rem;">{{ "{:,.2f}".format(cot.total) }} {{ cot.moneda }}</td>
+      </tr>
+    </tfoot>
+  </table>
+</div>
+
+{% if cot.condiciones or cot.notas %}
+<div class="panel" style="margin-top:1.25rem;">
+  {% if cot.condiciones %}
+  <div style="padding:1.25rem 1.5rem;border-bottom:1px solid var(--gray-light);">
+    <label style="font-size:.65rem;font-weight:700;text-transform:uppercase;color:var(--gray);">Condiciones</label>
+    <p style="margin-top:.5rem;white-space:pre-wrap;font-size:.9rem;">{{ cot.condiciones }}</p>
+  </div>
+  {% endif %}
+  {% if cot.notas %}
+  <div style="padding:1.25rem 1.5rem;">
+    <label style="font-size:.65rem;font-weight:700;text-transform:uppercase;color:var(--gray);">Notas internas</label>
+    <p style="margin-top:.5rem;white-space:pre-wrap;font-size:.9rem;color:var(--gray);">{{ cot.notas }}</p>
+  </div>
+  {% endif %}
+</div>
+{% endif %}
+
+<div style="margin-top:1.25rem;display:flex;gap:.75rem;">
+  <form method="POST" action="{{ url_for('admin.cotizacion_eliminar', id=cot.id) }}" onsubmit="return confirm('¿Eliminar esta cotización?');">
+    <button type="submit" class="btn btn-danger"><i class="fas fa-trash"></i> Eliminar</button>
+  </form>
+</div>
+{% endblock %}

@@ -1,0 +1,35 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.egg-info/
+.eggs/
+dist/
+build/
+
+# Entorno virtual
+venv/
+.venv/
+
+# Secretos y entorno local
+.env
+.env.local
+
+# Base de datos local
+*.db
+*.sqlite3
+
+# Subidas de clientes (contenido generado en runtime)
+uploads/*
+!uploads/.gitkeep
+
+# Logs e historial del editor
+*.log
+.history/
+tmp/
+
+# IDE / OS
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db

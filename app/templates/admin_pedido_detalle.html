@@ -1,0 +1,258 @@
+{% extends "admin_layout.html" %}
+
+{% block title %}{{ ped.numero }}{% endblock %}
+
+{% block topbar_title %}{{ ped.numero }}{% endblock %}
+
+{% block topbar_subtitle %}{{ ped.cliente_nombre }} · {{ pedido_estados.get(ped.estado, ped.estado) }}{% endblock %}
+
+{% block topbar_actions %}
+  {% if ped.estado in ['listo', 'embarcado'] or not ped.embarques %}
+  <a href="{{ url_for('admin.pedido_a_embarque', id=ped.id) }}" class="btn-top" style="background:var(--orange);color:#fff;"><i class="fas fa-ship"></i> Crear embarque</a>
+  {% endif %}
+  <a href="{{ url_for('admin.pedido_editar', id=ped.id) }}" class="btn-top accent"><i class="fas fa-pen"></i> Editar</a>
+  <a href="{{ url_for('admin.pedidos') }}" class="btn-top ghost"><i class="fas fa-arrow-left"></i> Lista</a>
+{% endblock %}
+
+
+
+{% block content %}
+
+<div class="kpi-grid" style="grid-template-columns:repeat(5,1fr);margin-bottom:1.25rem;">
+
+  <div class="kpi-card green">
+
+    <div class="kpi-label">Total pedido</div>
+
+    <div class="kpi-value" style="font-size:1.4rem;">{{ "{:,.2f}".format(ped.total) }}</div>
+
+    <div class="kpi-sub">{{ ped.moneda }}</div>
+
+  </div>
+
+  <div class="kpi-card blue">
+
+    <div class="kpi-label">Estado</div>
+
+    <div class="kpi-value" style="font-size:1rem;">
+
+      <span class="estado-badge" style="background:{{ pedido_estado_colors.get(ped.estado, '#eee') }}18;color:{{ pedido_estado_colors.get(ped.estado, '#666') }};">
+        <i class="fas {{ pedido_estado_icons.get(ped.estado, 'fa-circle') }}"></i>
+        {{ pedido_estados.get(ped.estado, ped.estado) }}
+      </span>
+
+    </div>
+
+  </div>
+
+  <div class="kpi-card orange">
+
+    <div class="kpi-label">Anticipo</div>
+
+    <div class="kpi-value" style="font-size:1.2rem;">{{ "{:,.2f}".format(ped.anticipo_monto or 0) }}</div>
+
+    <div class="kpi-sub">{{ ped.moneda }}</div>
+
+  </div>
+
+  <div class="kpi-card dark">
+
+    <div class="kpi-label">Saldo pendiente</div>
+
+    <div class="kpi-value" style="font-size:1.2rem;">{{ "{:,.2f}".format(ped.saldo_pendiente) }}</div>
+
+    <div class="kpi-sub">{{ ped.moneda }}</div>
+
+  </div>
+
+  <div class="kpi-card" style="background:var(--cream);">
+
+    <div class="kpi-label">Incoterm</div>
+
+    <div class="kpi-value" style="font-size:1.2rem;">{{ ped.incoterm }}</div>
+
+  </div>
+
+</div>
+
+
+
+<div class="grid-2">
+
+  <div class="panel">
+
+    <div class="panel-header"><h3>Cliente</h3></div>
+
+    <div class="info-grid" style="background:var(--white);border:none;">
+
+      <div class="info-item"><label>Nombre</label><span>{{ ped.cliente_nombre }}</span></div>
+
+      {% if ped.cliente_empresa %}<div class="info-item"><label>Empresa</label><span>{{ ped.cliente_empresa }}</span></div>{% endif %}
+
+      {% if ped.cliente_email %}<div class="info-item"><label>Email</label><span>{{ ped.cliente_email }}</span></div>{% endif %}
+
+      {% if ped.cliente_telefono %}<div class="info-item"><label>Teléfono</label><span>{{ ped.cliente_telefono }}</span></div>{% endif %}
+
+      {% if ped.cliente_pais %}<div class="info-item"><label>País</label><span>{{ ped.cliente_pais }}</span></div>{% endif %}
+
+      {% if ped.cliente %}
+
+      <div class="info-item full" style="grid-column:1/-1;">
+
+        <a href="{{ url_for('admin.cartera_detalle', id=ped.cliente.id) }}" class="btn btn-ghost" style="margin-top:.5rem;font-size:.75rem;"><i class="fas fa-user"></i> Ver ficha cliente</a>
+
+      </div>
+
+      {% endif %}
+
+    </div>
+
+  </div>
+
+  <div class="panel">
+
+    <div class="panel-header"><h3>Resumen</h3></div>
+
+    <div style="padding:1.25rem 1.5rem;font-size:.9rem;line-height:1.8;">
+
+      <div>Fecha pedido: <strong>{{ ped.fecha_pedido.strftime("%d/%m/%Y %H:%M") }}</strong></div>
+
+      <div>Entrega estimada: <strong>{{ ped.fecha_entrega_estimada.strftime("%d/%m/%Y") if ped.fecha_entrega_estimada else '—' }}</strong></div>
+
+      <div>Subtotal: <strong>{{ "{:,.2f}".format(ped.subtotal) }} {{ ped.moneda }}</strong></div>
+
+      {% if ped.descuento_pct %}<div>Descuento: <strong>{{ ped.descuento_pct }}%</strong></div>{% endif %}
+
+      {% if ped.cotizacion %}
+
+      <div style="margin-top:1rem;">
+
+        <a href="{{ url_for('admin.cotizacion_detalle', id=ped.cotizacion.id) }}" class="btn btn-ghost" style="font-size:.75rem;">
+
+          <i class="fas fa-file-invoice"></i> Cotización origen: {{ ped.cotizacion.numero }}
+
+        </a>
+
+      </div>
+
+      {% endif %}
+
+      {% if ped.embarques %}
+      <div style="margin-top:.75rem;">
+        <i class="fas fa-ship" style="color:var(--accent);"></i> Embarques:
+        {% for e in ped.embarques %}
+        <a href="{{ url_for('admin.embarque_detalle', id=e.id) }}" style="color:var(--accent);font-weight:600;">{{ e.numero }}</a>{% if not loop.last %}, {% endif %}
+        {% endfor %}
+      </div>
+      {% else %}
+      <div style="margin-top:1rem;">
+        <a href="{{ url_for('admin.pedido_a_embarque', id=ped.id) }}" class="btn btn-green" style="font-size:.75rem;"><i class="fas fa-ship"></i> Crear embarque</a>
+      </div>
+      {% endif %}
+
+    </div>
+
+  </div>
+
+</div>
+
+
+
+<div class="panel" style="margin-top:1.25rem;">
+
+  <div class="panel-header"><h3>Detalle de líneas</h3></div>
+
+  <table class="data-table">
+
+    <thead>
+
+      <tr><th>#</th><th>Descripción</th><th>Cantidad</th><th>P. Unit.</th><th>Subtotal</th></tr>
+
+    </thead>
+
+    <tbody>
+
+      {% for l in ped.lineas %}
+
+      <tr>
+
+        <td>{{ loop.index }}</td>
+
+        <td>{{ l.descripcion }}{% if l.producto %} <span style="color:var(--gray);font-size:.75rem;">({{ l.producto.nombre }})</span>{% endif %}</td>
+
+        <td>{{ l.cantidad|round(2) }} {{ l.unidad }}</td>
+
+        <td>{{ "{:,.2f}".format(l.precio_unitario) }}</td>
+
+        <td style="font-weight:700;">{{ "{:,.2f}".format(l.subtotal) }} {{ ped.moneda }}</td>
+
+      </tr>
+
+      {% endfor %}
+
+    </tbody>
+
+    <tfoot>
+
+      <tr>
+
+        <td colspan="4" style="text-align:right;font-weight:700;padding:1rem;">TOTAL</td>
+
+        <td style="font-weight:800;color:var(--accent);font-size:1.1rem;padding:1rem;">{{ "{:,.2f}".format(ped.total) }} {{ ped.moneda }}</td>
+
+      </tr>
+
+    </tfoot>
+
+  </table>
+
+</div>
+
+
+
+{% if ped.condiciones or ped.notas %}
+
+<div class="panel" style="margin-top:1.25rem;">
+
+  {% if ped.condiciones %}
+
+  <div style="padding:1.25rem 1.5rem;border-bottom:1px solid var(--gray-light);">
+
+    <label style="font-size:.65rem;font-weight:700;text-transform:uppercase;color:var(--gray);">Condiciones</label>
+
+    <p style="margin-top:.5rem;white-space:pre-wrap;font-size:.9rem;">{{ ped.condiciones }}</p>
+
+  </div>
+
+  {% endif %}
+
+  {% if ped.notas %}
+
+  <div style="padding:1.25rem 1.5rem;">
+
+    <label style="font-size:.65rem;font-weight:700;text-transform:uppercase;color:var(--gray);">Notas internas</label>
+
+    <p style="margin-top:.5rem;white-space:pre-wrap;font-size:.9rem;color:var(--gray);">{{ ped.notas }}</p>
+
+  </div>
+
+  {% endif %}
+
+</div>
+
+{% endif %}
+
+
+
+<div style="margin-top:1.25rem;display:flex;gap:.75rem;">
+
+  <form method="POST" action="{{ url_for('admin.pedido_eliminar', id=ped.id) }}" onsubmit="return confirm('¿Eliminar este pedido?');">
+
+    <button type="submit" class="btn btn-danger"><i class="fas fa-trash"></i> Eliminar</button>
+
+  </form>
+
+</div>
+
+{% endblock %}
+

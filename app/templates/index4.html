@@ -1,0 +1,1154 @@
+<!DOCTYPE html>
+<html lang="es" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>{{ config.STORE_NAME or 'Patagonia Sur SpA' }} – Exportación de Frutas, Mariscos y Vinos a México</title>
+  <meta name="description" content="Patagonia Sur SpA: exportamos frutas frescas y procesadas, productos del mar y vinos premium de Chile hacia México. Calidad patagónica, logística confiable y trazabilidad total.">
+  <meta name="keywords" content="exportación Chile México, frutas chilenas, mariscos, vinos, Patagonia Sur, importación alimentos">
+  <meta name="author" content="Patagonia Sur SpA">
+
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Patagonia Sur SpA">
+  <meta property="og:url" content="https://www.instagram.com/patagoniasurspa">
+  <meta property="og:title" content="Patagonia Sur SpA – Del sur de Chile a México">
+  <meta property="og:description" content="Frutas, productos del mar y vinos chilenos exportados con excelencia al mercado mexicano.">
+
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌿</text></svg>">
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet">
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            cream: { DEFAULT: '#F7F3EA', 50: '#FDFCF9', 100: '#F7F3EA', 200: '#EDE6D6' },
+            title: { DEFAULT: '#201D24', light: '#4A454F' },
+            primary: { DEFAULT: '#EA942A', dark: '#D4821F', light: '#F5B04A' },
+            secondary: { DEFAULT: '#587232', dark: '#465C28', light: '#6E9150' },
+            forest: { 600: '#3A4D22', 700: '#2D4A1E', 800: '#1E3314', 900: '#142410', 950: '#0D1809' },
+          },
+          fontFamily: {
+            sans: ['DM Sans', 'system-ui', 'sans-serif'],
+            display: ['Playfair Display', 'Georgia', 'serif'],
+          },
+        }
+      }
+    }
+  </script>
+
+  <style>
+    :root {
+      --cream: #F7F3EA;
+      --title: #201D24;
+      --primary: #EA942A;
+      --secondary: #587232;
+    }
+
+    .font-display { font-family: 'Playfair Display', Georgia, serif; }
+
+    /* Section label — leaf + line */
+    .section-label {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: #587232;
+    }
+    .section-label::after {
+      content: '';
+      width: 48px;
+      height: 2px;
+      background: linear-gradient(90deg, #587232, #EA942A);
+    }
+
+    /* Buttons */
+    .btn-primary {
+      background: #EA942A;
+      color: #201D24;
+      transition: all 0.3s ease;
+    }
+    .btn-primary:hover { background: #D4821F; transform: translateY(-2px); }
+    .btn-secondary {
+      background: #587232;
+      color: #ffffff;
+      transition: all 0.3s ease;
+    }
+    .btn-secondary:hover { background: #465C28; transform: translateY(-2px); }
+
+    /* Sticky header */
+    .main-header {
+      background: #ffffff;
+      transition: box-shadow 0.3s ease;
+    }
+    .main-header.scrolled { box-shadow: 0 4px 24px rgba(32,29,36,0.08); }
+
+    .nav-link {
+      position: relative;
+      color: #201D24;
+      font-weight: 600;
+      transition: color 0.3s;
+    }
+    .nav-link:hover { color: #587232; }
+    .nav-link::after {
+      content: '';
+      position: absolute;
+      bottom: -4px;
+      left: 0;
+      width: 0;
+      height: 2px;
+      background: #EA942A;
+      transition: width 0.3s ease;
+    }
+    .nav-link:hover::after { width: 100%; }
+
+    /* Hero */
+    .hero-bg {
+      background-image: url('https://images.unsplash.com/photo-1500382017468-9049fed471f0?w=1920&q=80');
+      background-size: cover;
+      background-position: center;
+      background-attachment: fixed;
+    }
+    .hero-overlay {
+      background: linear-gradient(135deg, rgba(20,36,16,0.88) 0%, rgba(45,74,30,0.75) 50%, rgba(30,51,20,0.85) 100%);
+    }
+
+    /* Floating hero stats */
+    .hero-stat-card {
+      background: rgba(255,255,255,0.95);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(88,114,50,0.15);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    .hero-stat-card:hover {
+      transform: translateY(-6px);
+      box-shadow: 0 20px 40px rgba(32,29,36,0.12);
+    }
+
+    /* Years badge */
+    .years-badge {
+      position: absolute;
+      bottom: -24px;
+      right: -16px;
+      background: #EA942A;
+      color: #201D24;
+      padding: 20px 24px;
+      border-radius: 12px;
+      box-shadow: 0 16px 40px rgba(234,148,42,0.35);
+      z-index: 10;
+    }
+
+    /* Feature boxes */
+    .feature-box {
+      background: #fff;
+      border: 1px solid rgba(88,114,50,0.12);
+      transition: all 0.4s ease;
+    }
+    .feature-box:hover {
+      transform: translateY(-8px);
+      box-shadow: 0 24px 48px rgba(32,29,36,0.1);
+      border-color: rgba(88,114,50,0.3);
+    }
+    .feature-icon {
+      width: 72px;
+      height: 72px;
+      border-radius: 50%;
+      background: #F0F4EB;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.75rem;
+      color: #587232;
+      margin: 0 auto 20px;
+      transition: transform 0.4s ease, background 0.4s ease;
+    }
+    .feature-box:hover .feature-icon {
+      background: #587232;
+      color: #fff;
+      transform: scale(1.08);
+    }
+
+    /* Product cards */
+    .product-card {
+      position: relative;
+      overflow: hidden;
+      border-radius: 16px;
+    }
+    .product-card img {
+      transition: transform 0.6s ease;
+    }
+    .product-card:hover img { transform: scale(1.08); }
+    .product-overlay {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(to top, rgba(20,36,16,0.92) 0%, rgba(20,36,16,0.4) 50%, transparent 100%);
+      opacity: 0.85;
+      transition: opacity 0.4s ease;
+    }
+    .product-card:hover .product-overlay { opacity: 1; }
+    .product-hover-content {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      padding: 28px;
+      transform: translateY(20px);
+      opacity: 0;
+      transition: all 0.4s ease;
+    }
+    .product-card:hover .product-hover-content {
+      transform: translateY(0);
+      opacity: 1;
+    }
+    .product-tag {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      background: #EA942A;
+      color: #201D24;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      padding: 6px 14px;
+      border-radius: 999px;
+      z-index: 5;
+    }
+
+    /* Service cards */
+    .service-card {
+      background: #fff;
+      border: 1px solid rgba(88,114,50,0.1);
+      border-radius: 16px;
+      padding: 32px;
+      transition: all 0.4s ease;
+    }
+    .service-card:hover {
+      transform: translateY(-8px);
+      box-shadow: 0 20px 50px rgba(32,29,36,0.1);
+      border-color: rgba(234,148,42,0.4);
+    }
+    .service-icon {
+      width: 64px;
+      height: 64px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, #F0F4EB, #E5EBDC);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      color: #587232;
+      margin-bottom: 20px;
+      transition: all 0.4s ease;
+    }
+    .service-card:hover .service-icon {
+      background: #587232;
+      color: #fff;
+    }
+
+    /* Stats band */
+    .stats-band {
+      background: linear-gradient(135deg, #1E3314 0%, #2D4A1E 50%, #3A4D22 100%);
+    }
+
+    /* Process steps */
+    .process-step {
+      position: relative;
+      text-align: center;
+      padding: 0 16px;
+    }
+    .process-step::after {
+      content: '';
+      position: absolute;
+      top: 36px;
+      left: calc(50% + 40px);
+      width: calc(100% - 80px);
+      height: 2px;
+      background: linear-gradient(90deg, #587232, rgba(88,114,50,0.2));
+    }
+    .process-step:last-child::after { display: none; }
+    @media (max-width: 1023px) {
+      .process-step::after { display: none; }
+    }
+    .process-number {
+      width: 72px;
+      height: 72px;
+      border-radius: 50%;
+      background: #587232;
+      color: #fff;
+      font-family: 'Playfair Display', serif;
+      font-size: 1.75rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 20px;
+      box-shadow: 0 8px 24px rgba(88,114,50,0.35);
+      position: relative;
+      z-index: 2;
+    }
+
+    /* City cards */
+    .city-card {
+      background: #fff;
+      border: 1px solid rgba(88,114,50,0.12);
+      border-radius: 16px;
+      padding: 28px;
+      text-align: center;
+      transition: all 0.4s ease;
+    }
+    .city-card:hover {
+      transform: translateY(-6px);
+      box-shadow: 0 16px 40px rgba(32,29,36,0.1);
+      border-color: #587232;
+    }
+
+    /* CTA banner */
+    .cta-banner {
+      background-image: url('https://images.unsplash.com/photo-1574943323825-51d46a4b5d85?w=1920&q=80');
+      background-size: cover;
+      background-position: center;
+      position: relative;
+    }
+    .cta-banner::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(20,36,16,0.9) 0%, rgba(45,74,30,0.85) 100%);
+    }
+
+    /* Scroll reveal */
+    .reveal {
+      opacity: 0;
+      transform: translateY(32px);
+      transition: opacity 0.7s ease, transform 0.7s ease;
+    }
+    .reveal.in-view {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* Off-canvas mobile menu */
+    .mobile-drawer {
+      transform: translateX(100%);
+      transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .mobile-drawer.open { transform: translateX(0); }
+    .drawer-overlay {
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.35s ease, visibility 0.35s ease;
+    }
+    .drawer-overlay.open {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    /* Checklist */
+    .check-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+    }
+    .check-icon {
+      flex-shrink: 0;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: #587232;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 10px;
+      margin-top: 2px;
+    }
+  </style>
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "name": "Patagonia Sur SpA",
+    "url": "https://www.instagram.com/patagoniasurspa",
+    "description": "Exportación de frutas, productos del mar y vinos de Chile hacia México.",
+    "areaServed": ["Chile", "México"],
+    "sameAs": ["https://www.instagram.com/patagoniasurspa"]
+  }
+  </script>
+</head>
+
+<body class="font-sans bg-cream text-title antialiased">
+
+  <!-- Top Bar -->
+  <div class="bg-forest-900 text-white text-sm hidden md:block">
+    <div class="max-w-7xl mx-auto px-4 py-2.5 flex justify-between items-center">
+      <div class="flex items-center gap-6">
+        <a href="tel:+{{ config.WHATSAPP_PHONE }}" class="flex items-center gap-2 hover:text-primary transition-colors">
+          <i class="fas fa-phone-alt text-primary text-xs"></i>
+          <span>+{{ config.WHATSAPP_PHONE[:2] }} {{ config.WHATSAPP_PHONE[2:3] }} {{ config.WHATSAPP_PHONE[3:7] }} {{ config.WHATSAPP_PHONE[7:] }}</span>
+        </a>
+        <a href="mailto:{{ config.CONTACT_EMAIL or 'contacto@patagoniasur.cl' }}" class="flex items-center gap-2 hover:text-primary transition-colors">
+          <i class="fas fa-envelope text-primary text-xs"></i>
+          <span>{{ config.CONTACT_EMAIL or 'contacto@patagoniasur.cl' }}</span>
+        </a>
+      </div>
+      <div class="flex items-center gap-4">
+        <span class="text-white/60 text-xs uppercase tracking-wider">Síguenos</span>
+        <a href="https://www.instagram.com/patagoniasurspa" target="_blank" rel="noopener" class="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center hover:bg-primary hover:text-title transition-all" aria-label="Instagram">
+          <i class="fab fa-instagram"></i>
+        </a>
+        <a href="https://wa.me/{{ config.WHATSAPP_PHONE }}" target="_blank" rel="noopener" class="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center hover:bg-primary hover:text-title transition-all" aria-label="WhatsApp">
+          <i class="fab fa-whatsapp"></i>
+        </a>
+        <a href="https://www.linkedin.com" target="_blank" rel="noopener" class="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center hover:bg-primary hover:text-title transition-all" aria-label="LinkedIn">
+          <i class="fab fa-linkedin-in"></i>
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Sticky Header -->
+  <header class="main-header sticky top-0 z-50" id="mainHeader">
+    <div class="max-w-7xl mx-auto px-4">
+      <div class="flex justify-between items-center py-4">
+        <a href="{{ url_for('main.index') }}" class="flex items-center gap-3">
+          <div class="w-12 h-12 rounded-lg bg-secondary flex items-center justify-center text-white font-display font-bold text-xl">PS</div>
+          <div>
+            <div class="font-display text-xl md:text-2xl font-bold text-title leading-tight">{{ config.STORE_NAME or 'Patagonia Sur' }}</div>
+            <div class="text-[10px] uppercase tracking-widest text-title-light font-semibold hidden sm:block">Chile → México</div>
+          </div>
+        </a>
+
+        <nav class="hidden lg:flex items-center gap-8">
+          <a href="#nosotros" class="nav-link text-sm">Nosotros</a>
+          <a href="#productos" class="nav-link text-sm">Productos</a>
+          <a href="#servicios" class="nav-link text-sm">Servicios</a>
+          <a href="#proceso" class="nav-link text-sm">Proceso</a>
+          <a href="#mexico" class="nav-link text-sm">México</a>
+          <a href="#contacto" class="nav-link text-sm">Contacto</a>
+          <a href="https://wa.me/{{ config.WHATSAPP_PHONE }}?text={{ 'Hola Patagonia Sur, quiero cotizar productos para México.'|urlencode }}"
+             target="_blank" rel="noopener"
+             class="btn-primary px-6 py-2.5 rounded-full text-sm font-bold shadow-lg shadow-primary/25">
+            <i class="fab fa-whatsapp mr-2"></i>Cotizar
+          </a>
+        </nav>
+
+        <button id="menuBtn" class="lg:hidden w-10 h-10 flex items-center justify-center rounded-lg border border-title/15 text-title" aria-label="Abrir menú">
+          <i class="fas fa-bars text-lg"></i>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Mobile Off-Canvas -->
+  <div id="drawerOverlay" class="drawer-overlay fixed inset-0 bg-black/50 z-[60]"></div>
+  <aside id="mobileDrawer" class="mobile-drawer fixed top-0 right-0 h-full w-80 max-w-[85vw] bg-white z-[70] shadow-2xl flex flex-col">
+    <div class="flex justify-between items-center p-5 border-b border-gray-100">
+      <span class="font-display font-bold text-lg text-title">Menú</span>
+      <button id="closeDrawer" class="w-10 h-10 flex items-center justify-center rounded-lg hover:bg-cream" aria-label="Cerrar menú">
+        <i class="fas fa-times text-lg"></i>
+      </button>
+    </div>
+    <nav class="flex-1 p-5 space-y-1 overflow-y-auto">
+      <a href="#nosotros" class="drawer-link block px-4 py-3 rounded-lg font-semibold text-title hover:bg-cream transition-colors">Nosotros</a>
+      <a href="#productos" class="drawer-link block px-4 py-3 rounded-lg font-semibold text-title hover:bg-cream transition-colors">Productos</a>
+      <a href="#servicios" class="drawer-link block px-4 py-3 rounded-lg font-semibold text-title hover:bg-cream transition-colors">Servicios</a>
+      <a href="#proceso" class="drawer-link block px-4 py-3 rounded-lg font-semibold text-title hover:bg-cream transition-colors">Proceso</a>
+      <a href="#mexico" class="drawer-link block px-4 py-3 rounded-lg font-semibold text-title hover:bg-cream transition-colors">México</a>
+      <a href="#contacto" class="drawer-link block px-4 py-3 rounded-lg font-semibold text-title hover:bg-cream transition-colors">Contacto</a>
+    </nav>
+    <div class="p-5 border-t border-gray-100 space-y-3">
+      <a href="https://wa.me/{{ config.WHATSAPP_PHONE }}?text={{ 'Hola Patagonia Sur, quiero cotizar productos para México.'|urlencode }}"
+         target="_blank" rel="noopener"
+         class="btn-primary w-full py-3 rounded-full font-bold text-center block">
+        <i class="fab fa-whatsapp mr-2"></i>Cotizar por WhatsApp
+      </a>
+      <div class="flex justify-center gap-4 pt-2">
+        <a href="https://www.instagram.com/patagoniasurspa" target="_blank" rel="noopener" class="text-secondary hover:text-primary text-xl"><i class="fab fa-instagram"></i></a>
+        <a href="https://wa.me/{{ config.WHATSAPP_PHONE }}" target="_blank" rel="noopener" class="text-secondary hover:text-primary text-xl"><i class="fab fa-whatsapp"></i></a>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Hero -->
+  <section class="hero-bg relative min-h-[90vh] flex flex-col justify-center">
+    <div class="hero-overlay absolute inset-0"></div>
+    <div class="relative z-10 max-w-7xl mx-auto px-4 py-24 md:py-32 w-full">
+      <div class="max-w-3xl">
+        <div class="section-label text-white/80 mb-6 reveal">
+          <i class="fas fa-leaf"></i>
+          <span>Exportación premium</span>
+        </div>
+        <h1 class="font-display text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-white leading-[1.1] mb-6 reveal">
+          Del sur de Chile<br>
+          <span class="text-primary">a tu mesa</span> en México
+        </h1>
+        <p class="text-lg md:text-xl text-white/85 mb-10 max-w-xl leading-relaxed reveal">
+          Frutas, mariscos y vinos con trazabilidad total. Conectamos los valles y costas patagónicas con importadores, HORECA y retail mexicano.
+        </p>
+        <div class="flex flex-col sm:flex-row gap-4 reveal">
+          <a href="#contacto" class="btn-primary px-8 py-4 rounded-full font-bold text-center shadow-xl shadow-primary/30">
+            <i class="fas fa-file-invoice mr-2"></i>Cotizar exportación
+          </a>
+          <a href="#productos" class="btn-secondary px-8 py-4 rounded-full font-semibold text-center">
+            <i class="fas fa-seedling mr-2"></i>Ver productos
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Floating stat cards -->
+    <div class="relative z-10 max-w-7xl mx-auto px-4 w-full pb-12 md:pb-16 -mt-8">
+      <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 reveal">
+        <div class="hero-stat-card rounded-xl p-5 md:p-6 text-center">
+          <div class="text-2xl md:text-3xl font-display font-bold text-secondary">3</div>
+          <div class="text-xs text-title-light mt-1 uppercase tracking-wider font-semibold">Líneas de producto</div>
+        </div>
+        <div class="hero-stat-card rounded-xl p-5 md:p-6 text-center">
+          <div class="text-2xl md:text-3xl font-display font-bold text-secondary"><span class="counter" data-target="100" data-suffix="%">0</span></div>
+          <div class="text-xs text-title-light mt-1 uppercase tracking-wider font-semibold">Trazabilidad</div>
+        </div>
+        <div class="hero-stat-card rounded-xl p-5 md:p-6 text-center">
+          <div class="text-2xl md:text-3xl font-display font-bold text-primary">MX</div>
+          <div class="text-xs text-title-light mt-1 uppercase tracking-wider font-semibold">Mercado destino</div>
+        </div>
+        <div class="hero-stat-card rounded-xl p-5 md:p-6 text-center">
+          <div class="text-2xl md:text-3xl font-display font-bold text-secondary">24/7</div>
+          <div class="text-xs text-title-light mt-1 uppercase tracking-wider font-semibold">Seguimiento</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- About (#nosotros) -->
+  <section id="nosotros" class="py-20 md:py-28 bg-cream">
+    <div class="max-w-7xl mx-auto px-4">
+      <div class="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
+        <div class="relative reveal">
+          <img src="https://images.unsplash.com/photo-1464226184884-fa280b87c399?w=800&q=80"
+               alt="Campos y producción agrícola en el sur de Chile"
+               class="rounded-2xl w-full h-[400px] md:h-[480px] object-cover shadow-2xl">
+          <div class="years-badge">
+            <div class="font-display text-3xl font-bold leading-none">10+</div>
+            <div class="text-xs font-bold uppercase tracking-wider mt-1">Años exportando</div>
+          </div>
+        </div>
+        <div class="reveal">
+          <div class="section-label mb-4">
+            <i class="fas fa-leaf"></i>
+            <span>Sobre nosotros</span>
+          </div>
+          <h2 class="font-display text-3xl md:text-4xl lg:text-5xl font-bold text-title mb-6 leading-tight">
+            Calidad patagónica con estándares internacionales
+          </h2>
+          <p class="text-title-light text-lg mb-6 leading-relaxed">
+            {{ config.STORE_NAME or 'Patagonia Sur SpA' }} es una empresa chilena especializada en la exportación de frutas frescas y procesadas, productos del mar y vinos premium hacia el mercado mexicano.
+          </p>
+          <p class="text-title-light mb-8 leading-relaxed">
+            Trabajamos directamente con productores certificados del sur de Chile, garantizando cadena de frío, documentación aduanera completa y entrega puerta a puerta en México.
+          </p>
+          <ul class="space-y-4">
+            <li class="check-item">
+              <span class="check-icon"><i class="fas fa-check"></i></span>
+              <span class="text-title font-medium">Productores certificados en valles y costas del sur de Chile</span>
+            </li>
+            <li class="check-item">
+              <span class="check-icon"><i class="fas fa-check"></i></span>
+              <span class="text-title font-medium">Cumplimiento SAG, SENASICA y normativa NOM México</span>
+            </li>
+            <li class="check-item">
+              <span class="check-icon"><i class="fas fa-check"></i></span>
+              <span class="text-title font-medium">Logística marítima Valparaíso → Manzanillo con seguimiento</span>
+            </li>
+            <li class="check-item">
+              <span class="check-icon"><i class="fas fa-check"></i></span>
+              <span class="text-title font-medium">Atención personalizada para importadores, HORECA y retail</span>
+            </li>
+          </ul>
+          <a href="#contacto" class="inline-flex items-center mt-8 text-secondary font-bold hover:text-primary transition-colors">
+            Conocer más <i class="fas fa-arrow-right ml-2 text-sm"></i>
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Features Strip -->
+  <section class="py-16 bg-white border-y border-secondary/10">
+    <div class="max-w-7xl mx-auto px-4">
+      <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div class="feature-box rounded-2xl p-8 text-center reveal">
+          <div class="feature-icon"><i class="fas fa-leaf"></i></div>
+          <h3 class="font-display text-xl font-bold text-title mb-2">Calidad Orgánica</h3>
+          <p class="text-title-light text-sm">Selección rigurosa en origen con estándares internacionales de calidad y frescura.</p>
+        </div>
+        <div class="feature-box rounded-2xl p-8 text-center reveal">
+          <div class="feature-icon"><i class="fas fa-snowflake"></i></div>
+          <h3 class="font-display text-xl font-bold text-title mb-2">Cadena de Frío</h3>
+          <p class="text-title-light text-sm">Monitoreo de temperatura desde el campo o mar hasta el almacén en México.</p>
+        </div>
+        <div class="feature-box rounded-2xl p-8 text-center reveal">
+          <div class="feature-icon"><i class="fas fa-truck"></i></div>
+          <h3 class="font-display text-xl font-bold text-title mb-2">Exportación MX</h3>
+          <p class="text-title-light text-sm">Ruta optimizada Chile–Pacífico–México con cobertura en principales ciudades.</p>
+        </div>
+        <div class="feature-box rounded-2xl p-8 text-center reveal">
+          <div class="feature-icon"><i class="fas fa-certificate"></i></div>
+          <h3 class="font-display text-xl font-bold text-title mb-2">Certificado</h3>
+          <p class="text-title-light text-sm">HACCP, BRC, certificados fitosanitarios y trazabilidad total en cada envío.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Products (#productos) -->
+  <section id="productos" class="py-20 md:py-28 bg-cream">
+    <div class="max-w-7xl mx-auto px-4">
+      <div class="text-center mb-14 reveal">
+        <div class="section-label justify-center mb-4">
+          <i class="fas fa-leaf"></i>
+          <span>Nuestros productos</span>
+        </div>
+        <h2 class="font-display text-3xl md:text-4xl lg:text-5xl font-bold text-title mb-4">
+          Tres pilares, un solo origen
+        </h2>
+        <p class="text-title-light text-lg max-w-2xl mx-auto">
+          Seleccionamos los mejores productos del sur de Chile para el mercado mexicano con estándares de exportación internacional.
+        </p>
+      </div>
+
+      <div class="grid md:grid-cols-3 gap-6 lg:gap-8">
+        <!-- Frutas -->
+        <article class="product-card h-[420px] reveal">
+          <span class="product-tag">Frutas</span>
+          <img src="https://images.unsplash.com/photo-1619566636858-adf3ef46400b?w=600&q=80"
+               alt="Frutas frescas chilenas"
+               class="w-full h-full object-cover">
+          <div class="product-overlay"></div>
+          <div class="absolute bottom-0 left-0 right-0 p-6 z-10">
+            <h3 class="font-display text-2xl font-bold text-white mb-1">Frutas</h3>
+            <p class="text-white/75 text-sm">Frescas, procesadas y congeladas</p>
+          </div>
+          <div class="product-hover-content z-20">
+            <h3 class="font-display text-2xl font-bold text-white mb-2">Frutas Chilenas</h3>
+            <p class="text-white/80 text-sm mb-4">Manzanas, cítricos, uvas de mesa, berries y frutas procesadas IQF con cadena de frío garantizada.</p>
+            <ul class="text-white/70 text-xs space-y-1 mb-4">
+              <li><i class="fas fa-check text-primary mr-2"></i>Certificados fitosanitarios</li>
+              <li><i class="fas fa-check text-primary mr-2"></i>Calibrado y empaque exportación</li>
+            </ul>
+            <a href="#contacto" class="inline-flex items-center text-primary font-bold text-sm hover:underline">
+              Solicitar catálogo <i class="fas fa-arrow-right ml-2"></i>
+            </a>
+          </div>
+        </article>
+
+        <!-- Mariscos -->
+        <article class="product-card h-[420px] reveal">
+          <span class="product-tag">Del Mar</span>
+          <img src="https://images.unsplash.com/photo-1559738063-888f0170f3d1?w=600&q=80"
+               alt="Productos del mar chilenos"
+               class="w-full h-full object-cover">
+          <div class="product-overlay"></div>
+          <div class="absolute bottom-0 left-0 right-0 p-6 z-10">
+            <h3 class="font-display text-2xl font-bold text-white mb-1">Productos del Mar</h3>
+            <p class="text-white/75 text-sm">Salmón, mariscos y pescados</p>
+          </div>
+          <div class="product-hover-content z-20">
+            <h3 class="font-display text-2xl font-bold text-white mb-2">Del Mar Patagónico</h3>
+            <p class="text-white/80 text-sm mb-4">Salmón, mariscos, pescados y algas. Fresco, congelado y valor agregado con origen certificado.</p>
+            <ul class="text-white/70 text-xs space-y-1 mb-4">
+              <li><i class="fas fa-check text-primary mr-2"></i>HACCP y BRC</li>
+              <li><i class="fas fa-check text-primary mr-2"></i>Fileteado y porcionado</li>
+            </ul>
+            <a href="#contacto" class="inline-flex items-center text-primary font-bold text-sm hover:underline">
+              Solicitar catálogo <i class="fas fa-arrow-right ml-2"></i>
+            </a>
+          </div>
+        </article>
+
+        <!-- Vinos -->
+        <article class="product-card h-[420px] reveal">
+          <span class="product-tag">Vinos</span>
+          <img src="https://images.unsplash.com/photo-1506377247377-2ccd5affb152?w=600&q=80"
+               alt="Vinos premium chilenos"
+               class="w-full h-full object-cover">
+          <div class="product-overlay"></div>
+          <div class="absolute bottom-0 left-0 right-0 p-6 z-10">
+            <h3 class="font-display text-2xl font-bold text-white mb-1">Vinos</h3>
+            <p class="text-white/75 text-sm">Tintos, blancos y espumantes D.O.</p>
+          </div>
+          <div class="product-hover-content z-20">
+            <h3 class="font-display text-2xl font-bold text-white mb-2">Vinos Premium</h3>
+            <p class="text-white/80 text-sm mb-4">Tintos, blancos y espumantes de los valles chilenos con denominación de origen y etiquetado bilingüe.</p>
+            <ul class="text-white/70 text-xs space-y-1 mb-4">
+              <li><i class="fas fa-check text-primary mr-2"></i>Cumplimiento NOM México</li>
+              <li><i class="fas fa-check text-primary mr-2"></i>Distribución mayorista</li>
+            </ul>
+            <a href="#contacto" class="inline-flex items-center text-primary font-bold text-sm hover:underline">
+              Solicitar catálogo <i class="fas fa-arrow-right ml-2"></i>
+            </a>
+          </div>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- Services (#servicios) -->
+  <section id="servicios" class="py-20 md:py-28 bg-white">
+    <div class="max-w-7xl mx-auto px-4">
+      <div class="text-center mb-14 reveal">
+        <div class="section-label justify-center mb-4">
+          <i class="fas fa-leaf"></i>
+          <span>Nuestros servicios</span>
+        </div>
+        <h2 class="font-display text-3xl md:text-4xl lg:text-5xl font-bold text-title mb-4">
+          De Chile a México, sin fricciones
+        </h2>
+        <p class="text-title-light text-lg max-w-2xl mx-auto">
+          Gestionamos todo el ciclo exportador: sourcing, documentación, logística internacional y entrega en destino.
+        </p>
+      </div>
+
+      <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <article class="service-card reveal">
+          <div class="service-icon"><i class="fas fa-seedling"></i></div>
+          <h3 class="font-display text-xl font-bold text-title mb-2">Sourcing & Selección</h3>
+          <p class="text-title-light text-sm mb-4">Conectamos con productores certificados del sur de Chile con auditoría y control de calidad en origen.</p>
+          <a href="#contacto" class="text-secondary font-semibold text-sm hover:text-primary transition-colors">
+            Más info <i class="fas fa-arrow-right ml-1 text-xs"></i>
+          </a>
+        </article>
+
+        <article class="service-card reveal">
+          <div class="service-icon"><i class="fas fa-file-alt"></i></div>
+          <h3 class="font-display text-xl font-bold text-title mb-2">Documentación & Aduanas</h3>
+          <p class="text-title-light text-sm mb-4">Trámites fitosanitarios, sanitarios y aduaneros Chile–México con certificados SAG y SENASICA.</p>
+          <a href="#contacto" class="text-secondary font-semibold text-sm hover:text-primary transition-colors">
+            Más info <i class="fas fa-arrow-right ml-1 text-xs"></i>
+          </a>
+        </article>
+
+        <article class="service-card reveal">
+          <div class="service-icon"><i class="fas fa-ship"></i></div>
+          <h3 class="font-display text-xl font-bold text-title mb-2">Logística Internacional</h3>
+          <p class="text-title-light text-sm mb-4">Transporte marítimo con contenedores reefer, puertos Valparaíso → Manzanillo y seguro de carga.</p>
+          <a href="#contacto" class="text-secondary font-semibold text-sm hover:text-primary transition-colors">
+            Más info <i class="fas fa-arrow-right ml-1 text-xs"></i>
+          </a>
+        </article>
+
+        <article class="service-card reveal">
+          <div class="service-icon"><i class="fas fa-thermometer-half"></i></div>
+          <h3 class="font-display text-xl font-bold text-title mb-2">Cadena de Frío</h3>
+          <p class="text-title-light text-sm mb-4">Monitoreo de temperatura de origen a destino con sensores IoT y almacenes climatizados.</p>
+          <a href="#contacto" class="text-secondary font-semibold text-sm hover:text-primary transition-colors">
+            Más info <i class="fas fa-arrow-right ml-1 text-xs"></i>
+          </a>
+        </article>
+
+        <article class="service-card reveal">
+          <div class="service-icon"><i class="fas fa-truck"></i></div>
+          <h3 class="font-display text-xl font-bold text-title mb-2">Distribución en México</h3>
+          <p class="text-title-light text-sm mb-4">Entrega en CDMX, Guadalajara, Monterrey y principales hubs con red de distribuidores locales.</p>
+          <a href="#contacto" class="text-secondary font-semibold text-sm hover:text-primary transition-colors">
+            Más info <i class="fas fa-arrow-right ml-1 text-xs"></i>
+          </a>
+        </article>
+
+        <article class="service-card border-2 border-primary/30 reveal">
+          <div class="service-icon" style="background: #587232; color: #fff;"><i class="fas fa-search-location"></i></div>
+          <h3 class="font-display text-xl font-bold text-title mb-2">Trazabilidad Total</h3>
+          <p class="text-title-light text-sm mb-4">Del campo o mar chileno hasta el punto de venta en México con reportes y certificados digitales.</p>
+          <a href="#contacto" class="text-secondary font-semibold text-sm hover:text-primary transition-colors">
+            Ver demo <i class="fas fa-arrow-right ml-1 text-xs"></i>
+          </a>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- Stats Counter Band -->
+  <section class="stats-band py-16 md:py-20">
+    <div class="max-w-7xl mx-auto px-4">
+      <div class="grid grid-cols-2 lg:grid-cols-4 gap-8 text-center text-white">
+        <div class="reveal">
+          <div class="font-display text-4xl md:text-5xl font-bold text-primary mb-2">
+            <span class="counter" data-target="3">0</span>
+          </div>
+          <div class="text-white/70 text-sm uppercase tracking-wider font-semibold">Líneas de producto</div>
+        </div>
+        <div class="reveal">
+          <div class="font-display text-4xl md:text-5xl font-bold text-primary mb-2">
+            <span class="counter" data-target="15" data-prefix="+">0</span>
+          </div>
+          <div class="text-white/70 text-sm uppercase tracking-wider font-semibold">Ciudades en México</div>
+        </div>
+        <div class="reveal">
+          <div class="font-display text-4xl md:text-5xl font-bold text-primary mb-2">
+            <span class="counter" data-target="100" data-suffix="%">0</span>
+          </div>
+          <div class="text-white/70 text-sm uppercase tracking-wider font-semibold">Trazabilidad</div>
+        </div>
+        <div class="reveal">
+          <div class="font-display text-4xl md:text-5xl font-bold text-primary mb-2">
+            <span class="counter" data-target="48" data-suffix="h">0</span>
+          </div>
+          <div class="text-white/70 text-sm uppercase tracking-wider font-semibold">Cotización rápida</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Process (#proceso) -->
+  <section id="proceso" class="py-20 md:py-28 bg-cream">
+    <div class="max-w-7xl mx-auto px-4">
+      <div class="text-center mb-16 reveal">
+        <div class="section-label justify-center mb-4">
+          <i class="fas fa-leaf"></i>
+          <span>Cómo trabajamos</span>
+        </div>
+        <h2 class="font-display text-3xl md:text-4xl lg:text-5xl font-bold text-title mb-4">
+          Del campo chileno a tu almacén
+        </h2>
+        <p class="text-title-light text-lg max-w-2xl mx-auto">
+          Un flujo transparente y trazable en cada etapa de la exportación.
+        </p>
+      </div>
+
+      <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-4">
+        <div class="process-step reveal">
+          <div class="process-number">01</div>
+          <h3 class="font-display text-lg font-bold text-title mb-2">Cotización</h3>
+          <p class="text-title-light text-sm">Definimos productos, volúmenes, calendario de cosecha y condiciones FOB/CIF a México.</p>
+        </div>
+        <div class="process-step reveal">
+          <div class="process-number">02</div>
+          <h3 class="font-display text-lg font-bold text-title mb-2">Producción</h3>
+          <p class="text-title-light text-sm">Selección en origen, control de calidad, empaque exportación y certificados.</p>
+        </div>
+        <div class="process-step reveal">
+          <div class="process-number">03</div>
+          <h3 class="font-display text-lg font-bold text-title mb-2">Embarque</h3>
+          <p class="text-title-light text-sm">Documentación aduanera, cadena de frío y seguimiento marítimo en tiempo real.</p>
+        </div>
+        <div class="process-step reveal">
+          <div class="process-number">04</div>
+          <h3 class="font-display text-lg font-bold text-title mb-2">Entrega MX</h3>
+          <p class="text-title-light text-sm">Despacho aduanal, distribución local y confirmación con trazabilidad completa.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Mexico (#mexico) -->
+  <section id="mexico" class="py-20 md:py-28 bg-white">
+    <div class="max-w-7xl mx-auto px-4">
+      <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-6 mb-12 reveal">
+        <div>
+          <div class="section-label mb-4">
+            <i class="fas fa-leaf"></i>
+            <span>Mercado destino</span>
+          </div>
+          <h2 class="font-display text-3xl md:text-4xl font-bold text-title">Exportamos a México</h2>
+          <p class="text-title-light mt-3 max-w-xl">Cobertura en los principales centros de consumo y distribución. Ruta optimizada Chile → Pacífico → México.</p>
+        </div>
+        <a href="#contacto" class="text-secondary font-bold hover:text-primary transition-colors whitespace-nowrap">
+          Ser distribuidor <i class="fas fa-arrow-right ml-2"></i>
+        </a>
+      </div>
+
+      <div class="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-6">
+        <div class="city-card reveal">
+          <div class="w-14 h-14 rounded-xl bg-secondary text-white flex items-center justify-center text-2xl mx-auto mb-4">
+            <i class="fas fa-city"></i>
+          </div>
+          <h3 class="font-display font-bold text-title">Ciudad de México</h3>
+          <p class="text-title-light text-xs mt-1">CDMX y área metropolitana</p>
+        </div>
+        <div class="city-card reveal">
+          <div class="w-14 h-14 rounded-xl bg-secondary text-white flex items-center justify-center text-2xl mx-auto mb-4">
+            <i class="fas fa-warehouse"></i>
+          </div>
+          <h3 class="font-display font-bold text-title">Guadalajara</h3>
+          <p class="text-title-light text-xs mt-1">Jalisco · occidente</p>
+        </div>
+        <div class="city-card reveal">
+          <div class="w-14 h-14 rounded-xl bg-secondary text-white flex items-center justify-center text-2xl mx-auto mb-4">
+            <i class="fas fa-industry"></i>
+          </div>
+          <h3 class="font-display font-bold text-title">Monterrey</h3>
+          <p class="text-title-light text-xs mt-1">Nuevo León · norte</p>
+        </div>
+        <div class="city-card reveal">
+          <div class="w-14 h-14 rounded-xl bg-secondary text-white flex items-center justify-center text-2xl mx-auto mb-4">
+            <i class="fas fa-anchor"></i>
+          </div>
+          <h3 class="font-display font-bold text-title">Manzanillo</h3>
+          <p class="text-title-light text-xs mt-1">Puerto de entrada principal</p>
+        </div>
+        <div class="city-card reveal">
+          <div class="w-14 h-14 rounded-xl bg-secondary text-white flex items-center justify-center text-2xl mx-auto mb-4">
+            <i class="fas fa-sun"></i>
+          </div>
+          <h3 class="font-display font-bold text-title">Cancún & Riviera</h3>
+          <p class="text-title-light text-xs mt-1">HORECA · turismo</p>
+        </div>
+        <div class="city-card reveal">
+          <div class="w-14 h-14 rounded-xl bg-secondary text-white flex items-center justify-center text-2xl mx-auto mb-4">
+            <i class="fas fa-map-marked-alt"></i>
+          </div>
+          <h3 class="font-display font-bold text-title">+15 ciudades</h3>
+          <p class="text-title-light text-xs mt-1">Red de distribución nacional</p>
+        </div>
+      </div>
+
+      <p class="text-title-light text-sm mt-10 text-center reveal">
+        Cumplimos normativa SENASICA, etiquetado NOM y requisitos aduaneros para importación de alimentos y bebidas en México.
+      </p>
+    </div>
+  </section>
+
+  <!-- CTA Banner -->
+  <section class="cta-banner py-20 md:py-28 relative">
+    <div class="relative z-10 max-w-7xl mx-auto px-4 text-center">
+      <div class="section-label justify-center text-white/80 mb-6 reveal">
+        <i class="fas fa-leaf"></i>
+        <span>Comienza hoy</span>
+      </div>
+      <h2 class="font-display text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-6 max-w-3xl mx-auto reveal">
+        ¿Importas productos chilenos en México?
+      </h2>
+      <p class="text-white/85 text-lg max-w-2xl mx-auto mb-10 reveal">
+        Cotiza frutas, mariscos o vinos con entrega garantizada. Atendemos importadores, distribuidores, HORECA y retail en todo el país.
+      </p>
+      <div class="flex flex-col sm:flex-row gap-4 justify-center reveal">
+        <a href="https://wa.me/{{ config.WHATSAPP_PHONE }}?text={{ 'Hola Patagonia Sur, quiero cotizar exportación a México.'|urlencode }}"
+           target="_blank" rel="noopener"
+           class="btn-primary px-8 py-4 rounded-full font-bold shadow-xl">
+          <i class="fab fa-whatsapp mr-2"></i>Cotizar por WhatsApp
+        </a>
+        <a href="#contacto" class="bg-white/10 backdrop-blur border border-white/30 text-white px-8 py-4 rounded-full font-semibold hover:bg-white/20 transition-all">
+          Formulario de contacto
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Contact (#contacto) -->
+  <section id="contacto" class="py-20 md:py-28 bg-cream">
+    <div class="max-w-7xl mx-auto px-4">
+      <div class="grid lg:grid-cols-2 gap-12 lg:gap-16 items-start">
+        <div class="reveal">
+          <div class="section-label mb-4">
+            <i class="fas fa-leaf"></i>
+            <span>Contacto</span>
+          </div>
+          <h2 class="font-display text-3xl md:text-4xl font-bold text-title mb-4">Hablemos de exportación</h2>
+          <p class="text-title-light text-lg mb-8">Cuéntanos qué productos necesitas importar en México. Te respondemos con catálogo, precios y calendario de embarque.</p>
+
+          <ul class="space-y-5">
+            <li class="flex items-center gap-4">
+              <div class="w-12 h-12 rounded-xl bg-white border border-secondary/15 flex items-center justify-center text-secondary">
+                <i class="fas fa-map-marker-alt"></i>
+              </div>
+              <div>
+                <div class="font-semibold text-title">Origen</div>
+                <div class="text-sm text-title-light">Sur de Chile · Patagonia</div>
+              </div>
+            </li>
+            <li class="flex items-center gap-4">
+              <div class="w-12 h-12 rounded-xl bg-white border border-secondary/15 flex items-center justify-center text-secondary">
+                <i class="fas fa-phone"></i>
+              </div>
+              <div>
+                <div class="font-semibold text-title">Teléfono / WhatsApp</div>
+                <div class="text-sm text-title-light">+{{ config.WHATSAPP_PHONE[:2] }} {{ config.WHATSAPP_PHONE[2:3] }} {{ config.WHATSAPP_PHONE[3:7] }} {{ config.WHATSAPP_PHONE[7:] }}</div>
+              </div>
+            </li>
+            <li class="flex items-center gap-4">
+              <div class="w-12 h-12 rounded-xl bg-white border border-secondary/15 flex items-center justify-center text-secondary">
+                <i class="fab fa-instagram"></i>
+              </div>
+              <div>
+                <div class="font-semibold text-title">Instagram</div>
+                <a href="https://www.instagram.com/patagoniasurspa" target="_blank" rel="noopener" class="text-sm text-secondary hover:text-primary">@patagoniasurspa</a>
+              </div>
+            </li>
+          </ul>
+
+          <div class="flex flex-wrap gap-3 mt-8">
+            <a href="https://wa.me/{{ config.WHATSAPP_PHONE }}" target="_blank" rel="noopener"
+               class="inline-flex items-center gap-2 rounded-full border-2 border-secondary/30 text-title px-5 py-2.5 font-semibold hover:bg-white transition-colors">
+              <i class="fab fa-whatsapp"></i> WhatsApp
+            </a>
+            <a href="https://www.instagram.com/patagoniasurspa" target="_blank" rel="noopener"
+               class="inline-flex items-center gap-2 rounded-full border-2 border-title/15 text-title px-5 py-2.5 font-semibold hover:bg-white transition-colors">
+              <i class="fab fa-instagram"></i> Instagram
+            </a>
+          </div>
+        </div>
+
+        <form method="POST" action="{{ url_for('main.contacto') }}"
+              class="bg-white rounded-2xl p-8 shadow-xl border border-secondary/10 reveal">
+          {{ form.hidden_tag() }}
+          <h3 class="font-display text-xl font-bold text-title mb-6">Solicita tu cotización</h3>
+          <div class="grid md:grid-cols-2 gap-4">
+            <div>
+              <label class="text-sm font-medium text-title">Nombre</label>
+              {{ form.nombre(class="mt-1 w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 focus:bg-white focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none transition-all", placeholder="Tu nombre") }}
+            </div>
+            <div>
+              <label class="text-sm font-medium text-title">Email</label>
+              {{ form.email(class="mt-1 w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 focus:bg-white focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none transition-all", placeholder="correo@empresa.cl") }}
+            </div>
+            <div>
+              <label class="text-sm font-medium text-title">Teléfono</label>
+              {{ form.telefono(class="mt-1 w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 focus:bg-white focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none transition-all", placeholder="+56 9 ....") }}
+            </div>
+            <div>
+              <label class="text-sm font-medium text-title">Empresa</label>
+              {{ form.empresa(class="mt-1 w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 focus:bg-white focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none transition-all", placeholder="Nombre de tu empresa") }}
+            </div>
+            <div class="md:col-span-2">
+              <label class="text-sm font-medium text-title">¿Cómo podemos ayudar?</label>
+              {{ form.mensaje(class="mt-1 w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 focus:bg-white focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none transition-all resize-none", rows="5", placeholder="Productos de interés, volúmenes estimados, ciudad de destino en México...") }}
+            </div>
+          </div>
+          <button type="submit" class="mt-6 w-full btn-primary px-6 py-3.5 rounded-xl font-bold shadow-lg shadow-primary/25">
+            <i class="fas fa-paper-plane mr-2"></i>Enviar solicitud
+          </button>
+          <p class="mt-3 text-xs text-title-light text-center">Al enviar aceptas nuestra política de privacidad.</p>
+        </form>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="bg-forest-900 text-white/70">
+    <div class="max-w-7xl mx-auto px-4 py-14 grid sm:grid-cols-2 lg:grid-cols-4 gap-10">
+      <div>
+        <div class="flex items-center gap-3 mb-4">
+          <div class="w-10 h-10 rounded-lg bg-secondary flex items-center justify-center text-white font-display font-bold">PS</div>
+          <span class="font-display text-lg font-bold text-white">{{ config.STORE_NAME or 'Patagonia Sur SpA' }}</span>
+        </div>
+        <p class="text-sm leading-relaxed">Exportación de frutas, productos del mar y vinos de Chile hacia México. Calidad patagónica con trazabilidad total.</p>
+      </div>
+      <div>
+        <h4 class="font-display font-bold text-white mb-4">Productos</h4>
+        <ul class="space-y-2 text-sm">
+          <li><a href="#productos" class="hover:text-primary transition-colors">Frutas</a></li>
+          <li><a href="#productos" class="hover:text-primary transition-colors">Productos del mar</a></li>
+          <li><a href="#productos" class="hover:text-primary transition-colors">Vinos</a></li>
+          <li><a href="#servicios" class="hover:text-primary transition-colors">Logística & exportación</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4 class="font-display font-bold text-white mb-4">Empresa</h4>
+        <ul class="space-y-2 text-sm">
+          <li><a href="#nosotros" class="hover:text-primary transition-colors">Nosotros</a></li>
+          <li><a href="#mexico" class="hover:text-primary transition-colors">Mercado México</a></li>
+          <li><a href="#proceso" class="hover:text-primary transition-colors">Proceso</a></li>
+          <li><a href="#contacto" class="hover:text-primary transition-colors">Contacto</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4 class="font-display font-bold text-white mb-4">Contacto</h4>
+        <ul class="space-y-2 text-sm">
+          <li><i class="fab fa-whatsapp mr-2 text-primary"></i><a href="https://wa.me/{{ config.WHATSAPP_PHONE }}" class="hover:text-primary">+{{ config.WHATSAPP_PHONE }}</a></li>
+          <li><i class="fab fa-instagram mr-2 text-primary"></i><a href="https://www.instagram.com/patagoniasurspa" class="hover:text-primary">@patagoniasurspa</a></li>
+          <li><i class="fas fa-envelope mr-2 text-primary"></i>{{ config.CONTACT_EMAIL or 'contacto@patagoniasur.cl' }}</li>
+          <li><i class="fas fa-map-marker-alt mr-2 text-primary"></i>Chile → México</li>
+        </ul>
+      </div>
+    </div>
+    <div class="border-t border-white/10 text-center text-sm py-6 text-white/50">
+      © {{ config.STORE_NAME or 'Patagonia Sur SpA' }} · Exportación Chile–México
+    </div>
+  </footer>
+
+  <script>
+    // Mobile off-canvas drawer
+    const menuBtn = document.getElementById('menuBtn');
+    const closeDrawer = document.getElementById('closeDrawer');
+    const mobileDrawer = document.getElementById('mobileDrawer');
+    const drawerOverlay = document.getElementById('drawerOverlay');
+
+    function openDrawer() {
+      mobileDrawer.classList.add('open');
+      drawerOverlay.classList.add('open');
+      document.body.style.overflow = 'hidden';
+    }
+    function closeDrawerFn() {
+      mobileDrawer.classList.remove('open');
+      drawerOverlay.classList.remove('open');
+      document.body.style.overflow = '';
+    }
+
+    menuBtn?.addEventListener('click', openDrawer);
+    closeDrawer?.addEventListener('click', closeDrawerFn);
+    drawerOverlay?.addEventListener('click', closeDrawerFn);
+    document.querySelectorAll('.drawer-link').forEach(link => {
+      link.addEventListener('click', closeDrawerFn);
+    });
+
+    // Header shadow on scroll
+    const mainHeader = document.getElementById('mainHeader');
+    window.addEventListener('scroll', () => {
+      if (window.scrollY > 10) mainHeader.classList.add('scrolled');
+      else mainHeader.classList.remove('scrolled');
+    }, { passive: true });
+
+    // Counter animation
+    (function () {
+      const easeOut = t => 1 - Math.pow(1 - t, 3);
+      function animateCounter(el) {
+        const target = parseFloat(el.dataset.target || '0');
+        const decimals = parseInt(el.dataset.decimals || '0', 10);
+        const prefix = el.dataset.prefix || '';
+        const suffix = el.dataset.suffix || '';
+        const duration = 1400;
+        let start = null;
+        function step(ts) {
+          if (!start) start = ts;
+          const p = Math.min((ts - start) / duration, 1);
+          el.textContent = prefix + (easeOut(p) * target).toFixed(decimals) + suffix;
+          if (p < 1) requestAnimationFrame(step);
+        }
+        requestAnimationFrame(step);
+      }
+      const counters = document.querySelectorAll('.counter');
+      if (counters.length) {
+        const obs = new IntersectionObserver((entries, io) => {
+          entries.forEach(e => {
+            if (e.isIntersecting) { animateCounter(e.target); io.unobserve(e.target); }
+          });
+        }, { threshold: 0.25 });
+        counters.forEach(c => obs.observe(c));
+      }
+    })();
+
+    // Scroll reveal
+    (function () {
+      const items = document.querySelectorAll('.reveal');
+      if (!items.length) return;
+      const obs = new IntersectionObserver((entries) => {
+        entries.forEach((e, i) => {
+          if (e.isIntersecting) {
+            setTimeout(() => e.target.classList.add('in-view'), i * 80);
+            obs.unobserve(e.target);
+          }
+        });
+      }, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
+      items.forEach(el => obs.observe(el));
+    })();
+  </script>
+</body>
+</html>

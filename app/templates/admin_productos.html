@@ -1,0 +1,47 @@
+{% extends "admin_layout.html" %}
+{% block title %}Productos{% endblock %}
+{% block topbar_title %}Catálogo de productos{% endblock %}
+{% block topbar_subtitle %}Líneas de exportación: frutas, mariscos, vinos{% endblock %}
+{% block topbar_actions %}
+  <a href="{{ url_for('admin.producto_nuevo') }}" class="btn-top accent"><i class="fas fa-plus"></i> Nuevo producto</a>
+{% endblock %}
+
+{% block content %}
+<div class="panel">
+  <div class="panel-header">
+    <h3><i class="fas fa-boxes-stacked" style="color:var(--accent);margin-right:.5rem;"></i>{{ productos|length }} productos</h3>
+  </div>
+  {% if productos %}
+  <table class="data-table">
+    <thead>
+      <tr><th>Producto</th><th>Categoría</th><th>Clientes</th><th>Abonos</th><th>Estado</th><th>Orden</th><th></th></tr>
+    </thead>
+    <tbody>
+      {% for p in productos %}
+      <tr>
+        <td><strong>{{ p.nombre }}</strong>{% if p.descripcion %}<div style="font-size:.75rem;color:var(--gray);max-width:280px;">{{ p.descripcion[:80] }}{% if p.descripcion|length > 80 %}…{% endif %}</div>{% endif %}</td>
+        <td><span class="badge" style="background:var(--accent-light);color:var(--accent-dark);">{{ producto_categorias.get(p.categoria, p.categoria) }}</span></td>
+        <td>{{ p.clientes|length }}</td>
+        <td>{{ p.abonos|length }}</td>
+        <td>{% if p.activo %}<span style="color:var(--green-ok);font-weight:600;">Activo</span>{% else %}<span style="color:var(--gray);">Inactivo</span>{% endif %}</td>
+        <td>{{ p.orden }}</td>
+        <td>
+          <div style="display:flex;gap:.4rem;">
+            <a href="{{ url_for('admin.producto_editar', id=p.id) }}" class="btn-icon" title="Editar"><i class="fas fa-pen"></i></a>
+            <form method="POST" action="{{ url_for('admin.producto_toggle', id=p.id) }}">
+              <button type="submit" class="btn-icon" title="Activar/Desactivar"><i class="fas fa-power-off"></i></button>
+            </form>
+          </div>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <div class="empty-state">
+    <i class="fas fa-box"></i>
+    <p>No hay productos. <a href="{{ url_for('admin.producto_nuevo') }}">Crear el primero</a></p>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

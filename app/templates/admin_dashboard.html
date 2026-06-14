@@ -1,0 +1,191 @@
+{% extends "admin_layout.html" %}
+{% block title %}Resumen{% endblock %}
+{% block topbar_title %}Resumen ejecutivo{% endblock %}
+{% block topbar_subtitle %}KPIs de clientes, abonos y operaciones{% endblock %}
+{% block topbar_actions %}
+  <a href="{{ url_for('admin.embarque_nuevo') }}" class="btn-top accent"><i class="fas fa-ship"></i> Nuevo embarque</a>
+  <a href="{{ url_for('admin.pedido_nueva') }}" class="btn-top" style="background:var(--orange);color:#fff;"><i class="fas fa-cart-shopping"></i> Nuevo pedido</a>
+  <a href="{{ url_for('admin.mensajes') }}" class="btn-top ghost"><i class="fas fa-inbox"></i> Mensajes{% if kpis.mensajes_pendientes %} ({{ kpis.mensajes_pendientes }}){% endif %}</a>
+{% endblock %}
+
+{% block content %}
+<div class="pipeline-bar">
+  <div class="pipeline-step"><i class="fas fa-inbox"></i><span>Mensaje</span></div>
+  <i class="fas fa-chevron-right pipeline-arrow"></i>
+  <div class="pipeline-step"><i class="fas fa-users"></i><span>Cliente</span></div>
+  <i class="fas fa-chevron-right pipeline-arrow"></i>
+  <div class="pipeline-step"><i class="fas fa-file-invoice-dollar"></i><span>Cotización</span></div>
+  <i class="fas fa-chevron-right pipeline-arrow"></i>
+  <div class="pipeline-step"><i class="fas fa-cart-shopping"></i><span>Pedido</span></div>
+  <i class="fas fa-chevron-right pipeline-arrow"></i>
+  <div class="pipeline-step active"><i class="fas fa-ship"></i><span>Embarque</span></div>
+</div>
+
+<div class="kpi-grid">
+  <div class="kpi-card green">
+    <div class="kpi-icon"><i class="fas fa-users"></i></div>
+    <div class="kpi-label">Clientes registrados</div>
+    <div class="kpi-value">{{ kpis.total_clientes }}</div>
+    <div class="kpi-sub">{{ kpis.clientes_con_abono }} con abono</div>
+  </div>
+  <div class="kpi-card blue">
+    <div class="kpi-icon"><i class="fas fa-hand-holding-dollar"></i></div>
+    <div class="kpi-label">Abonos acumulados (USD)</div>
+    <div class="kpi-value">${{ "{:,.0f}".format(kpis.total_abonos_usd) }}</div>
+    <div class="kpi-sub">{{ kpis.abonos_mes }} abonos este mes · ${{ "{:,.0f}".format(kpis.monto_mes_usd) }}</div>
+  </div>
+  <div class="kpi-card orange">
+    <div class="kpi-icon"><i class="fas fa-envelope"></i></div>
+    <div class="kpi-label">Consultas web</div>
+    <div class="kpi-value">{{ kpis.mensajes_pendientes }}</div>
+    <div class="kpi-sub">pendientes · {{ kpis.mensajes_mes }} este mes</div>
+  </div>
+  <div class="kpi-card dark">
+    <div class="kpi-icon"><i class="fas fa-ship"></i></div>
+    <div class="kpi-label">Embarques activos</div>
+    <div class="kpi-value">{{ kpis.embarques_activos }}</div>
+    <div class="kpi-sub">{{ kpis.embarques_en_transito }} en tránsito · {{ kpis.pedidos_activos }} pedidos</div>
+  </div>
+</div>
+
+<div class="grid-2">
+  <div class="panel">
+    <div class="panel-header"><h3><i class="fas fa-layer-group" style="color:var(--accent);margin-right:.4rem;"></i>Clientes por clasificación</h3></div>
+    <div class="chart-bars">
+      {% set max_estado = kpis.por_estado.values()|max if kpis.por_estado.values()|max > 0 else 1 %}
+      {% for key, label in kpis.estados_labels.items() %}
+      {% set n = kpis.por_estado.get(key, 0) %}
+      <div class="bar-row">
+        <span class="bar-label">{{ label }}</span>
+        <div class="bar-track"><div class="bar-fill" style="width:{{ (n / max_estado * 100)|int }}%;background:{{ estado_colors.get(key, 'var(--accent)') }};"></div></div>
+        <span class="bar-num">{{ n }}</span>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-header"><h3><i class="fas fa-chart-bar" style="color:var(--accent);margin-right:.4rem;"></i>Interés por producto</h3></div>
+    <div class="chart-bars">
+      {% if kpis.por_producto %}
+        {% set max_prod = kpis.por_producto|map(attribute='1')|max %}
+        {% for nombre, count in kpis.por_producto %}
+        <div class="bar-row">
+          <span class="bar-label">{{ nombre }}</span>
+          <div class="bar-track"><div class="bar-fill" style="width:{{ (count / max_prod * 100)|int }}%;"></div></div>
+          <span class="bar-num">{{ count }}</span>
+        </div>
+        {% endfor %}
+      {% else %}
+        <p style="padding:1rem;color:var(--gray);font-size:.85rem;">Aún no hay clientes asignados a productos.</p>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<div class="grid-2">
+  <div class="panel">
+    <div class="panel-header">
+      <h3>Últimos clientes</h3>
+      <a href="{{ url_for('admin.clientes') }}" class="btn btn-ghost" style="padding:.45rem .9rem;font-size:.75rem;">Ver todos</a>
+    </div>
+    {% if kpis.clientes_recientes %}
+    <table class="data-table">
+      <thead><tr><th>Cliente</th><th>Estado</th><th>Producto</th></tr></thead>
+      <tbody>
+        {% for c in kpis.clientes_recientes %}
+        <tr>
+          <td><a href="{{ url_for('admin.cartera_detalle', id=c.id) }}" class="link-row">{{ c.nombre }}</a></td>
+          <td><span class="badge" style="background:{{ estado_colors.get(c.estado, '#eee') }}22;color:{{ estado_colors.get(c.estado, '#666') }};">{{ cliente_estados.get(c.estado, c.estado) }}</span></td>
+          <td style="color:var(--gray);font-size:.8rem;">{{ c.producto.nombre if c.producto else '—' }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <div class="empty-state" style="padding:2rem;"><p>Sin clientes registrados.</p></div>
+    {% endif %}
+  </div>
+
+  <div class="panel">
+    <div class="panel-header"><h3>Últimos abonos</h3></div>
+    {% if kpis.abonos_recientes %}
+    <table class="data-table">
+      <thead><tr><th>Cliente</th><th>Monto</th><th>Producto</th></tr></thead>
+      <tbody>
+        {% for a in kpis.abonos_recientes %}
+        <tr>
+          <td><a href="{{ url_for('admin.cartera_detalle', id=a.folder_id) }}" class="link-row">{{ a.folder.nombre }}</a></td>
+          <td style="font-weight:700;">{{ "{:,.0f}".format(a.monto) }} {{ a.moneda }}</td>
+          <td style="color:var(--gray);font-size:.8rem;">{{ a.producto.nombre if a.producto else 'General' }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <div class="empty-state" style="padding:2rem;"><p>Sin abonos registrados.</p></div>
+    {% endif %}
+  </div>
+</div>
+
+<div class="panel" style="margin-top:1.25rem;">
+  <div class="panel-header">
+    <h3><i class="fas fa-cart-shopping" style="color:var(--accent);margin-right:.4rem;"></i>Últimos pedidos</h3>
+    <a href="{{ url_for('admin.pedidos') }}" class="btn btn-ghost" style="padding:.45rem .9rem;font-size:.75rem;">Ver todos</a>
+  </div>
+  {% if kpis.pedidos_recientes %}
+  <table class="data-table">
+    <thead><tr><th>Nº</th><th>Cliente</th><th>Estado</th><th>Total</th><th>Fecha</th></tr></thead>
+    <tbody>
+      {% for p in kpis.pedidos_recientes %}
+      <tr>
+        <td><a href="{{ url_for('admin.pedido_detalle', id=p.id) }}" class="link-row">{{ p.numero }}</a></td>
+        <td>{{ p.cliente_nombre }}</td>
+        <td>
+          <span class="estado-badge" style="background:{{ pedido_estado_colors.get(p.estado, '#eee') }}18;color:{{ pedido_estado_colors.get(p.estado, '#666') }};">
+            <i class="fas {{ pedido_estado_icons.get(p.estado, 'fa-circle') }}"></i>
+            {{ pedido_estados.get(p.estado, p.estado) }}
+          </span>
+        </td>
+        <td style="font-weight:700;">{{ "{:,.2f}".format(p.total) }} {{ p.moneda }}</td>
+        <td style="font-size:.85rem;">{{ p.fecha_pedido.strftime("%d/%m/%Y") }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <div class="empty-state" style="padding:2rem;"><p>Sin pedidos registrados.</p></div>
+  {% endif %}
+</div>
+
+<div class="panel" style="margin-top:1.25rem;">
+  <div class="panel-header">
+    <h3><i class="fas fa-ship" style="color:var(--accent);margin-right:.4rem;"></i>Últimos embarques</h3>
+    <a href="{{ url_for('admin.embarques') }}" class="btn btn-ghost" style="padding:.45rem .9rem;font-size:.75rem;">Ver todos</a>
+  </div>
+  {% if kpis.embarques_recientes %}
+  <table class="data-table">
+    <thead><tr><th></th><th>Nº</th><th>Cliente</th><th>Ruta</th><th>Estado</th><th>ETA</th></tr></thead>
+    <tbody>
+      {% for e in kpis.embarques_recientes %}
+      <tr>
+        <td style="color:{{ embarque_estado_colors.get(e.estado, '#666') }};"><i class="fas {{ embarque_estado_icons.get(e.estado, 'fa-ship') }}"></i></td>
+        <td><a href="{{ url_for('admin.embarque_detalle', id=e.id) }}" class="link-row">{{ e.numero }}</a></td>
+        <td>{{ e.cliente_nombre }}</td>
+        <td style="font-size:.8rem;">{{ e.puerto_origen or '—' }} → {{ e.puerto_destino or '—' }}</td>
+        <td>
+          <span class="estado-badge" style="background:{{ embarque_estado_colors.get(e.estado, '#eee') }}18;color:{{ embarque_estado_colors.get(e.estado, '#666') }};">
+            <i class="fas {{ embarque_estado_icons.get(e.estado) }}"></i>
+            {{ embarque_estados.get(e.estado, e.estado) }}
+          </span>
+        </td>
+        <td style="font-size:.85rem;">{{ e.eta.strftime("%d/%m/%Y") if e.eta else '—' }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <div class="empty-state" style="padding:2rem;"><p>Sin embarques registrados. <a href="{{ url_for('admin.embarque_nuevo') }}">Crear el primero</a></p></div>
+  {% endif %}
+</div>
+{% endblock %}
