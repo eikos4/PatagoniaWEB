@@ -476,7 +476,7 @@
       .btn-m.blue { background: #eff6ff; border-color: #93c5fd; color: #1d4ed8; }
       .btn-m.red { color: var(--red); border-color: #fecdd3; flex: 0; min-width: 44px; }
     }
-  </style>
+</style>
 </head>
 <body>
 
@@ -537,29 +537,29 @@
         <a href="{{ url_for('admin.logout') }}" class="btn-top primary">
           <i class="fas fa-sign-out-alt"></i> Salir
         </a>
-      </div>
-    </header>
+  </div>
+</header>
 
     <div class="content">
-      {% with messages = get_flashed_messages(with_categories=true) %}
-        {% if messages %}
-          {% for category, message in messages %}
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+        {% for category, message in messages %}
             <div class="flash-msg {{ category }}">
-              <i class="fas {% if category == 'success' %}fa-circle-check{% elif category in ['error','danger'] %}fa-circle-exclamation{% else %}fa-circle-info{% endif %}"></i>
+            <i class="fas {% if category == 'success' %}fa-circle-check{% elif category in ['error','danger'] %}fa-circle-exclamation{% else %}fa-circle-info{% endif %}"></i>
               {{ message }}
-            </div>
-          {% endfor %}
-        {% endif %}
-      {% endwith %}
+          </div>
+        {% endfor %}
+    {% endif %}
+  {% endwith %}
 
       <!-- Bento stats -->
       <div class="bento anim">
         <div class="bento-card bento-hero anim anim-d1">
-          <div>
+    <div>
             <p class="label">Requieren atención</p>
             <div class="big-num">{{ pendientes }}<span>{% if pendientes == 1 %} msg{% else %} msgs{% endif %}</span></div>
             <p class="desc">Solicitudes pendientes de revisión desde el formulario de contacto.</p>
-          </div>
+      </div>
           {% if pendientes > 0 %}
           <div class="pulse-dot"><span class="dot"></span> Activas ahora</div>
           {% endif %}
@@ -576,7 +576,7 @@
           <div class="stat-top">
             <span class="stat-label">Procesados</span>
             <div class="stat-icon"><i class="fas fa-check-double"></i></div>
-          </div>
+      </div>
           <div class="stat-num">{{ leidos }}</div>
           <div class="stat-bar"><div class="stat-bar-fill" style="width:{{ pct_read }}%"></div></div>
         </div>
@@ -590,13 +590,13 @@
             <i class="fas fa-search"></i>
             <input type="text" id="searchInput" placeholder="Buscar contacto, empresa o mensaje...">
             <kbd>/</kbd>
-          </div>
+    </div>
           <div class="segmented" id="filterBtns">
             <button class="active" data-filter="all">Todos</button>
             <button data-filter="pending">Pendientes</button>
             <button data-filter="read">Leídos</button>
-          </div>
-        </div>
+    </div>
+  </div>
 
         <!-- Desktop list -->
         <ul class="msg-list msg-list-desktop" id="msgList">
@@ -614,9 +614,9 @@
                 <a href="mailto:{{ m.email }}"><i class="fas fa-envelope"></i> {{ m.email }}</a>
                 {% if m.telefono %}<span><i class="fas fa-phone"></i> {{ m.telefono }}</span>{% endif %}
                 {% if m.empresa %}<span><i class="fas fa-building"></i> {{ m.empresa }}</span>{% endif %}
-              </div>
+                </div>
               <p class="msg-text" title="{{ m.mensaje }}">{{ m.mensaje }}</p>
-            </div>
+                </div>
             <div class="msg-side">
               <div class="msg-date">
                 <strong>{{ m.fecha.strftime("%d %b") }}</strong>
@@ -629,20 +629,20 @@
               {% endif %}
             </div>
             <div class="msg-actions">
-              <form method="POST" action="{{ url_for('admin.toggle_mensaje', id=m.id) }}">
+                <form method="POST" action="{{ url_for('admin.toggle_mensaje', id=m.id) }}">
                 <button type="submit" class="btn-icon" title="{% if m.leido %}Marcar pendiente{% else %}Marcar leído{% endif %}">
                   <i class="fas {% if m.leido %}fa-envelope{% else %}fa-envelope-open{% endif %}"></i>
-                </button>
-              </form>
+                  </button>
+                </form>
               <a href="mailto:{{ m.email }}?subject=Re: Cotización Patagonia Sur" class="btn-icon reply" title="Responder">
                 <i class="fas fa-reply"></i>
               </a>
               <form method="POST" action="{{ url_for('admin.delete_mensaje', id=m.id) }}" onsubmit="return confirm('¿Eliminar este mensaje?');">
                 <button type="submit" class="btn-icon delete" title="Eliminar">
                   <i class="fas fa-trash-alt"></i>
-                </button>
-              </form>
-            </div>
+                  </button>
+                </form>
+              </div>
           </li>
           {% else %}
           <li>
@@ -650,55 +650,55 @@
               <div class="empty-icon"><i class="fas fa-inbox"></i></div>
               <h3>Sin mensajes aún</h3>
               <p>Las cotizaciones del sitio aparecerán aquí automáticamente.</p>
-            </div>
+                </div>
           </li>
           {% endfor %}
         </ul>
 
         <!-- Mobile cards -->
         <div class="cards-mobile" id="msgCards">
-          {% for m in mensajes %}
+    {% for m in mensajes %}
           <div class="m-card {% if not m.leido %}unread{% endif %}"
-               data-status="{{ 'read' if m.leido else 'pending' }}"
+         data-status="{{ 'read' if m.leido else 'pending' }}"
                data-search="{{ (m.nombre ~ ' ' ~ m.email ~ ' ' ~ (m.empresa or '') ~ ' ' ~ m.mensaje)|lower }}">
             <div style="display:flex;gap:.75rem;align-items:center;margin-bottom:.75rem;">
               <div class="avatar" style="width:40px;height:40px;font-size:.85rem;">{{ m.nombre[0]|upper if m.nombre else '?' }}</div>
               <div style="flex:1;">
                 <div style="font-weight:700;">{{ m.nombre }} <span style="color:#9ca3af;font-size:.7rem;">#{{ m.id }}</span></div>
                 <div style="font-size:.75rem;color:#9ca3af;">{{ m.fecha.strftime("%d/%m/%Y %H:%M") }}</div>
-              </div>
-              {% if m.leido %}
+        </div>
+        {% if m.leido %}
                 <span class="status-pill read"><span class="dot-sm"></span></span>
-              {% else %}
+        {% else %}
                 <span class="status-pill pending"><span class="dot-sm"></span></span>
-              {% endif %}
-            </div>
+        {% endif %}
+      </div>
             <div class="msg-meta" style="margin-bottom:.5rem;">
               <a href="mailto:{{ m.email }}">{{ m.email }}</a>
               {% if m.empresa %} · {{ m.empresa }}{% endif %}
-            </div>
+      </div>
             <p class="msg-text" style="-webkit-line-clamp:4;">{{ m.mensaje }}</p>
             <div class="m-card-actions">
               <form method="POST" action="{{ url_for('admin.toggle_mensaje', id=m.id) }}">
                 <button type="submit" class="btn-m green">
-                  <i class="fas {% if m.leido %}fa-envelope{% else %}fa-envelope-open{% endif %}"></i>
+            <i class="fas {% if m.leido %}fa-envelope{% else %}fa-envelope-open{% endif %}"></i>
                   {% if m.leido %}Pendiente{% else %}Leído{% endif %}
-                </button>
-              </form>
+          </button>
+        </form>
               <a href="mailto:{{ m.email }}" class="btn-m blue"><i class="fas fa-reply"></i> Responder</a>
-              <form method="POST" action="{{ url_for('admin.delete_mensaje', id=m.id) }}" onsubmit="return confirm('¿Eliminar?');">
+        <form method="POST" action="{{ url_for('admin.delete_mensaje', id=m.id) }}" onsubmit="return confirm('¿Eliminar?');">
                 <button type="submit" class="btn-m red"><i class="fas fa-trash-alt"></i></button>
-              </form>
-            </div>
-          </div>
-          {% else %}
+        </form>
+      </div>
+    </div>
+    {% else %}
           <div class="empty-state">
             <div class="empty-icon"><i class="fas fa-inbox"></i></div>
             <h3>Sin mensajes aún</h3>
             <p>Las cotizaciones del sitio aparecerán aquí.</p>
-          </div>
-          {% endfor %}
-        </div>
+    </div>
+    {% endfor %}
+  </div>
 
         <p class="no-results" id="noResults">
           <i class="fas fa-search" style="font-size:1.5rem;display:block;margin-bottom:.5rem;opacity:.4;"></i>
@@ -708,30 +708,30 @@
     </div>
   </div>
 
-  <script>
+<script>
     (function () {
-      const input = document.getElementById('searchInput');
+    const input = document.getElementById('searchInput');
       const btns = document.querySelectorAll('.segmented button');
       const items = document.querySelectorAll('[data-search]');
       const noResults = document.getElementById('noResults');
-      let currentFilter = 'all';
+    let currentFilter = 'all';
 
       function applyFilters() {
-        const q = (input?.value || '').toLowerCase().trim();
-        let visible = 0;
+      const q = (input?.value || '').toLowerCase().trim();
+      let visible = 0;
         items.forEach(el => {
           const matchSearch = !q || el.dataset.search.includes(q);
           const matchFilter = currentFilter === 'all' || el.dataset.status === currentFilter;
-          const show = matchSearch && matchFilter;
+        const show = matchSearch && matchFilter;
           el.dataset.hidden = show ? 'false' : 'true';
-          if (show) visible++;
-        });
+        if (show) visible++;
+      });
         if (noResults) noResults.classList.toggle('show', visible === 0 && items.length > 0);
-      }
+    }
 
-      input?.addEventListener('input', applyFilters);
-      btns.forEach(b => b.addEventListener('click', () => {
-        currentFilter = b.dataset.filter;
+    input?.addEventListener('input', applyFilters);
+    btns.forEach(b => b.addEventListener('click', () => {
+      currentFilter = b.dataset.filter;
         btns.forEach(x => x.classList.remove('active'));
         b.classList.add('active');
         applyFilters();
@@ -758,7 +758,7 @@
         sidebar.classList.remove('open');
         overlay.classList.remove('show');
       });
-    })();
-  </script>
+  })();
+</script>
 </body>
 </html>

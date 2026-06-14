@@ -1,85 +1,73 @@
-{% extends "admin_layout.html" %}
+{% extends "admin_layout_tw.html" %}
+{% from "admin_macros_tw.html" import tw_input, cliente_avatar %}
 {% block title %}{% if editing %}Editar cliente{% else %}Nuevo cliente{% endif %}{% endblock %}
 {% block topbar_title %}{% if editing %}Editar cliente{% else %}Registrar cliente{% endif %}{% endblock %}
 {% block topbar_subtitle %}Datos comerciales, clasificación y producto de interés{% endblock %}
 {% block topbar_actions %}
-  <a href="{{ url_for('admin.clientes') }}" class="btn-top ghost"><i class="fas fa-arrow-left"></i> Volver</a>
+  <a href="{{ url_for('admin.clientes') }}" class="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-gray-200 bg-white text-sm font-semibold hover:border-patagonia hover:text-patagonia transition-colors">
+    <i class="fas fa-arrow-left text-xs"></i> Volver
+  </a>
 {% endblock %}
 
 {% block content %}
-<div class="panel">
-  <div class="panel-header">
-    <h3><i class="fas fa-address-card" style="color:var(--accent);margin-right:.5rem;"></i>Ficha del cliente</h3>
+<div class="max-w-3xl">
+  <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+    <div class="px-6 py-5 border-b border-gray-100 bg-gradient-to-r from-cream to-white flex items-center gap-4">
+      {% if editing and carpeta %}
+      {{ cliente_avatar(carpeta.nombre, 'md') }}
+      <div>
+        <h2 class="font-bold text-ink">{{ carpeta.nombre }}</h2>
+        <p class="text-xs text-ink-muted">Editar ficha comercial</p>
+      </div>
+      {% else %}
+      <span class="w-11 h-11 rounded-xl bg-sunset/10 text-sunset flex items-center justify-center text-lg"><i class="fas fa-user-plus"></i></span>
+      <div>
+        <h2 class="font-bold text-ink">Nuevo cliente</h2>
+        <p class="text-xs text-ink-muted">Registro en cartera comercial</p>
+      </div>
+      {% endif %}
+    </div>
+
+    <form method="POST" novalidate class="p-6">
+      {{ form.hidden_tag() }}
+
+      <p class="text-[11px] font-bold uppercase tracking-widest text-ink-muted mb-4 flex items-center gap-2">
+        <i class="fas fa-id-card text-patagonia"></i> Identificación
+      </p>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-5 mb-8">
+        {{ tw_input('Nombre del cliente', form.nombre, 'fa-user', full=true) }}
+        {{ tw_input('Empresa', form.empresa, 'fa-building') }}
+        {{ tw_input('Contacto', form.contacto, 'fa-address-card') }}
+        {{ tw_input('Email', form.email, 'fa-envelope') }}
+        {{ tw_input('Teléfono', form.telefono, 'fa-phone') }}
+        {{ tw_input('País', form.pais, 'fa-globe-americas') }}
+        {{ tw_input('Ciudad', form.ciudad, 'fa-city') }}
+        {{ tw_input('Tipo de cliente', form.tipo_cliente, 'fa-tags') }}
+      </div>
+
+      <p class="text-[11px] font-bold uppercase tracking-widest text-ink-muted mb-4 flex items-center gap-2">
+        <i class="fas fa-chart-line text-patagonia"></i> Comercial
+      </p>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-5 mb-8">
+        {{ tw_input('Clasificación', form.estado, 'fa-tag') }}
+        {{ tw_input('Producto de interés', form.producto_id, 'fa-seedling') }}
+        {{ tw_input('Ejecutivo asignado', form.ejecutivo_id, 'fa-user-tie') }}
+        {{ tw_input('Valor estimado', form.valor_estimado, 'fa-dollar-sign') }}
+        {{ tw_input('Moneda', form.moneda_estimada, 'fa-coins') }}
+        {{ tw_input('Condiciones comerciales', form.condiciones_comerciales, 'fa-handshake', full=true, rows=3) }}
+        {{ tw_input('Notas internas', form.notas, 'fa-note-sticky', full=true) }}
+      </div>
+
+      <div class="flex flex-wrap items-center gap-3 pt-6 border-t border-gray-100">
+        <button type="submit" class="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-patagonia text-white text-sm font-bold hover:bg-patagonia-dark shadow-lg shadow-patagonia/20 transition-all">
+          <i class="fas fa-save"></i> {% if editing %}Guardar cambios{% else %}Crear cliente{% endif %}
+        </button>
+        <a href="{% if editing %}{{ url_for('admin.cartera_detalle', id=carpeta.id) }}{% else %}{{ url_for('admin.clientes') }}{% endif %}"
+           class="inline-flex items-center gap-2 px-5 py-3 rounded-xl border border-gray-200 text-sm font-semibold text-ink-muted hover:border-gray-300 transition-colors">
+          Cancelar
+        </a>
+      </div>
+    </form>
   </div>
-  <form method="POST" novalidate>
-    {{ form.hidden_tag() }}
-    <div class="form-grid">
-      <div class="form-group full">
-        <label><i class="fas fa-user"></i> {{ form.nombre.label.text }}</label>
-        {{ form.nombre(class="form-control", placeholder="Nombre comercial o razón social") }}
-        {% for e in form.nombre.errors %}<div class="form-errors">{{ e }}</div>{% endfor %}
-      </div>
-      <div class="form-group">
-        <label>{{ form.empresa.label.text }}</label>
-        {{ form.empresa(class="form-control") }}
-      </div>
-      <div class="form-group">
-        <label>{{ form.contacto.label.text }}</label>
-        {{ form.contacto(class="form-control") }}
-      </div>
-      <div class="form-group">
-        <label>{{ form.email.label.text }}</label>
-        {{ form.email(class="form-control") }}
-      </div>
-      <div class="form-group">
-        <label>{{ form.telefono.label.text }}</label>
-        {{ form.telefono(class="form-control") }}
-      </div>
-      <div class="form-group">
-        <label>{{ form.pais.label.text }}</label>
-        {{ form.pais(class="form-control", placeholder="México, Chile...") }}
-      </div>
-      <div class="form-group">
-        <label>{{ form.ciudad.label.text }}</label>
-        {{ form.ciudad(class="form-control") }}
-      </div>
-      <div class="form-group">
-        <label>{{ form.tipo_cliente.label.text }}</label>
-        {{ form.tipo_cliente(class="form-control") }}
-      </div>
-      <div class="form-group">
-        <label><i class="fas fa-tag"></i> {{ form.estado.label.text }}</label>
-        {{ form.estado(class="form-control") }}
-      </div>
-      <div class="form-group">
-        <label><i class="fas fa-box"></i> {{ form.producto_id.label.text }}</label>
-        {{ form.producto_id(class="form-control") }}
-      </div>
-      <div class="form-group">
-        <label><i class="fas fa-user-tie"></i> {{ form.ejecutivo_id.label.text }}</label>
-        {{ form.ejecutivo_id(class="form-control") }}
-      </div>
-      <div class="form-group">
-        <label>{{ form.valor_estimado.label.text }}</label>
-        {{ form.valor_estimado(class="form-control", placeholder="0") }}
-      </div>
-      <div class="form-group">
-        <label>{{ form.moneda_estimada.label.text }}</label>
-        {{ form.moneda_estimada(class="form-control") }}
-      </div>
-      <div class="form-group full">
-        <label>{{ form.condiciones_comerciales.label.text }}</label>
-        {{ form.condiciones_comerciales(class="form-control", rows=3, placeholder="Incoterms, plazos de pago, volúmenes mínimos...") }}
-      </div>
-      <div class="form-group full">
-        <label>{{ form.notas.label.text }}</label>
-        {{ form.notas(class="form-control", placeholder="Observaciones internas...") }}
-      </div>
-    </div>
-    <div class="form-actions">
-      <button type="submit" class="btn btn-green"><i class="fas fa-save"></i> {% if editing %}Guardar{% else %}Crear cliente{% endif %}</button>
-      <a href="{% if editing %}{{ url_for('admin.cartera_detalle', id=carpeta.id) }}{% else %}{{ url_for('admin.clientes') }}{% endif %}" class="btn btn-ghost">Cancelar</a>
-    </div>
-  </form>
 </div>
 {% endblock %}

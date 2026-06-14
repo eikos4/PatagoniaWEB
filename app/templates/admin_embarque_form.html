@@ -1,9 +1,15 @@
-{% extends "admin_layout.html" %}
+{% extends "admin_layout_tw.html" %}
+{% from "admin_macros_tw.html" import tw_input %}
 {% block title %}{% if editing %}Editar {{ emb.numero }}{% else %}Nuevo embarque{% endif %}{% endblock %}
 {% block topbar_title %}{% if editing %}Editar embarque{% else %}Nuevo embarque{% endif %}{% endblock %}
 {% block topbar_subtitle %}{% if editing %}{{ emb.numero }}{% elif pedido_id %}Desde pedido{% else %}Registra envío marítimo Chile → destino{% endif %}{% endblock %}
 {% block topbar_actions %}
-  <a href="{{ url_for('admin.embarques') }}" class="btn-top ghost"><i class="fas fa-arrow-left"></i> Volver</a>
+  <a href="{{ url_for('admin.embarques') }}" class="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-gray-200 bg-white text-sm font-semibold hover:border-patagonia hover:text-patagonia transition-colors">
+    <i class="fas fa-arrow-left text-xs"></i> Volver
+  </a>
+  <a href="{{ url_for('admin.calculadora_contenedores') }}" target="_blank" class="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-gray-200 bg-white text-sm font-semibold hover:border-patagonia hover:text-patagonia transition-colors">
+    <i class="fas fa-calculator text-xs"></i> Calculadora
+  </a>
 {% endblock %}
 
 {% block content %}
@@ -12,105 +18,62 @@
   {% if pedido_id and not editing %}<input type="hidden" name="pedido_id" value="{{ pedido_id }}">{% endif %}
 
   {% if pedido_id and not editing %}
-  <div class="alert-panel info">
-    <i class="fas fa-circle-info"></i>
-    Creando embarque desde pedido. Al guardar, el pedido se actualizará según el estado del envío.
+  <div class="mb-6 flex items-start gap-3 px-5 py-4 rounded-2xl bg-patagonia-50 border border-patagonia/20 text-sm text-ink">
+    <i class="fas fa-circle-info text-patagonia mt-0.5"></i>
+    <p>Creando embarque desde pedido. Al guardar, el pedido se actualizará según el estado del envío.</p>
   </div>
   {% endif %}
 
-  <div class="panel" style="margin-bottom:1.25rem;">
-    <div class="panel-header"><h3><i class="fas fa-cart-shopping" style="color:var(--accent);margin-right:.4rem;"></i>Pedido y responsable</h3></div>
-    <div class="form-grid" style="padding:1.25rem 1.5rem;">
-      <div class="form-group">
-        <label><i class="fas fa-link" style="color:var(--gray);margin-right:.3rem;"></i>{{ form.order_id.label.text }} *</label>
-        {{ form.order_id(class="form-control") }}
-        {% for e in form.order_id.errors %}<div class="form-errors">{{ e }}</div>{% endfor %}
-      </div>
-      <div class="form-group">
-        <label><i class="fas fa-user-tie" style="color:var(--gray);margin-right:.3rem;"></i>{{ form.responsable_id.label.text }}</label>
-        {{ form.responsable_id(class="form-control") }}
-      </div>
-      <div class="form-group">
-        <label><i class="fas fa-traffic-light" style="color:var(--gray);margin-right:.3rem;"></i>{{ form.estado.label.text }}</label>
-        {{ form.estado(class="form-control") }}
-      </div>
+  <div class="bg-white rounded-2xl border border-gray-100 shadow-sm mb-6 overflow-hidden">
+    <div class="px-6 py-4 border-b border-gray-100 bg-gradient-to-r from-cream to-white flex items-center gap-2">
+      <i class="fas fa-cart-shopping text-sunset"></i>
+      <h2 class="font-bold text-ink">Pedido y responsable</h2>
+    </div>
+    <div class="p-6 grid grid-cols-1 sm:grid-cols-3 gap-5">
+      {{ tw_input('Pedido vinculado *', form.order_id, 'fa-link') }}
+      {{ tw_input('Responsable', form.responsable_id, 'fa-user-tie') }}
+      {{ tw_input('Estado', form.estado, 'fa-traffic-light') }}
     </div>
   </div>
 
-  <div class="panel" style="margin-bottom:1.25rem;">
-    <div class="panel-header"><h3><i class="fas fa-route" style="color:var(--accent);margin-right:.4rem;"></i>Ruta y fechas</h3></div>
-    <div class="form-grid">
-      <div class="form-group">
-        <label><i class="fas fa-location-dot" style="color:var(--accent);margin-right:.3rem;"></i>{{ form.puerto_origen.label.text }}</label>
-        {{ form.puerto_origen(class="form-control") }}
-      </div>
-      <div class="form-group">
-        <label><i class="fas fa-anchor" style="color:var(--orange);margin-right:.3rem;"></i>{{ form.puerto_destino.label.text }}</label>
-        {{ form.puerto_destino(class="form-control") }}
-      </div>
-      <div class="form-group">
-        <label><i class="fas fa-plane-departure" style="color:var(--gray);margin-right:.3rem;"></i>{{ form.etd.label.text }}</label>
-        {{ form.etd(class="form-control") }}
-      </div>
-      <div class="form-group">
-        <label><i class="fas fa-plane-arrival" style="color:var(--gray);margin-right:.3rem;"></i>{{ form.eta.label.text }}</label>
-        {{ form.eta(class="form-control") }}
-      </div>
-      <div class="form-group">
-        <label><i class="fas fa-ship" style="color:var(--gray);margin-right:.3rem;"></i>{{ form.fecha_zarpe.label.text }}</label>
-        {{ form.fecha_zarpe(class="form-control") }}
-      </div>
+  <div class="bg-white rounded-2xl border border-gray-100 shadow-sm mb-6 overflow-hidden">
+    <div class="px-6 py-4 border-b border-gray-100 flex items-center gap-2">
+      <i class="fas fa-route text-patagonia"></i>
+      <h2 class="font-bold text-ink">Ruta y fechas</h2>
+    </div>
+    <div class="p-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+      {{ tw_input('Puerto origen', form.puerto_origen, 'fa-location-dot') }}
+      {{ tw_input('Puerto destino', form.puerto_destino, 'fa-anchor') }}
+      {{ tw_input('ETD', form.etd, 'fa-plane-departure') }}
+      {{ tw_input('ETA', form.eta, 'fa-plane-arrival') }}
+      {{ tw_input('Fecha zarpe', form.fecha_zarpe, 'fa-ship') }}
     </div>
   </div>
 
-  <div class="panel" style="margin-bottom:1.25rem;">
-    <div class="panel-header"><h3><i class="fas fa-container-storage" style="color:var(--accent);margin-right:.4rem;"></i>Contenedor y carga</h3></div>
-    <div class="form-grid">
-      <div class="form-group">
-        <label><i class="fas fa-building" style="color:var(--gray);margin-right:.3rem;"></i>{{ form.naviera.label.text }}</label>
-        {{ form.naviera(class="form-control", placeholder="Ej: Maersk, MSC, Hapag-Lloyd") }}
-      </div>
-      <div class="form-group">
-        <label><i class="fas fa-ticket" style="color:var(--gray);margin-right:.3rem;"></i>{{ form.numero_booking.label.text }}</label>
-        {{ form.numero_booking(class="form-control") }}
-      </div>
-      <div class="form-group">
-        <label><i class="fas fa-box" style="color:var(--gray);margin-right:.3rem;"></i>{{ form.numero_contenedor.label.text }}</label>
-        {{ form.numero_contenedor(class="form-control", placeholder="Ej: MSKU1234567") }}
-      </div>
-      <div class="form-group">
-        <label><i class="fas fa-cube" style="color:var(--gray);margin-right:.3rem;"></i>{{ form.tipo_contenedor.label.text }}</label>
-        {{ form.tipo_contenedor(class="form-control") }}
-      </div>
-      <div class="form-group">
-        <label><i class="fas fa-file-lines" style="color:var(--gray);margin-right:.3rem;"></i>{{ form.numero_bl.label.text }}</label>
-        {{ form.numero_bl(class="form-control") }}
-      </div>
-      <div class="form-group">
-        <label><i class="fas fa-snowflake" style="color:#2563eb;margin-right:.3rem;"></i>{{ form.tipo_carga.label.text }}</label>
-        {{ form.tipo_carga(class="form-control") }}
-      </div>
-      <div class="form-group">
-        <label><i class="fas fa-temperature-low" style="color:#2563eb;margin-right:.3rem;"></i>{{ form.temperatura.label.text }}</label>
-        {{ form.temperatura(class="form-control") }}
-      </div>
-      <div class="form-group">
-        <label><i class="fas fa-truck" style="color:var(--gray);margin-right:.3rem;"></i>{{ form.transporte_terrestre.label.text }}</label>
-        {{ form.transporte_terrestre(class="form-control", placeholder="Transportista / patente") }}
-      </div>
-      <div class="form-group">
-        <label><i class="fas fa-passport" style="color:var(--gray);margin-right:.3rem;"></i>{{ form.agente_aduana.label.text }}</label>
-        {{ form.agente_aduana(class="form-control") }}
-      </div>
-      <div class="form-group full">
-        <label><i class="fas fa-note-sticky" style="color:var(--gray);margin-right:.3rem;"></i>{{ form.notas.label.text }}</label>
-        {{ form.notas(class="form-control", rows=3) }}
-      </div>
+  <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+    <div class="px-6 py-4 border-b border-gray-100 flex items-center gap-2">
+      <i class="fas fa-container-storage text-patagonia"></i>
+      <h2 class="font-bold text-ink">Contenedor y carga</h2>
     </div>
-    <div class="form-actions">
-      <button type="submit" class="btn btn-green"><i class="fas fa-ship"></i> {% if editing %}Guardar cambios{% else %}Crear embarque{% endif %}</button>
-      <a href="{{ url_for('admin.embarques') }}" class="btn btn-ghost">Cancelar</a>
-      <a href="{{ url_for('admin.calculadora_contenedores') }}" class="btn btn-ghost" target="_blank"><i class="fas fa-calculator"></i> Calculadora</a>
+    <div class="p-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+      {{ tw_input('Naviera', form.naviera, 'fa-building') }}
+      {{ tw_input('Nº booking', form.numero_booking, 'fa-ticket') }}
+      {{ tw_input('Nº contenedor', form.numero_contenedor, 'fa-box') }}
+      {{ tw_input('Tipo contenedor', form.tipo_contenedor, 'fa-cube') }}
+      {{ tw_input('Nº BL', form.numero_bl, 'fa-file-lines') }}
+      {{ tw_input('Tipo carga', form.tipo_carga, 'fa-snowflake') }}
+      {{ tw_input('Temperatura', form.temperatura, 'fa-temperature-low') }}
+      {{ tw_input('Transporte terrestre', form.transporte_terrestre, 'fa-truck') }}
+      {{ tw_input('Agente aduana', form.agente_aduana, 'fa-passport') }}
+      {{ tw_input('Notas', form.notas, 'fa-note-sticky', full=true, rows=3) }}
+    </div>
+    <div class="px-6 py-5 border-t border-gray-100 flex flex-wrap items-center gap-3">
+      <button type="submit" class="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-patagonia text-white text-sm font-bold hover:bg-patagonia-dark shadow-lg shadow-patagonia/20 transition-all">
+        <i class="fas fa-ship"></i> {% if editing %}Guardar cambios{% else %}Crear embarque{% endif %}
+      </button>
+      <a href="{{ url_for('admin.embarques') }}" class="inline-flex items-center gap-2 px-5 py-3 rounded-xl border border-gray-200 text-sm font-semibold text-ink-muted hover:border-gray-300 transition-colors">
+        Cancelar
+      </a>
     </div>
   </div>
 </form>

@@ -1,0 +1,298 @@
+{# Banderas ISO — flag-icons necesita font-size explícito #}
+{% macro flag_circle(codigo, size='md') %}
+{% set sizes = {'sm': '1.75rem', 'md': '2.75rem', 'lg': '3.5rem'} %}
+{% set wrap = {'sm': 'w-7 h-7', 'md': 'w-11 h-11', 'lg': 'w-14 h-14'} %}
+<div class="{{ wrap[size] }} rounded-full overflow-hidden ring-2 ring-gray-100 shadow-sm flex items-center justify-center shrink-0 bg-gray-50">
+  <span class="fi fi-{{ codigo|lower }} fis" style="font-size:{{ sizes[size] }};line-height:1;display:block;"></span>
+</div>
+{% endmacro %}
+
+{% macro tw_input(label, field, icon='', full=false, rows=0) %}
+<div class="{% if full %}col-span-full{% endif %}">
+  <label class="block text-[11px] font-bold uppercase tracking-wider text-ink-muted mb-2">
+    {% if icon %}<i class="fas {{ icon }} text-patagonia mr-1"></i>{% endif %}{{ label }}
+  </label>
+  {% if rows %}
+  {{ field(class="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 text-sm focus:bg-white focus:border-patagonia focus:ring-2 focus:ring-patagonia/20 outline-none transition-all resize-none", rows=rows) }}
+  {% else %}
+  {{ field(class="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 text-sm focus:bg-white focus:border-patagonia focus:ring-2 focus:ring-patagonia/20 outline-none transition-all") }}
+  {% endif %}
+  {% if field.errors %}
+  <p class="mt-1.5 text-xs text-red-600"><i class="fas fa-exclamation-circle mr-1"></i>{{ field.errors[0] }}</p>
+  {% endif %}
+</div>
+{% endmacro %}
+
+{% macro requisito_icon(tipo) %}
+{% set icons = {
+  'fitosanitario': 'fa-leaf',
+  'documento': 'fa-file-lines',
+  'etiquetado': 'fa-tags',
+  'autoridad': 'fa-landmark',
+  'certificacion': 'fa-certificate',
+  'comercial': 'fa-handshake',
+  'producto': 'fa-box',
+} %}
+{% set colors = {
+  'fitosanitario': 'bg-green-50 text-green-700',
+  'documento': 'bg-blue-50 text-blue-700',
+  'etiquetado': 'bg-purple-50 text-purple-700',
+  'autoridad': 'bg-amber-50 text-amber-700',
+  'certificacion': 'bg-orange-50 text-orange-700',
+  'comercial': 'bg-cream text-ink',
+  'producto': 'bg-patagonia-50 text-patagonia',
+} %}
+<span class="w-9 h-9 rounded-xl flex items-center justify-center shrink-0 {{ colors.get(tipo, 'bg-gray-100 text-gray-600') }}">
+  <i class="fas {{ icons.get(tipo, 'fa-circle') }} text-sm"></i>
+</span>
+{% endmacro %}
+
+{% macro cliente_avatar(nombre, size='md') %}
+{% set parts = nombre.split() %}
+{% set ini = (parts[0][0] ~ (parts[1][0] if parts|length > 1 else parts[0][1] if parts[0]|length > 1 else ''))|upper %}
+{% set sizes = {'sm': 'w-9 h-9 text-xs', 'md': 'w-11 h-11 text-sm', 'lg': 'w-14 h-14 text-base'} %}
+<span class="{{ sizes[size] }} rounded-xl bg-gradient-to-br from-patagonia to-patagonia-dark text-white font-extrabold flex items-center justify-center shrink-0 shadow-md shadow-patagonia/20">
+  {{ ini }}
+</span>
+{% endmacro %}
+
+{% macro cliente_badge(estado) %}
+{% set _colors = {
+  'prospecto': '#6b7280',
+  'negociacion': '#EA942A',
+  'con_abono': '#2563eb',
+  'cliente_activo': '#15803d',
+  'inactivo': '#9ca3af',
+} %}
+{% set _labels = {
+  'prospecto': 'Prospecto',
+  'negociacion': 'En negociación',
+  'con_abono': 'Con abono',
+  'cliente_activo': 'Cliente activo',
+  'inactivo': 'Inactivo',
+} %}
+{% set _icons = {
+  'prospecto': 'fa-user-plus',
+  'negociacion': 'fa-handshake',
+  'con_abono': 'fa-coins',
+  'cliente_activo': 'fa-user-check',
+  'inactivo': 'fa-user-slash',
+} %}
+<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold"
+      style="background:{{ _colors.get(estado, '#eee') }}18;color:{{ _colors.get(estado, '#666') }};">
+  <i class="fas {{ _icons.get(estado, 'fa-user') }} text-[10px]"></i>
+  {{ _labels.get(estado, estado) }}
+</span>
+{% endmacro %}
+
+{% macro producto_icon(categoria) %}
+{% set icons = {
+  'frutas': 'fa-apple-whole',
+  'frutas_iqf': 'fa-snowflake',
+  'mariscos': 'fa-fish',
+  'vinos': 'fa-wine-glass',
+  'procesados': 'fa-box',
+  'otro': 'fa-seedling',
+} %}
+{% set colors = {
+  'frutas': 'bg-green-50 text-green-700',
+  'frutas_iqf': 'bg-cyan-50 text-cyan-700',
+  'mariscos': 'bg-blue-50 text-blue-700',
+  'vinos': 'bg-purple-50 text-purple-700',
+  'procesados': 'bg-amber-50 text-amber-700',
+  'otro': 'bg-patagonia-50 text-patagonia',
+} %}
+<span class="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 {{ colors.get(categoria, 'bg-gray-100 text-gray-600') }}">
+  <i class="fas {{ icons.get(categoria, 'fa-seedling') }} text-xs"></i>
+</span>
+{% endmacro %}
+
+{% macro pais_chip(pais, size='sm') %}
+{% set iso_map = {
+  'méxico': 'mx', 'mexico': 'mx', 'chile': 'cl', 'colombia': 'co',
+  'perú': 'pe', 'peru': 'pe', 'españa': 'es', 'espana': 'es', 'spain': 'es',
+  'estados unidos': 'us', 'usa': 'us', 'brasil': 'br', 'brazil': 'br',
+  'argentina': 'ar', 'ecuador': 'ec', 'canadá': 'ca', 'canada': 'ca',
+} %}
+{% set code = iso_map.get(pais|lower, '') %}
+{% if code %}
+  {{ flag_circle(code, size) }}
+{% else %}
+<span class="w-7 h-7 rounded-full bg-gray-100 text-ink-muted flex items-center justify-center shrink-0">
+  <i class="fas fa-globe text-[10px]"></i>
+</span>
+{% endif %}
+<span class="text-sm text-ink">{{ pais }}</span>
+{% endmacro %}
+
+{% macro cotizacion_badge(estado) %}
+{% set _colors = {
+  'borrador': '#6b7280',
+  'enviada': '#2563eb',
+  'aceptada': '#15803d',
+  'rechazada': '#be123c',
+  'vencida': '#9ca3af',
+} %}
+{% set _labels = {
+  'borrador': 'Borrador',
+  'enviada': 'Enviada',
+  'aceptada': 'Aceptada',
+  'rechazada': 'Rechazada',
+  'vencida': 'Vencida',
+} %}
+{% set _icons = {
+  'borrador': 'fa-pen-ruler',
+  'enviada': 'fa-paper-plane',
+  'aceptada': 'fa-thumbs-up',
+  'rechazada': 'fa-circle-xmark',
+  'vencida': 'fa-clock',
+} %}
+<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold"
+      style="background:{{ _colors.get(estado, '#eee') }}18;color:{{ _colors.get(estado, '#666') }};">
+  <i class="fas {{ _icons.get(estado, 'fa-circle') }} text-[10px]"></i>
+  {{ _labels.get(estado, estado) }}
+</span>
+{% endmacro %}
+
+{% macro pedido_badge(estado) %}
+{% set _colors = {
+  'confirmado': '#2563eb',
+  'en_preparacion': '#EA942A',
+  'listo': '#7c3aed',
+  'embarcado': '#587232',
+  'entregado': '#15803d',
+  'cancelado': '#9ca3af',
+} %}
+{% set _labels = {
+  'confirmado': 'Confirmado',
+  'en_preparacion': 'En preparación',
+  'listo': 'Listo para embarque',
+  'embarcado': 'Embarcado',
+  'entregado': 'Entregado',
+  'cancelado': 'Cancelado',
+} %}
+{% set _icons = {
+  'confirmado': 'fa-circle-check',
+  'en_preparacion': 'fa-box-open',
+  'listo': 'fa-dolly',
+  'embarcado': 'fa-ship',
+  'entregado': 'fa-flag-checkered',
+  'cancelado': 'fa-ban',
+} %}
+<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold"
+      style="background:{{ _colors.get(estado, '#eee') }}18;color:{{ _colors.get(estado, '#666') }};">
+  <i class="fas {{ _icons.get(estado, 'fa-circle') }} text-[10px]"></i>
+  {{ _labels.get(estado, estado) }}
+</span>
+{% endmacro %}
+
+{% macro embarque_badge(estado) %}
+{% set _colors = {
+  'en_preparacion': '#6b7280',
+  'documentacion_pendiente': '#EA942A',
+  'listo_despacho': '#7c3aed',
+  'programado': '#2563eb',
+  'en_transito': '#587232',
+  'en_puerto': '#EA942A',
+  'en_destino': '#0d9488',
+  'entregado': '#15803d',
+  'cerrado': '#374151',
+  'incidencia': '#be123c',
+  'cancelado': '#9ca3af',
+} %}
+{% set _labels = {
+  'en_preparacion': 'En preparación',
+  'documentacion_pendiente': 'Documentación pendiente',
+  'listo_despacho': 'Listo para despacho',
+  'programado': 'Programado',
+  'en_transito': 'En tránsito',
+  'en_puerto': 'En puerto destino',
+  'en_destino': 'En destino',
+  'entregado': 'Entregado',
+  'cerrado': 'Cerrado',
+  'incidencia': 'Con incidencia',
+  'cancelado': 'Cancelado',
+} %}
+{% set _icons = {
+  'en_preparacion': 'fa-box-open',
+  'documentacion_pendiente': 'fa-file-circle-exclamation',
+  'listo_despacho': 'fa-dolly',
+  'programado': 'fa-calendar-check',
+  'en_transito': 'fa-ship',
+  'en_puerto': 'fa-anchor',
+  'en_destino': 'fa-warehouse',
+  'entregado': 'fa-circle-check',
+  'cerrado': 'fa-lock',
+  'incidencia': 'fa-triangle-exclamation',
+  'cancelado': 'fa-ban',
+} %}
+<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold"
+      style="background:{{ _colors.get(estado, '#eee') }}18;color:{{ _colors.get(estado, '#666') }};">
+  <i class="fas {{ _icons.get(estado, 'fa-ship') }} text-[10px]"></i>
+  {{ _labels.get(estado, estado) }}
+</span>
+{% endmacro %}
+
+{% macro documento_badge(estado) %}
+{% set _colors = {
+  'pendiente': '#EA942A',
+  'aprobado': '#15803d',
+  'rechazado': '#be123c',
+  'vencido': '#9ca3af',
+} %}
+{% set _labels = {
+  'pendiente': 'Pendiente',
+  'aprobado': 'Aprobado',
+  'rechazado': 'Rechazado',
+  'vencido': 'Vencido',
+} %}
+{% set _icons = {
+  'pendiente': 'fa-clock',
+  'aprobado': 'fa-circle-check',
+  'rechazado': 'fa-circle-xmark',
+  'vencido': 'fa-calendar-xmark',
+} %}
+<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold"
+      style="background:{{ _colors.get(estado, '#eee') }}18;color:{{ _colors.get(estado, '#666') }};">
+  <i class="fas {{ _icons.get(estado, 'fa-file') }} text-[10px]"></i>
+  {{ _labels.get(estado, estado) }}
+</span>
+{% endmacro %}
+
+{% macro documento_tipo_icon(tipo) %}
+{% set icons = {
+  'fitosanitario': 'fa-leaf',
+  'origen': 'fa-certificate',
+  'factura': 'fa-file-invoice-dollar',
+  'packing': 'fa-boxes-stacked',
+  'bl': 'fa-ship',
+  'despacho': 'fa-truck',
+  'contrato': 'fa-file-contract',
+  'seguro': 'fa-shield-halved',
+  'aduana': 'fa-passport',
+  'etiqueta': 'fa-tags',
+  'calidad': 'fa-award',
+  'cliente': 'fa-user',
+  'contenedor': 'fa-container-storage',
+  'otro': 'fa-file-lines',
+} %}
+{% set colors = {
+  'fitosanitario': 'bg-green-50 text-green-700',
+  'origen': 'bg-blue-50 text-blue-700',
+  'factura': 'bg-purple-50 text-purple-700',
+  'packing': 'bg-amber-50 text-amber-700',
+  'bl': 'bg-patagonia-50 text-patagonia',
+  'despacho': 'bg-cyan-50 text-cyan-700',
+  'contrato': 'bg-orange-50 text-orange-700',
+  'seguro': 'bg-indigo-50 text-indigo-700',
+  'aduana': 'bg-red-50 text-red-600',
+  'etiqueta': 'bg-pink-50 text-pink-700',
+  'calidad': 'bg-yellow-50 text-yellow-700',
+  'cliente': 'bg-gray-100 text-ink-muted',
+  'contenedor': 'bg-slate-100 text-slate-700',
+  'otro': 'bg-gray-100 text-gray-600',
+} %}
+<span class="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 {{ colors.get(tipo, 'bg-gray-100 text-gray-600') }}">
+  <i class="fas {{ icons.get(tipo, 'fa-file') }} text-sm"></i>
+</span>
+{% endmacro %}

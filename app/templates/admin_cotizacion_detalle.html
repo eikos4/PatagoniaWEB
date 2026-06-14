@@ -1,127 +1,237 @@
-{% extends "admin_layout.html" %}
+{% extends "admin_layout_tw.html" %}
+{% from "admin_macros_tw.html" import cliente_avatar, cotizacion_badge, pais_chip, producto_icon %}
 {% block title %}{{ cot.numero }}{% endblock %}
-{% block topbar_title %}{{ cot.numero }}{% endblock %}
-{% block topbar_subtitle %}{{ cot.cliente_nombre }} · {{ cotizacion_estados.get(cot.estado, cot.estado) }}{% endblock %}
+{% block topbar_title %}
+<span class="inline-flex items-center gap-2 px-3 py-1 rounded-lg bg-patagonia-50 text-patagonia font-extrabold text-base">{{ cot.numero }}</span>
+{% endblock %}
+{% block topbar_subtitle %}
+{{ cot.cliente_nombre }} · {{ cotizacion_badge(cot.estado) }}
+{% endblock %}
 {% block topbar_actions %}
-  <a href="{{ url_for('admin.cotizacion_pdf', id=cot.id) }}" class="btn-top accent"><i class="fas fa-file-pdf"></i> Descargar PDF</a>
+  <a href="{{ url_for('admin.cotizacion_pdf', id=cot.id) }}" class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-red-50 text-red-600 border border-red-100 text-sm font-bold hover:bg-red-100 transition-colors">
+    <i class="fas fa-file-pdf text-xs"></i> PDF
+  </a>
   {% if cot.estado in ['aceptada', 'enviada'] or not cot.pedidos %}
-  <a href="{{ url_for('admin.cotizacion_a_pedido', id=cot.id) }}" class="btn-top" style="background:var(--orange);color:#fff;"><i class="fas fa-cart-shopping"></i> Crear pedido</a>
+  <a href="{{ url_for('admin.cotizacion_a_pedido', id=cot.id) }}" class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-sunset text-white text-sm font-bold hover:bg-sunset-dark transition-colors">
+    <i class="fas fa-cart-shopping text-xs"></i> Crear pedido
+  </a>
   {% endif %}
-  <a href="{{ url_for('admin.cotizacion_editar', id=cot.id) }}" class="btn-top ghost"><i class="fas fa-pen"></i> Editar</a>
-  <a href="{{ url_for('admin.cotizaciones') }}" class="btn-top ghost"><i class="fas fa-arrow-left"></i> Lista</a>
+  <a href="{{ url_for('admin.cotizacion_editar', id=cot.id) }}" class="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-gray-200 bg-white text-sm font-semibold hover:border-patagonia hover:text-patagonia transition-colors">
+    <i class="fas fa-pen text-xs"></i> Editar
+  </a>
+  <a href="{{ url_for('admin.cotizaciones') }}" class="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-gray-200 bg-white text-sm font-semibold hover:border-patagonia hover:text-patagonia transition-colors">
+    <i class="fas fa-arrow-left text-xs"></i> Lista
+  </a>
 {% endblock %}
 
 {% block content %}
-<div class="kpi-grid" style="grid-template-columns:repeat(4,1fr);margin-bottom:1.25rem;">
-  <div class="kpi-card green">
-    <div class="kpi-label">Total</div>
-    <div class="kpi-value" style="font-size:1.4rem;">{{ "{:,.2f}".format(cot.total) }}</div>
-    <div class="kpi-sub">{{ cot.moneda }}</div>
+<!-- KPIs -->
+<div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+  <div class="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm">
+    <p class="text-[10px] font-bold uppercase tracking-wider text-ink-muted mb-1">Total</p>
+    <p class="text-2xl font-extrabold text-patagonia">{{ "{:,.2f}".format(cot.total) }}</p>
+    <p class="text-xs text-ink-muted font-medium">{{ cot.moneda }}</p>
   </div>
-  <div class="kpi-card blue">
-    <div class="kpi-label">Estado</div>
-    <div class="kpi-value" style="font-size:1rem;">
-      <span class="badge" style="background:{{ cotizacion_estado_colors.get(cot.estado, '#eee') }}22;color:{{ cotizacion_estado_colors.get(cot.estado, '#666') }};">
-        {{ cotizacion_estados.get(cot.estado, cot.estado) }}
-      </span>
-    </div>
+  <div class="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm">
+    <p class="text-[10px] font-bold uppercase tracking-wider text-ink-muted mb-2">Estado</p>
+    {{ cotizacion_badge(cot.estado) }}
   </div>
-  <div class="kpi-card orange">
-    <div class="kpi-label">Incoterm</div>
-    <div class="kpi-value" style="font-size:1.2rem;">{{ cot.incoterm }}</div>
+  <div class="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm">
+    <p class="text-[10px] font-bold uppercase tracking-wider text-ink-muted mb-1">Incoterm</p>
+    <p class="text-xl font-extrabold text-ink">{{ cot.incoterm }}</p>
   </div>
-  <div class="kpi-card dark">
-    <div class="kpi-label">Válida hasta</div>
-    <div class="kpi-value" style="font-size:1rem;">{{ cot.fecha_vencimiento.strftime("%d/%m/%Y") if cot.fecha_vencimiento else '—' }}</div>
+  <div class="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm">
+    <p class="text-[10px] font-bold uppercase tracking-wider text-ink-muted mb-1">Válida hasta</p>
+    <p class="text-lg font-extrabold {% if cot.estado == 'vencida' %}text-red-600{% else %}text-ink{% endif %}">
+      {{ cot.fecha_vencimiento.strftime("%d/%m/%Y") if cot.fecha_vencimiento else '—' }}
+    </p>
+    {% if cot.validez_dias %}<p class="text-xs text-ink-muted">{{ cot.validez_dias }} días de validez</p>{% endif %}
   </div>
 </div>
 
-<div class="grid-2">
-  <div class="panel">
-    <div class="panel-header"><h3>Cliente</h3></div>
-    <div class="info-grid" style="background:var(--white);border:none;">
-      <div class="info-item"><label>Nombre</label><span>{{ cot.cliente_nombre }}</span></div>
-      {% if cot.cliente_empresa %}<div class="info-item"><label>Empresa</label><span>{{ cot.cliente_empresa }}</span></div>{% endif %}
-      {% if cot.cliente_email %}<div class="info-item"><label>Email</label><span>{{ cot.cliente_email }}</span></div>{% endif %}
-      {% if cot.cliente_telefono %}<div class="info-item"><label>Teléfono</label><span>{{ cot.cliente_telefono }}</span></div>{% endif %}
-      {% if cot.cliente_pais %}<div class="info-item"><label>País</label><span>{{ cot.cliente_pais }}</span></div>{% endif %}
-      {% if cot.cliente %}
-      <div class="info-item full" style="grid-column:1/-1;">
-        <a href="{{ url_for('admin.cartera_detalle', id=cot.cliente.id) }}" class="btn btn-ghost" style="margin-top:.5rem;font-size:.75rem;"><i class="fas fa-user"></i> Ver ficha cliente</a>
-      </div>
-      {% endif %}
+<div class="grid grid-cols-1 xl:grid-cols-2 gap-6 mb-6">
+  <!-- Cliente -->
+  <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+    <div class="px-6 py-4 border-b border-gray-100 flex items-center gap-2">
+      <i class="fas fa-user text-patagonia"></i>
+      <h2 class="font-bold text-ink">Cliente</h2>
     </div>
-  </div>
-  <div class="panel">
-    <div class="panel-header"><h3>Resumen</h3></div>
-    <div style="padding:1.25rem 1.5rem;font-size:.9rem;line-height:1.8;">
-      <div>Emisión: <strong>{{ cot.fecha_emision.strftime("%d/%m/%Y %H:%M") }}</strong></div>
-      <div>Subtotal: <strong>{{ "{:,.2f}".format(cot.subtotal) }} {{ cot.moneda }}</strong></div>
-      {% if cot.descuento_pct %}<div>Descuento: <strong>{{ cot.descuento_pct }}%</strong></div>{% endif %}
-      <div style="margin-top:1rem;">
-        <a href="{{ url_for('admin.cotizacion_pdf', id=cot.id) }}" class="btn btn-green"><i class="fas fa-download"></i> Descargar PDF con logo</a>
-        {% if cot.estado in ['aceptada', 'enviada'] or not cot.pedidos %}
-        <a href="{{ url_for('admin.cotizacion_a_pedido', id=cot.id) }}" class="btn btn-ghost" style="margin-left:.5rem;"><i class="fas fa-cart-shopping"></i> Convertir a pedido</a>
+    <div class="p-6">
+      <div class="flex items-start gap-4 mb-5">
+        {{ cliente_avatar(cot.cliente_nombre, 'md') }}
+        <div>
+          <p class="font-extrabold text-ink text-lg">{{ cot.cliente_nombre }}</p>
+          {% if cot.cliente_empresa %}<p class="text-sm text-ink-muted">{{ cot.cliente_empresa }}</p>{% endif %}
+        </div>
+      </div>
+      <div class="space-y-3 text-sm">
+        {% if cot.cliente_email %}
+        <div class="flex items-center gap-3">
+          <span class="w-8 h-8 rounded-lg bg-gray-50 flex items-center justify-center text-patagonia"><i class="fas fa-envelope text-xs"></i></span>
+          <a href="mailto:{{ cot.cliente_email }}" class="text-ink hover:text-patagonia transition-colors">{{ cot.cliente_email }}</a>
+        </div>
+        {% endif %}
+        {% if cot.cliente_telefono %}
+        <div class="flex items-center gap-3">
+          <span class="w-8 h-8 rounded-lg bg-gray-50 flex items-center justify-center text-patagonia"><i class="fas fa-phone text-xs"></i></span>
+          <span>{{ cot.cliente_telefono }}</span>
+        </div>
+        {% endif %}
+        {% if cot.cliente_pais %}
+        <div class="flex items-center gap-3">
+          <span class="w-8 h-8 rounded-lg bg-gray-50 flex items-center justify-center"><i class="fas fa-globe-americas text-xs text-patagonia"></i></span>
+          <div class="flex items-center gap-2">{{ pais_chip(cot.cliente_pais) }}</div>
+        </div>
         {% endif %}
       </div>
+      {% if cot.cliente %}
+      <a href="{{ url_for('admin.cartera_detalle', id=cot.cliente.id) }}" class="mt-5 inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-gray-200 text-sm font-semibold hover:border-patagonia hover:text-patagonia transition-colors">
+        <i class="fas fa-folder-open text-xs"></i> Ver ficha cliente
+      </a>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Resumen -->
+  <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+    <div class="px-6 py-4 border-b border-gray-100 flex items-center gap-2">
+      <i class="fas fa-receipt text-sunset"></i>
+      <h2 class="font-bold text-ink">Resumen comercial</h2>
+    </div>
+    <div class="p-6 space-y-4 text-sm">
+      <div class="flex justify-between py-2 border-b border-gray-50">
+        <span class="text-ink-muted">Emisión</span>
+        <span class="font-semibold">{{ cot.fecha_emision.strftime("%d/%m/%Y %H:%M") }}</span>
+      </div>
+      <div class="flex justify-between py-2 border-b border-gray-50">
+        <span class="text-ink-muted">Subtotal</span>
+        <span class="font-semibold">{{ "{:,.2f}".format(cot.subtotal) }} {{ cot.moneda }}</span>
+      </div>
+      {% if cot.descuento_pct %}
+      <div class="flex justify-between py-2 border-b border-gray-50">
+        <span class="text-ink-muted">Descuento</span>
+        <span class="font-semibold text-red-600">{{ cot.descuento_pct }}%</span>
+      </div>
+      {% endif %}
+      <div class="flex justify-between py-3 bg-patagonia-50/50 -mx-6 px-6 rounded-xl">
+        <span class="font-bold text-ink">Total</span>
+        <span class="text-xl font-extrabold text-patagonia">{{ "{:,.2f}".format(cot.total) }} {{ cot.moneda }}</span>
+      </div>
+
+      <div class="flex flex-wrap gap-2 pt-2">
+        <a href="{{ url_for('admin.cotizacion_pdf', id=cot.id) }}" class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-patagonia text-white text-sm font-bold hover:bg-patagonia-dark transition-colors">
+          <i class="fas fa-download"></i> Descargar PDF
+        </a>
+        {% if cot.estado in ['aceptada', 'enviada'] or not cot.pedidos %}
+        <a href="{{ url_for('admin.cotizacion_a_pedido', id=cot.id) }}" class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border border-gray-200 text-sm font-semibold hover:border-sunset hover:text-sunset transition-colors">
+          <i class="fas fa-cart-shopping"></i> Convertir a pedido
+        </a>
+        {% endif %}
+      </div>
+
       {% if cot.pedidos %}
-      <div style="margin-top:.75rem;font-size:.85rem;color:var(--gray);">
-        Pedidos vinculados:
-        {% for p in cot.pedidos %}
-        <a href="{{ url_for('admin.pedido_detalle', id=p.id) }}" style="color:var(--accent);font-weight:600;">{{ p.numero }}</a>{% if not loop.last %}, {% endif %}
-        {% endfor %}
+      <div class="pt-3 border-t border-gray-100">
+        <p class="text-[10px] font-bold uppercase tracking-wider text-ink-muted mb-2">Pedidos vinculados</p>
+        <div class="flex flex-wrap gap-2">
+          {% for p in cot.pedidos %}
+          <a href="{{ url_for('admin.pedido_detalle', id=p.id) }}" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-sunset/10 text-sunset text-xs font-bold hover:bg-sunset/20 transition-colors">
+            <i class="fas fa-cart-shopping"></i>{{ p.numero }}
+          </a>
+          {% endfor %}
+        </div>
       </div>
       {% endif %}
     </div>
   </div>
 </div>
 
-<div class="panel" style="margin-top:1.25rem;">
-  <div class="panel-header"><h3>Detalle de líneas</h3></div>
-  <table class="data-table">
-    <thead>
-      <tr><th>#</th><th>Descripción</th><th>Cantidad</th><th>P. Unit.</th><th>Subtotal</th></tr>
-    </thead>
-    <tbody>
-      {% for l in cot.lineas %}
-      <tr>
-        <td>{{ loop.index }}</td>
-        <td>{{ l.descripcion }}{% if l.producto %} <span style="color:var(--gray);font-size:.75rem;">({{ l.producto.nombre }})</span>{% endif %}</td>
-        <td>{{ l.cantidad|round(2) }} {{ l.unidad }}</td>
-        <td>{{ "{:,.2f}".format(l.precio_unitario) }}</td>
-        <td style="font-weight:700;">{{ "{:,.2f}".format(l.subtotal) }} {{ cot.moneda }}</td>
-      </tr>
-      {% endfor %}
-    </tbody>
-    <tfoot>
-      <tr>
-        <td colspan="4" style="text-align:right;font-weight:700;padding:1rem;">TOTAL</td>
-        <td style="font-weight:800;color:var(--accent);font-size:1.1rem;padding:1rem;">{{ "{:,.2f}".format(cot.total) }} {{ cot.moneda }}</td>
-      </tr>
-    </tfoot>
-  </table>
+<!-- Líneas -->
+<div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden mb-6">
+  <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
+    <h2 class="font-bold text-ink flex items-center gap-2">
+      <i class="fas fa-list text-patagonia"></i> Detalle de líneas
+    </h2>
+    <span class="text-xs font-semibold bg-gray-50 text-ink-muted px-3 py-1 rounded-full">{{ cot.lineas|length }} línea{% if cot.lineas|length != 1 %}s{% endif %}</span>
+  </div>
+
+  <div class="hidden md:block overflow-x-auto">
+    <table class="w-full text-sm">
+      <thead>
+        <tr class="bg-gray-50/80 text-left">
+          <th class="px-6 py-3 text-[11px] font-bold uppercase tracking-wider text-ink-muted w-10">#</th>
+          <th class="px-4 py-3 text-[11px] font-bold uppercase tracking-wider text-ink-muted">Descripción</th>
+          <th class="px-4 py-3 text-[11px] font-bold uppercase tracking-wider text-ink-muted text-right">Cantidad</th>
+          <th class="px-4 py-3 text-[11px] font-bold uppercase tracking-wider text-ink-muted text-right">P. Unit.</th>
+          <th class="px-6 py-3 text-[11px] font-bold uppercase tracking-wider text-ink-muted text-right">Subtotal</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-gray-50">
+        {% for l in cot.lineas %}
+        <tr class="hover:bg-cream/30 transition-colors">
+          <td class="px-6 py-4 text-ink-muted font-medium">{{ loop.index }}</td>
+          <td class="px-4 py-4">
+            <div class="flex items-center gap-3">
+              {% if l.producto %}{{ producto_icon(l.producto.categoria) }}{% else %}
+              <span class="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center text-ink-muted"><i class="fas fa-box text-xs"></i></span>
+              {% endif %}
+              <div>
+                <p class="font-semibold text-ink">{{ l.descripcion }}</p>
+                {% if l.producto %}<p class="text-xs text-ink-muted">{{ l.producto.nombre }}</p>{% endif %}
+              </div>
+            </div>
+          </td>
+          <td class="px-4 py-4 text-right font-medium">{{ l.cantidad|round(2) }} {{ l.unidad }}</td>
+          <td class="px-4 py-4 text-right">{{ "{:,.2f}".format(l.precio_unitario) }}</td>
+          <td class="px-6 py-4 text-right font-extrabold text-ink">{{ "{:,.2f}".format(l.subtotal) }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+      <tfoot>
+        <tr class="bg-cream/50">
+          <td colspan="4" class="px-6 py-4 text-right font-bold text-ink uppercase text-xs tracking-wider">Total</td>
+          <td class="px-6 py-4 text-right text-xl font-extrabold text-patagonia">{{ "{:,.2f}".format(cot.total) }} {{ cot.moneda }}</td>
+        </tr>
+      </tfoot>
+    </table>
+  </div>
+
+  <!-- Líneas móvil -->
+  <div class="md:hidden divide-y divide-gray-50">
+    {% for l in cot.lineas %}
+    <div class="px-5 py-4">
+      <p class="font-semibold text-ink">{{ l.descripcion }}</p>
+      <p class="text-xs text-ink-muted mt-1">{{ l.cantidad|round(2) }} {{ l.unidad }} × {{ "{:,.2f}".format(l.precio_unitario) }}</p>
+      <p class="text-sm font-extrabold text-patagonia mt-2">{{ "{:,.2f}".format(l.subtotal) }} {{ cot.moneda }}</p>
+    </div>
+    {% endfor %}
+    <div class="px-5 py-4 bg-cream/50 flex justify-between items-center">
+      <span class="font-bold text-sm">TOTAL</span>
+      <span class="text-lg font-extrabold text-patagonia">{{ "{:,.2f}".format(cot.total) }} {{ cot.moneda }}</span>
+    </div>
+  </div>
 </div>
 
 {% if cot.condiciones or cot.notas %}
-<div class="panel" style="margin-top:1.25rem;">
+<div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden mb-6">
   {% if cot.condiciones %}
-  <div style="padding:1.25rem 1.5rem;border-bottom:1px solid var(--gray-light);">
-    <label style="font-size:.65rem;font-weight:700;text-transform:uppercase;color:var(--gray);">Condiciones</label>
-    <p style="margin-top:.5rem;white-space:pre-wrap;font-size:.9rem;">{{ cot.condiciones }}</p>
+  <div class="px-6 py-5 border-b border-gray-100">
+    <p class="text-[10px] font-bold uppercase tracking-wider text-ink-muted mb-2"><i class="fas fa-handshake text-patagonia mr-1"></i>Condiciones</p>
+    <p class="text-sm text-ink leading-relaxed whitespace-pre-wrap">{{ cot.condiciones }}</p>
   </div>
   {% endif %}
   {% if cot.notas %}
-  <div style="padding:1.25rem 1.5rem;">
-    <label style="font-size:.65rem;font-weight:700;text-transform:uppercase;color:var(--gray);">Notas internas</label>
-    <p style="margin-top:.5rem;white-space:pre-wrap;font-size:.9rem;color:var(--gray);">{{ cot.notas }}</p>
+  <div class="px-6 py-5">
+    <p class="text-[10px] font-bold uppercase tracking-wider text-ink-muted mb-2"><i class="fas fa-note-sticky text-patagonia mr-1"></i>Notas internas</p>
+    <p class="text-sm text-ink-muted leading-relaxed whitespace-pre-wrap">{{ cot.notas }}</p>
   </div>
   {% endif %}
 </div>
 {% endif %}
 
-<div style="margin-top:1.25rem;display:flex;gap:.75rem;">
-  <form method="POST" action="{{ url_for('admin.cotizacion_eliminar', id=cot.id) }}" onsubmit="return confirm('¿Eliminar esta cotización?');">
-    <button type="submit" class="btn btn-danger"><i class="fas fa-trash"></i> Eliminar</button>
-  </form>
-</div>
+<form method="POST" action="{{ url_for('admin.cotizacion_eliminar', id=cot.id) }}" onsubmit="return confirm('¿Eliminar esta cotización?');">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  <button type="submit" class="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-red-200 text-red-600 text-sm font-semibold hover:bg-red-50 transition-colors">
+    <i class="fas fa-trash"></i> Eliminar cotización
+  </button>
+</form>
 {% endblock %}

@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="es" class="h-full">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}Admin{% endblock %} · {{ config.STORE_NAME or 'Patagonia Sur' }}</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌿</text></svg>">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/lipis/flag-icons@7.2.3/css/flag-icons.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            cream: { DEFAULT: '#F7F3EA', 50: '#FDFCF9', 100: '#F7F3EA' },
+            patagonia: { DEFAULT: '#587232', dark: '#465C28', light: '#6E9150', 50: '#EEF3E8', 100: '#DCE8D0' },
+            sunset: { DEFAULT: '#EA942A', dark: '#C97A1F' },
+            ink: { DEFAULT: '#111111', muted: '#6B7280' },
+            nav: { bg: '#FFFFFF', hover: '#F0F6EA', active: '#E8F2DC', border: '#D8E8C8' },
+          },
+          fontFamily: { sans: ['Inter', 'system-ui', 'sans-serif'] },
+          boxShadow: {
+            'nav': '4px 0 24px rgba(88, 114, 50, 0.06)',
+          },
+        },
+      },
+    };
+  </script>
+  <style>
+    #sidebar nav { scrollbar-width: thin; scrollbar-color: #DCE8D0 transparent; }
+    #sidebar nav::-webkit-scrollbar { width: 5px; }
+    #sidebar nav::-webkit-scrollbar-thumb { background: #DCE8D0; border-radius: 99px; }
+    #sidebar nav::-webkit-scrollbar-thumb:hover { background: #C5D9B0; }
+  </style>
+  {% block extra_head %}{% endblock %}
+</head>
+<body class="h-full font-sans bg-[#F4F8F0] text-ink antialiased">
+
+<div class="min-h-full flex">
+  <!-- Sidebar blanco + verde claro -->
+  <aside id="sidebar" class="fixed inset-y-0 left-0 z-50 w-[268px] bg-white flex flex-col border-r border-nav-border shadow-nav transform -translate-x-full lg:translate-x-0 transition-transform duration-300">
+
+    <!-- Brand -->
+    <a href="{{ url_for('admin.dashboard') }}" class="flex items-center gap-3 px-5 py-5 bg-gradient-to-br from-patagonia-50 via-white to-white border-b border-nav-border shrink-0">
+      <span class="w-11 h-11 rounded-2xl bg-gradient-to-br from-patagonia to-patagonia-dark flex items-center justify-center font-extrabold text-sm text-white shadow-md shadow-patagonia/25 ring-2 ring-patagonia-50">PS</span>
+      <div>
+        <div class="font-extrabold text-sm text-patagonia-dark">Patagonia Sur</div>
+        <div class="text-[10px] text-patagonia/70 uppercase tracking-widest font-semibold">Exportadora</div>
+      </div>
+    </a>
+
+    <nav class="flex-1 min-h-0 overflow-y-auto overflow-x-hidden py-4 px-3">
+      {% macro nav_link(key, endpoint, icon, label, badge=none, badge_style='bg-patagonia text-white') %}
+      <a href="{{ url_for(endpoint) }}"
+         class="group flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium mb-0.5 transition-all border-l-[3px]
+                {% if active_nav == key %}
+                  bg-nav-active text-patagonia border-patagonia font-semibold shadow-sm shadow-patagonia/5
+                {% else %}
+                  border-transparent text-ink-muted hover:bg-nav-hover hover:text-patagonia hover:border-patagonia-100
+                {% endif %}">
+        <span class="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 transition-colors
+                     {% if active_nav == key %}bg-patagonia text-white{% else %}bg-patagonia-50 text-patagonia group-hover:bg-patagonia-100{% endif %}">
+          <i class="fas {{ icon }} text-xs"></i>
+        </span>
+        <span class="flex-1 leading-tight">{{ label }}</span>
+        {% if badge %}
+        <span class="{{ badge_style }} text-[10px] font-bold min-w-[1.25rem] h-5 px-1.5 rounded-full flex items-center justify-center">{{ badge }}</span>
+        {% endif %}
+      </a>
+      {% endmacro %}
+
+      {% macro nav_link_ext(url, icon, label, external=false) %}
+      <a href="{{ url }}" {% if external %}target="_blank"{% endif %}
+         class="group flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium mb-0.5 transition-all border-l-[3px] border-transparent text-ink-muted hover:bg-nav-hover hover:text-patagonia hover:border-patagonia-100">
+        <span class="w-8 h-8 rounded-lg bg-gray-50 text-ink-muted flex items-center justify-center shrink-0 group-hover:bg-patagonia-50 group-hover:text-patagonia transition-colors">
+          <i class="fas {{ icon }} text-xs"></i>
+        </span>
+        <span class="flex-1">{{ label }}</span>
+        {% if external %}<i class="fas fa-arrow-up-right-from-square text-[9px] text-patagonia/40"></i>{% endif %}
+      </a>
+      {% endmacro %}
+
+      {% macro nav_label(text) %}
+      <p class="text-[10px] font-bold uppercase tracking-widest text-patagonia/45 px-3 mt-5 mb-2 first:mt-1 flex items-center gap-2">
+        <span class="h-px flex-1 bg-patagonia-50"></span>
+        <span>{{ text }}</span>
+        <span class="h-px flex-1 bg-patagonia-50"></span>
+      </p>
+      {% endmacro %}
+
+      {{ nav_label('Panel') }}
+      {{ nav_link('resumen', 'admin.dashboard', 'fa-chart-pie', 'Resumen') }}
+
+      {{ nav_label('Comercial') }}
+      {{ nav_link('clientes', 'admin.clientes', 'fa-users', 'Clientes', carteras_count if carteras_count else none) }}
+      {{ nav_link('cotizaciones', 'admin.cotizaciones', 'fa-file-invoice-dollar', 'Cotizaciones', cotizaciones_count if cotizaciones_count else none, 'bg-blue-500 text-white') }}
+      {{ nav_link('pedidos', 'admin.pedidos', 'fa-cart-shopping', 'Pedidos', pedidos_count if pedidos_count else none, 'bg-sunset text-white') }}
+      {{ nav_link('embarques', 'admin.embarques', 'fa-ship', 'Embarques', embarques_count if embarques_count else none) }}
+
+      {{ nav_label('Cumplimiento') }}
+      {{ nav_link('documentos', 'admin.documentos', 'fa-folder-open', 'Documentación', documentos_count if documentos_count else none, 'bg-sunset text-white') }}
+      {{ nav_link('paises', 'admin.paises', 'fa-globe-americas', 'Países y requisitos') }}
+      {{ nav_link('alertas', 'admin.alertas', 'fa-bell', 'Alertas', alertas_count if alertas_count else none, 'bg-red-500 text-white') }}
+
+      {{ nav_label('Operaciones') }}
+      {{ nav_link('tareas', 'admin.tareas', 'fa-list-check', 'Tareas', tareas_count if tareas_count else none, 'bg-blue-500 text-white') }}
+      {{ nav_link('calculadora', 'admin.calculadora_contenedores', 'fa-calculator', 'Calculadora') }}
+      {% if user_rol == 'ceo' %}
+      {{ nav_link('usuarios', 'admin.usuarios', 'fa-users-gear', 'Usuarios') }}
+      {% endif %}
+
+      {{ nav_label('Análisis') }}
+      {{ nav_link('reportes', 'admin.reportes', 'fa-chart-line', 'Reportes') }}
+      {{ nav_link('contratos', 'admin.contratos', 'fa-file-contract', 'Contratos', contratos_count if contratos_count else none, 'bg-sunset text-white') }}
+      {{ nav_link('plantillas', 'admin.plantillas', 'fa-book', 'Plantillas') }}
+      {{ nav_link('historial', 'admin.historial', 'fa-clock-rotate-left', 'Historial') }}
+
+      {{ nav_label('Catálogo') }}
+      {{ nav_link('productos', 'admin.productos', 'fa-seedling', 'Productos') }}
+
+      {{ nav_label('Comunicación') }}
+      {{ nav_link('mensajes', 'admin.mensajes', 'fa-inbox', 'Mensajes', pendientes_count if pendientes_count else none, 'bg-sunset text-white') }}
+      {{ nav_link('notificaciones', 'admin.notificaciones', 'fa-envelope', 'Notificaciones') }}
+      {{ nav_link_ext(url_for('portal.login'), 'fa-door-open', 'Portal clientes', true) }}
+
+      {{ nav_label('Sitio') }}
+      {{ nav_link_ext(url_for('main.index'), 'fa-globe-americas', 'Ver sitio web', true) }}
+    </nav>
+
+    <div class="p-3 border-t border-nav-border bg-patagonia-50/40 shrink-0">
+      <a href="{{ url_for('admin.logout') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold text-red-600 hover:bg-red-50 border border-transparent hover:border-red-100 transition-all">
+        <span class="w-8 h-8 rounded-lg bg-white border border-red-100 text-red-500 flex items-center justify-center shrink-0">
+          <i class="fas fa-right-from-bracket text-xs"></i>
+        </span>
+        Cerrar sesión
+      </a>
+    </div>
+  </aside>
+
+  <div id="overlay" class="fixed inset-0 bg-patagonia-dark/20 backdrop-blur-sm z-40 hidden lg:hidden"></div>
+
+  <!-- Main -->
+  <div class="flex-1 lg:ml-[268px] flex flex-col min-h-screen">
+    <header class="sticky top-0 z-30 bg-white/95 backdrop-blur-md border-b border-nav-border px-4 sm:px-6 lg:px-8 py-4 flex flex-wrap items-center justify-between gap-4 shadow-sm shadow-patagonia/5">
+      <div class="flex items-center gap-3">
+        <button id="menuToggle" class="lg:hidden w-10 h-10 rounded-xl border border-nav-border bg-patagonia-50 text-patagonia flex items-center justify-center hover:bg-patagonia-100 transition-colors" aria-label="Menú">
+          <i class="fas fa-bars"></i>
+        </button>
+        <div>
+          <div class="text-lg font-bold text-patagonia-dark flex items-center flex-wrap gap-2">{% block topbar_title %}Panel{% endblock %}</div>
+          <p class="text-sm text-ink-muted mt-0.5">{% block topbar_subtitle %}{% endblock %}</p>
+        </div>
+      </div>
+      <div class="flex flex-wrap items-center gap-2">
+        {% block topbar_actions %}
+        <a href="{{ url_for('main.index') }}" target="_blank" class="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-nav-border bg-white text-sm font-semibold text-ink-muted hover:border-patagonia hover:text-patagonia hover:bg-patagonia-50 transition-colors">
+          <i class="fas fa-external-link-alt text-xs"></i> Sitio
+        </a>
+        <a href="{{ url_for('admin.logout') }}" class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-patagonia text-white text-sm font-semibold hover:bg-patagonia-dark shadow-md shadow-patagonia/20 transition-colors">
+          <i class="fas fa-sign-out-alt text-xs"></i> Salir
+        </a>
+        {% endblock %}
+      </div>
+    </header>
+
+    <main class="flex-1 p-4 sm:p-6 lg:p-8 max-w-7xl w-full">
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% for category, message in messages %}
+        <div class="mb-5 flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium
+          {% if category == 'success' %}bg-patagonia-50 text-patagonia-dark border border-patagonia-100
+          {% elif category in ['danger','error'] %}bg-red-50 text-red-800 border border-red-200
+          {% else %}bg-white text-ink-muted border border-nav-border{% endif %}">
+          <i class="fas fa-{% if category == 'success' %}circle-check{% elif category in ['error','danger'] %}circle-exclamation{% else %}circle-info{% endif %}"></i>
+          {{ message }}
+        </div>
+        {% endfor %}
+      {% endwith %}
+      {% block content %}{% endblock %}
+    </main>
+  </div>
+</div>
+
+<script>
+  (function () {
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.getElementById('overlay');
+    const toggle = document.getElementById('menuToggle');
+    toggle?.addEventListener('click', () => {
+      sidebar.classList.toggle('-translate-x-full');
+      overlay.classList.toggle('hidden');
+    });
+    overlay?.addEventListener('click', () => {
+      sidebar.classList.add('-translate-x-full');
+      overlay.classList.add('hidden');
+    });
+  })();
+  {% block extra_js %}{% endblock %}
+</script>
+</body>
+</html>

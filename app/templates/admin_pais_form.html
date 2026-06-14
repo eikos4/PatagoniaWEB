@@ -1,37 +1,63 @@
-{% extends "admin_layout.html" %}
+{% extends "admin_layout_tw.html" %}
+{% from "admin_macros_tw.html" import flag_circle, tw_input %}
 {% block title %}{% if editing %}Editar país{% else %}Nuevo país{% endif %}{% endblock %}
 {% block topbar_title %}{% if editing %}{{ pais.nombre }}{% else %}Nuevo país destino{% endif %}{% endblock %}
-{% block topbar_subtitle %}Requisitos de exportación por mercado{% endblock %}
+{% block topbar_subtitle %}Configura mercado, código ISO y notas de exportación{% endblock %}
 {% block topbar_actions %}
-  <a href="{{ url_for('admin.paises') }}" class="btn-top ghost"><i class="fas fa-arrow-left"></i> Volver</a>
+  <a href="{{ url_for('admin.paises') }}" class="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-gray-200 bg-white text-sm font-semibold hover:border-patagonia hover:text-patagonia transition-colors">
+    <i class="fas fa-arrow-left text-xs"></i> Volver
+  </a>
 {% endblock %}
 
 {% block content %}
-<div class="panel">
-  <form method="POST" class="form-grid" style="padding-top:1.5rem;">
-    {{ form.hidden_tag() }}
-    <div class="form-group">
-      <label><i class="fas fa-flag"></i> Nombre</label>
-      {{ form.nombre(class="form-control") }}
-    </div>
-    <div class="form-group">
-      <label><i class="fas fa-barcode"></i> Código ISO</label>
-      {{ form.codigo(class="form-control", placeholder="MX, CO, US...") }}
-    </div>
-    <div class="form-group">
-      <label><i class="fas fa-toggle-on"></i> Estado</label>
-      {{ form.activo(class="form-control") }}
-    </div>
-    <div class="form-group full">
-      <label><i class="fas fa-note-sticky"></i> Notas generales</label>
-      {{ form.notas(class="form-control", rows="4") }}
-    </div>
-    <div class="form-actions full" style="grid-column:1/-1;padding-left:1.5rem;">
-      <button type="submit" class="btn btn-green"><i class="fas fa-save"></i> Guardar</button>
-      {% if editing %}
-      <a href="{{ url_for('admin.pais_detalle', id=pais.id) }}" class="btn btn-ghost">Cancelar</a>
+<div class="max-w-2xl">
+  <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+    <div class="px-6 py-5 border-b border-gray-100 bg-gradient-to-r from-cream to-white flex items-center gap-4">
+      {% if editing and pais %}
+      {{ flag_circle(pais.codigo, 'md') }}
+      <div>
+        <h2 class="font-bold text-ink">Editar {{ pais.nombre }}</h2>
+        <p class="text-xs text-ink-muted">Código {{ pais.codigo }}</p>
+      </div>
+      {% else %}
+      <span class="w-11 h-11 rounded-xl bg-patagonia-50 text-patagonia flex items-center justify-center text-lg"><i class="fas fa-flag"></i></span>
+      <div>
+        <h2 class="font-bold text-ink">Nuevo mercado destino</h2>
+        <p class="text-xs text-ink-muted">País al que exportas productos</p>
+      </div>
       {% endif %}
     </div>
-  </form>
+
+    <form method="POST" class="p-6">
+      {{ form.hidden_tag() }}
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+        {{ tw_input('Nombre del país', form.nombre, 'fa-earth-americas') }}
+        {{ tw_input('Código ISO (2 letras)', form.codigo, 'fa-barcode') }}
+        <div class="sm:col-span-2">
+          <label class="block text-[11px] font-bold uppercase tracking-wider text-ink-muted mb-2">
+            <i class="fas fa-toggle-on text-patagonia mr-1"></i>Estado
+          </label>
+          {{ form.activo(class="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 text-sm focus:bg-white focus:border-patagonia focus:ring-2 focus:ring-patagonia/20 outline-none transition-all") }}
+        </div>
+        {{ tw_input('Notas generales', form.notas, 'fa-note-sticky', full=true, rows=4) }}
+      </div>
+
+      <div class="flex flex-wrap items-center gap-3 mt-8 pt-6 border-t border-gray-100">
+        <button type="submit" class="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-patagonia text-white text-sm font-bold hover:bg-patagonia-dark shadow-lg shadow-patagonia/20 transition-all">
+          <i class="fas fa-save"></i> Guardar país
+        </button>
+        {% if editing %}
+        <a href="{{ url_for('admin.pais_detalle', id=pais.id) }}" class="inline-flex items-center gap-2 px-5 py-3 rounded-xl border border-gray-200 text-sm font-semibold text-ink-muted hover:border-gray-300 transition-colors">
+          Cancelar
+        </a>
+        {% endif %}
+      </div>
+    </form>
+  </div>
+
+  <div class="mt-5 flex items-start gap-3 p-4 rounded-xl bg-blue-50 border border-blue-100 text-sm text-blue-800">
+    <i class="fas fa-circle-info mt-0.5 text-blue-500"></i>
+    <p>Usa el código ISO de 2 letras (ej. <strong>MX</strong>, <strong>CO</strong>, <strong>US</strong>) para mostrar la bandera correcta en el panel.</p>
+  </div>
 </div>
 {% endblock %}

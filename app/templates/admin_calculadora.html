@@ -1,114 +1,212 @@
-{% extends "admin_layout.html" %}
+{% extends "admin_layout_tw.html" %}
+{% from "admin_macros_tw.html" import flag_circle, tw_input %}
 {% block title %}Calculadora de contenedores{% endblock %}
 {% block topbar_title %}Calculadora de contenedores{% endblock %}
-{% block topbar_subtitle %}Estima volumen y peso según dimensiones de cajas{% endblock %}
-
-{% block extra_css %}
-.calc-result { padding: 1.5rem; }
-.calc-metric { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 1.25rem; }
-.calc-metric .box { background: var(--cream); border-radius: var(--radius-sm); padding: 1rem; text-align: center; }
-.calc-metric .box .val { font-size: 1.5rem; font-weight: 800; }
-.calc-metric .box .lbl { font-size: .65rem; font-weight: 700; text-transform: uppercase; color: var(--gray); margin-top: .25rem; }
-.bar-meter { height: 10px; background: var(--gray-light); border-radius: 99px; overflow: hidden; margin-top: .5rem; }
-.bar-meter .fill { height: 100%; border-radius: 99px; }
-.bar-meter .fill.ok { background: var(--accent); }
-.bar-meter .fill.warn { background: var(--orange); }
-.bar-meter .fill.bad { background: var(--red); }
-@media (max-width: 768px) { .calc-metric { grid-template-columns: 1fr; } }
-{% endblock %}
+{% block topbar_subtitle %}Estima volumen y peso según dimensiones de cajas · formato por mercado destino{% endblock %}
 
 {% block content %}
-<div class="grid-2">
-  <div class="panel">
-    <div class="panel-header"><h3><i class="fas fa-calculator" style="color:var(--accent);margin-right:.4rem;"></i>Datos de carga</h3></div>
-    <form method="POST">
-      {{ form.hidden_tag() }}
-      <div class="form-grid">
-        <div class="form-group full">
-          <label>{{ form.tipo_contenedor.label.text }}</label>
-          {{ form.tipo_contenedor(class="form-control") }}
-        </div>
-        <div class="form-group">
-          <label>{{ form.cajas_largo.label.text }}</label>
-          {{ form.cajas_largo(class="form-control", placeholder="cm") }}
-          {% for e in form.cajas_largo.errors %}<div class="form-errors">{{ e }}</div>{% endfor %}
-        </div>
-        <div class="form-group">
-          <label>{{ form.cajas_ancho.label.text }}</label>
-          {{ form.cajas_ancho(class="form-control", placeholder="cm") }}
-        </div>
-        <div class="form-group">
-          <label>{{ form.cajas_alto.label.text }}</label>
-          {{ form.cajas_alto(class="form-control", placeholder="cm") }}
-        </div>
-        <div class="form-group">
-          <label>{{ form.peso_caja.label.text }}</label>
-          {{ form.peso_caja(class="form-control", placeholder="kg") }}
-        </div>
-        <div class="form-group">
-          <label>{{ form.cantidad_cajas.label.text }}</label>
-          {{ form.cantidad_cajas(class="form-control") }}
-        </div>
+<div class="grid lg:grid-cols-2 gap-6">
+  <!-- Formulario -->
+  <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+    <div class="px-5 py-4 border-b border-gray-100 flex items-center gap-3">
+      <span class="w-10 h-10 rounded-xl bg-patagonia-50 text-patagonia flex items-center justify-center"><i class="fas fa-calculator"></i></span>
+      <div>
+        <h3 class="font-bold text-ink">Datos de carga</h3>
+        <p class="text-xs text-ink-muted">Ingresa dimensiones en cm y peso en kg (estándar exportación)</p>
       </div>
-      <div class="form-actions">
-        <button type="submit" class="btn btn-green"><i class="fas fa-calculator"></i> Calcular</button>
+    </div>
+    <form method="POST" class="p-5">
+      {{ form.hidden_tag() }}
+      <div class="grid sm:grid-cols-2 gap-4">
+        <div class="col-span-full">
+          <label class="block text-[11px] font-bold uppercase tracking-wider text-ink-muted mb-2">
+            <i class="fas fa-globe-americas text-patagonia mr-1"></i>{{ form.mercado_destino.label.text }}
+          </label>
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-2">
+            {% for key, m in mercados_peso.items() %}
+            <label class="cursor-pointer">
+              <input type="radio" name="mercado_destino" value="{{ key }}" class="peer sr-only" {% if form.mercado_destino.data == key or (not form.mercado_destino.data and key == 'CL') %}checked{% endif %}>
+              <span class="flex flex-col items-center gap-1.5 p-3 rounded-xl border border-gray-200 bg-gray-50 text-center transition-all peer-checked:border-patagonia peer-checked:bg-patagonia-50 peer-checked:ring-2 peer-checked:ring-patagonia/20 hover:border-patagonia-100">
+                <span class="fi fi-{{ m.codigo }} fis text-2xl rounded-sm shadow-sm"></span>
+                <span class="text-[10px] font-bold text-ink-muted">{{ m.nombre }}</span>
+              </span>
+            </label>
+            {% endfor %}
+          </div>
+        </div>
+        {{ tw_input(form.tipo_contenedor.label.text, form.tipo_contenedor, 'fa-box', true) }}
+        {{ tw_input(form.cajas_largo.label.text, form.cajas_largo, 'fa-arrows-left-right') }}
+        {{ tw_input(form.cajas_ancho.label.text, form.cajas_ancho, 'fa-arrows-left-right') }}
+        {{ tw_input(form.cajas_alto.label.text, form.cajas_alto, 'fa-arrows-up-down') }}
+        {{ tw_input(form.peso_caja.label.text, form.peso_caja, 'fa-weight-hanging') }}
+        {{ tw_input(form.cantidad_cajas.label.text, form.cantidad_cajas, 'fa-boxes-stacked') }}
+      </div>
+      <div class="mt-5 flex flex-wrap gap-3">
+        <button type="submit" class="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-patagonia text-white text-sm font-bold hover:bg-patagonia-dark shadow-lg shadow-patagonia/25 transition-all">
+          <i class="fas fa-calculator text-xs"></i> Calcular
+        </button>
+        <p class="text-xs text-ink-muted self-center"><i class="fas fa-info-circle text-patagonia mr-1"></i>El peso de entrada es siempre en kg; el resultado se adapta al mercado seleccionado.</p>
       </div>
     </form>
   </div>
 
-  <div class="panel">
-    <div class="panel-header"><h3><i class="fas fa-chart-bar" style="color:var(--accent);margin-right:.4rem;"></i>Resultado</h3></div>
+  <!-- Resultado principal -->
+  <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+    <div class="px-5 py-4 border-b border-gray-100 flex items-center gap-3">
+      <span class="w-10 h-10 rounded-xl bg-patagonia-50 text-patagonia flex items-center justify-center"><i class="fas fa-chart-bar"></i></span>
+      <div>
+        <h3 class="font-bold text-ink">Resultado</h3>
+        {% if resultado %}
+        <p class="text-xs text-ink-muted flex items-center gap-2">
+          <span class="fi fi-{{ resultado.mercado_codigo }} fis text-base"></span>
+          Mercado: <strong class="text-patagonia">{{ resultado.mercado_nombre }}</strong>
+        </p>
+        {% endif %}
+      </div>
+    </div>
+
     {% if resultado %}
-    <div class="calc-result">
+    <div class="p-5 space-y-5">
       {% if resultado.estado == 'invalida' %}
-      <div class="alert-panel crit"><i class="fas fa-circle-exclamation"></i> Carga no válida para este contenedor.</div>
+      <div class="flex items-start gap-3 px-4 py-3 rounded-xl bg-red-50 border border-red-200 text-red-800 text-sm">
+        <i class="fas fa-circle-exclamation mt-0.5"></i>
+        <span>Carga no válida para este contenedor / mercado.</span>
+      </div>
       {% elif resultado.estado == 'advertencia' %}
-      <div class="alert-panel warn"><i class="fas fa-triangle-exclamation"></i> Cerca del límite — revisa distribución.</div>
+      <div class="flex items-start gap-3 px-4 py-3 rounded-xl bg-amber-50 border border-amber-200 text-amber-900 text-sm">
+        <i class="fas fa-triangle-exclamation mt-0.5"></i>
+        <span>Cerca del límite — revisa distribución y normativa del destino.</span>
+      </div>
       {% else %}
-      <div class="alert-panel info" style="background:#ecfdf5;border-color:#a7f3d0;color:var(--green-ok);"><i class="fas fa-circle-check"></i> Carga dentro de parámetros.</div>
+      <div class="flex items-start gap-3 px-4 py-3 rounded-xl bg-green-50 border border-green-200 text-green-800 text-sm">
+        <i class="fas fa-circle-check mt-0.5"></i>
+        <span>Carga dentro de parámetros para {{ resultado.mercado_nombre }}.</span>
+      </div>
       {% endif %}
 
-      <p style="font-size:.85rem;color:var(--gray);margin-bottom:1rem;">
-        Contenedor <strong>{{ contenedor_tipos.get(resultado.tipo) }}</strong> —
+      <p class="text-sm text-ink-muted">
+        Contenedor <strong class="text-ink">{{ contenedor_tipos.get(resultado.tipo) }}</strong> —
         {{ resultado.dims_contenedor.largo }}×{{ resultado.dims_contenedor.ancho }}×{{ resultado.dims_contenedor.alto }} m
       </p>
 
-      <div class="calc-metric">
-        <div class="box">
-          <div class="val">{{ resultado.pct_volumen }}%</div>
-          <div class="lbl">Ocupación volumen</div>
-          <div class="bar-meter"><div class="fill {% if resultado.pct_volumen > 100 %}bad{% elif resultado.pct_volumen > 90 %}warn{% else %}ok{% endif %}" style="width:{{ [resultado.pct_volumen, 100]|min }}%;"></div></div>
-          <div style="font-size:.7rem;color:var(--gray);margin-top:.35rem;">{{ resultado.volumen_carga_m3 }} / {{ resultado.volumen_contenedor_m3 }} m³</div>
+      <!-- Peso en formato mercado -->
+      <div class="rounded-2xl border border-patagonia-100 bg-gradient-to-br from-patagonia-50 to-white p-5">
+        <div class="flex items-center gap-3 mb-4">
+          {{ flag_circle(resultado.mercado_codigo, 'sm') }}
+          <div>
+            <p class="text-[10px] font-bold uppercase tracking-wider text-patagonia/70">Peso total · {{ resultado.mercado_nombre }}</p>
+            <p class="text-2xl font-extrabold text-patagonia-dark">{{ resultado.peso_mercado.kg }}</p>
+            <p class="text-sm text-ink-muted">
+              {{ resultado.peso_mercado.toneladas }}
+              {% if resultado.peso_mercado.extra %} · {{ resultado.peso_mercado.extra }}{% endif %}
+            </p>
+          </div>
         </div>
-        <div class="box">
-          <div class="val">{{ resultado.pct_peso }}%</div>
-          <div class="lbl">Ocupación peso</div>
-          <div class="bar-meter"><div class="fill {% if resultado.pct_peso > 100 %}bad{% elif resultado.pct_peso > 90 %}warn{% else %}ok{% endif %}" style="width:{{ [resultado.pct_peso, 100]|min }}%;"></div></div>
-          <div style="font-size:.7rem;color:var(--gray);margin-top:.35rem;">{{ resultado.peso_total_kg }} / {{ resultado.peso_max_kg }} kg</div>
+        <div class="grid grid-cols-2 gap-3 text-sm">
+          <div class="bg-white/80 rounded-xl px-3 py-2 border border-patagonia-50">
+            <p class="text-[10px] font-bold uppercase text-ink-muted">Por caja</p>
+            <p class="font-semibold text-ink">{{ resultado.peso_caja_fmt.kg }}</p>
+          </div>
+          <div class="bg-white/80 rounded-xl px-3 py-2 border border-patagonia-50">
+            <p class="text-[10px] font-bold uppercase text-ink-muted">Disponible</p>
+            <p class="font-semibold text-ink">{{ resultado.peso_disp_fmt.kg }}</p>
+          </div>
         </div>
-        <div class="box">
-          <div class="val">~{{ resultado.cajas_estimadas_max }}</div>
-          <div class="lbl">Cajas máx. estimadas</div>
-          <div style="font-size:.7rem;color:var(--gray);margin-top:.35rem;">Solicitadas: {{ resultado.cajas_solicitadas }}</div>
+        {% if resultado.limite_carretera %}
+        <p class="mt-3 text-xs text-amber-800 bg-amber-50 border border-amber-100 rounded-lg px-3 py-2">
+          <i class="fas fa-road mr-1"></i>Límite vial {{ resultado.mercado_nombre }}: <strong>{{ resultado.peso_max_fmt.kg }}</strong>
+          (contenedor: {{ resultado.peso_max_contenedor_kg|int }} kg)
+        </p>
+        {% endif %}
+        <p class="mt-2 text-[11px] text-ink-muted">{{ resultado.mercado_nota }}</p>
+      </div>
+
+      <!-- Métricas volumen / peso / cajas -->
+      <div class="grid sm:grid-cols-3 gap-3">
+        <div class="rounded-xl bg-cream border border-gray-100 p-4 text-center">
+          <p class="text-2xl font-extrabold text-ink">{{ resultado.pct_volumen }}%</p>
+          <p class="text-[10px] font-bold uppercase tracking-wider text-ink-muted mt-1">Volumen</p>
+          <div class="h-2 bg-gray-200 rounded-full overflow-hidden mt-2">
+            <div class="h-full rounded-full {% if resultado.pct_volumen > 100 %}bg-red-500{% elif resultado.pct_volumen > 90 %}bg-sunset{% else %}bg-patagonia{% endif %}" style="width:{{ [resultado.pct_volumen, 100]|min }}%"></div>
+          </div>
+          <p class="text-[11px] text-ink-muted mt-2">{{ resultado.volumen_carga_m3 }} / {{ resultado.volumen_contenedor_m3 }} m³</p>
+        </div>
+        <div class="rounded-xl bg-cream border border-gray-100 p-4 text-center">
+          <p class="text-2xl font-extrabold text-ink">{{ resultado.pct_peso }}%</p>
+          <p class="text-[10px] font-bold uppercase tracking-wider text-ink-muted mt-1">Peso ({{ resultado.mercado_nombre }})</p>
+          <div class="h-2 bg-gray-200 rounded-full overflow-hidden mt-2">
+            <div class="h-full rounded-full {% if resultado.pct_peso > 100 %}bg-red-500{% elif resultado.pct_peso > 90 %}bg-sunset{% else %}bg-patagonia{% endif %}" style="width:{{ [resultado.pct_peso, 100]|min }}%"></div>
+          </div>
+          <p class="text-[11px] text-ink-muted mt-2">{{ resultado.peso_mercado.kg }} / {{ resultado.peso_max_fmt.kg }}</p>
+        </div>
+        <div class="rounded-xl bg-cream border border-gray-100 p-4 text-center">
+          <p class="text-2xl font-extrabold text-ink">~{{ resultado.cajas_estimadas_max }}</p>
+          <p class="text-[10px] font-bold uppercase tracking-wider text-ink-muted mt-1">Cajas máx.</p>
+          <p class="text-[11px] text-ink-muted mt-3">Solicitadas: <strong>{{ resultado.cajas_solicitadas }}</strong></p>
         </div>
       </div>
 
       {% if resultado.alertas %}
-      <ul style="font-size:.85rem;color:var(--red);padding-left:1.25rem;">
+      <ul class="text-sm text-red-700 space-y-1 pl-5 list-disc">
         {% for a in resultado.alertas %}<li>{{ a }}</li>{% endfor %}
       </ul>
       {% endif %}
-
-      <p style="font-size:.75rem;color:var(--gray);margin-top:1rem;">
-        Peso disponible: <strong>{{ resultado.peso_disponible_kg }} kg</strong>. Cálculo orientativo; validar con operador logístico.
-      </p>
     </div>
     {% else %}
-    <div class="empty-state" style="padding:3rem;">
-      <i class="fas fa-cube"></i>
-      <p>Ingresa las dimensiones de las cajas y presiona Calcular.</p>
+    <div class="p-12 text-center text-ink-muted">
+      <i class="fas fa-cube text-4xl text-patagonia/30 mb-4"></i>
+      <p class="text-sm">Selecciona el mercado destino, ingresa las dimensiones y presiona Calcular.</p>
     </div>
     {% endif %}
   </div>
 </div>
+
+{% if resultado and resultado.comparativa %}
+<!-- Comparativa multi-mercado -->
+<div class="mt-6 bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+  <div class="px-5 py-4 border-b border-gray-100">
+    <h3 class="font-bold text-ink flex items-center gap-2">
+      <i class="fas fa-earth-americas text-patagonia"></i>
+      Comparativa de peso por mercado
+    </h3>
+    <p class="text-xs text-ink-muted mt-1">Misma carga expresada con formato local de Chile, México, Perú y otros destinos</p>
+  </div>
+  <div class="overflow-x-auto">
+    <table class="w-full text-sm">
+      <thead>
+        <tr class="bg-patagonia-50/60 text-left">
+          <th class="px-5 py-3 text-[10px] font-bold uppercase tracking-wider text-ink-muted">Mercado</th>
+          <th class="px-5 py-3 text-[10px] font-bold uppercase tracking-wider text-ink-muted">Carga total</th>
+          <th class="px-5 py-3 text-[10px] font-bold uppercase tracking-wider text-ink-muted">Toneladas</th>
+          <th class="px-5 py-3 text-[10px] font-bold uppercase tracking-wider text-ink-muted">Unidad extra</th>
+          <th class="px-5 py-3 text-[10px] font-bold uppercase tracking-wider text-ink-muted">Máx. permitido</th>
+          <th class="px-5 py-3 text-[10px] font-bold uppercase tracking-wider text-ink-muted">Disponible</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-gray-50">
+        {% for key, row in resultado.comparativa.items() %}
+        <tr class="hover:bg-gray-50/80 transition-colors {% if key == resultado.mercado %}bg-patagonia-50/40{% endif %}">
+          <td class="px-5 py-3">
+            <div class="flex items-center gap-2">
+              <span class="fi fi-{{ row.codigo }} fis text-lg rounded-sm"></span>
+              <span class="font-semibold text-ink">{{ row.nombre }}</span>
+              {% if key == resultado.mercado %}<span class="text-[9px] font-bold uppercase bg-patagonia text-white px-2 py-0.5 rounded-full">Seleccionado</span>{% endif %}
+            </div>
+          </td>
+          <td class="px-5 py-3 font-mono font-semibold text-ink">{{ row.carga.kg }}</td>
+          <td class="px-5 py-3 font-mono text-ink-muted">{{ row.carga.toneladas }}</td>
+          <td class="px-5 py-3 font-mono text-ink-muted">{{ row.carga.extra or '—' }}</td>
+          <td class="px-5 py-3 font-mono text-ink-muted">{{ row.maximo.kg }}</td>
+          <td class="px-5 py-3 font-mono text-patagonia font-semibold">{{ row.disponible.kg }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <div class="px-5 py-3 bg-gray-50 border-t border-gray-100 text-[11px] text-ink-muted">
+    <i class="fas fa-scale-balanced text-patagonia mr-1"></i>
+    Cálculo orientativo en kg base ({{ resultado.peso_total_kg }} kg). Validar con operador logístico y normativa vigente del país de destino.
+  </div>
+</div>
+{% endif %}
 {% endblock %}

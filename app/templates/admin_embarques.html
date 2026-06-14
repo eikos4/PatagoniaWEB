@@ -1,87 +1,221 @@
-{% extends "admin_layout.html" %}
+{% extends "admin_layout_tw.html" %}
+{% from "admin_macros_tw.html" import cliente_avatar, embarque_badge %}
 {% block title %}Embarques{% endblock %}
 {% block topbar_title %}Embarques{% endblock %}
-{% block topbar_subtitle %}Logística exportación · Chile → México{% endblock %}
+{% block topbar_subtitle %}Logística de exportación · Chile → mercados internacionales{% endblock %}
 {% block topbar_actions %}
-  <a href="{{ url_for('admin.embarque_nuevo') }}" class="btn-top accent"><i class="fas fa-ship"></i> Nuevo embarque</a>
+  <a href="{{ url_for('admin.embarque_nuevo') }}" class="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-patagonia text-white text-sm font-bold hover:bg-patagonia-dark shadow-lg shadow-patagonia/25 transition-all">
+    <i class="fas fa-ship text-xs"></i> Nuevo embarque
+  </a>
 {% endblock %}
 
 {% block content %}
-<div class="pipeline-bar">
-  <div class="pipeline-step"><i class="fas fa-file-invoice-dollar"></i><span>Cotización</span></div>
-  <i class="fas fa-chevron-right pipeline-arrow"></i>
-  <div class="pipeline-step"><i class="fas fa-cart-shopping"></i><span>Pedido</span></div>
-  <i class="fas fa-chevron-right pipeline-arrow"></i>
-  <div class="pipeline-step active"><i class="fas fa-ship"></i><span>Embarque</span></div>
-  <i class="fas fa-chevron-right pipeline-arrow"></i>
-  <div class="pipeline-step"><i class="fas fa-flag-checkered"></i><span>Entrega</span></div>
+{% set en_transito = embarques|selectattr('estado', 'equalto', 'en_transito')|list|length %}
+{% set entregados = embarques|selectattr('estado', 'equalto', 'entregado')|list|length %}
+{% set activos_ns = namespace(n=0) %}
+{% for e in embarques %}{% if e.estado not in ['entregado', 'cerrado', 'cancelado'] %}{% set activos_ns.n = activos_ns.n + 1 %}{% endif %}{% endfor %}
+
+<!-- Pipeline -->
+<div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 sm:p-5 mb-6 overflow-x-auto">
+  <div class="flex items-center justify-center min-w-[520px] gap-2 sm:gap-4">
+    <div class="flex flex-col items-center gap-1.5 opacity-50">
+      <span class="w-10 h-10 rounded-xl bg-gray-100 text-ink-muted flex items-center justify-center"><i class="fas fa-file-invoice-dollar"></i></span>
+      <span class="text-[10px] font-bold uppercase tracking-wider text-ink-muted">Cotización</span>
+    </div>
+    <i class="fas fa-chevron-right text-gray-300 text-xs"></i>
+    <div class="flex flex-col items-center gap-1.5 opacity-50">
+      <span class="w-10 h-10 rounded-xl bg-gray-100 text-ink-muted flex items-center justify-center"><i class="fas fa-cart-shopping"></i></span>
+      <span class="text-[10px] font-bold uppercase tracking-wider text-ink-muted">Pedido</span>
+    </div>
+    <i class="fas fa-chevron-right text-gray-300 text-xs"></i>
+    <div class="flex flex-col items-center gap-1.5">
+      <span class="w-10 h-10 rounded-xl bg-patagonia text-white flex items-center justify-center shadow-md shadow-patagonia/30 ring-2 ring-patagonia/20"><i class="fas fa-ship"></i></span>
+      <span class="text-[10px] font-bold uppercase tracking-wider text-patagonia">Embarque</span>
+    </div>
+    <i class="fas fa-chevron-right text-gray-300 text-xs"></i>
+    <div class="flex flex-col items-center gap-1.5 opacity-50">
+      <span class="w-10 h-10 rounded-xl bg-gray-100 text-ink-muted flex items-center justify-center"><i class="fas fa-flag-checkered"></i></span>
+      <span class="text-[10px] font-bold uppercase tracking-wider text-ink-muted">Entrega</span>
+    </div>
+  </div>
 </div>
 
-<div class="panel">
-  <div class="panel-header">
-    <h3><i class="fas fa-ship" style="color:var(--accent);margin-right:.5rem;"></i>{{ embarques|length }} embarque{% if embarques|length != 1 %}s{% endif %}</h3>
+<!-- KPIs -->
+<div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+  <div class="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm">
+    <div class="flex items-center gap-3">
+      <span class="w-10 h-10 rounded-xl bg-patagonia-50 text-patagonia flex items-center justify-center"><i class="fas fa-ship"></i></span>
+      <div>
+        <p class="text-2xl font-extrabold text-ink">{{ embarques|length }}</p>
+        <p class="text-xs text-ink-muted font-medium">{% if filtro_estado %}En filtro{% else %}Embarques{% endif %}</p>
+      </div>
+    </div>
   </div>
-  <div class="filter-bar">
-    <a href="{{ url_for('admin.embarques') }}" class="filter-chip {% if not filtro_estado %}active{% endif %}"><i class="fas fa-list"></i> Todos</a>
+  <div class="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm">
+    <div class="flex items-center gap-3">
+      <span class="w-10 h-10 rounded-xl bg-patagonia/10 text-patagonia flex items-center justify-center"><i class="fas fa-satellite-dish"></i></span>
+      <div>
+        <p class="text-2xl font-extrabold text-ink">{{ activos_ns.n }}</p>
+        <p class="text-xs text-ink-muted font-medium">En curso</p>
+      </div>
+    </div>
+  </div>
+  <div class="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm">
+    <div class="flex items-center gap-3">
+      <span class="w-10 h-10 rounded-xl bg-blue-50 text-blue-700 flex items-center justify-center"><i class="fas fa-ship"></i></span>
+      <div>
+        <p class="text-2xl font-extrabold text-ink">{{ en_transito }}</p>
+        <p class="text-xs text-ink-muted font-medium">En tránsito</p>
+      </div>
+    </div>
+  </div>
+  <div class="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm">
+    <div class="flex items-center gap-3">
+      <span class="w-10 h-10 rounded-xl bg-green-50 text-green-700 flex items-center justify-center"><i class="fas fa-circle-check"></i></span>
+      <div>
+        <p class="text-2xl font-extrabold text-ink">{{ entregados }}</p>
+        <p class="text-xs text-ink-muted font-medium">Entregados</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Filtros -->
+<div class="bg-white rounded-2xl border border-gray-100 shadow-sm mb-6 overflow-hidden">
+  <div class="px-5 py-3 border-b border-gray-100 flex items-center gap-2">
+    <i class="fas fa-filter text-patagonia text-sm"></i>
+    <span class="text-sm font-semibold text-ink">Estado logístico</span>
+    {% if filtro_estado %}
+    <a href="{{ url_for('admin.embarques') }}" class="ml-auto text-xs font-semibold text-red-500 hover:text-red-700 flex items-center gap-1">
+      <i class="fas fa-times"></i> Limpiar
+    </a>
+    {% endif %}
+  </div>
+  <div class="px-5 py-4 flex flex-wrap gap-2">
+    <a href="{{ url_for('admin.embarques') }}"
+       class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all
+              {% if not filtro_estado %}bg-patagonia text-white shadow-md shadow-patagonia/20{% else %}bg-gray-50 text-ink-muted hover:bg-gray-100{% endif %}">
+      <i class="fas fa-list"></i> Todos
+    </a>
     {% for key, label in embarque_estados.items() %}
-    <a href="{{ url_for('admin.embarques', estado=key) }}" class="filter-chip {% if filtro_estado == key %}active{% endif %}">
+    <a href="{{ url_for('admin.embarques', estado=key) }}"
+       class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all
+              {% if filtro_estado == key %}bg-patagonia text-white shadow-md shadow-patagonia/20{% else %}bg-gray-50 text-ink-muted hover:bg-gray-100{% endif %}">
       <i class="fas {{ embarque_estado_icons.get(key, 'fa-circle') }}"></i> {{ label }}
     </a>
     {% endfor %}
   </div>
-
-  {% if embarques %}
-  <table class="data-table">
-    <thead>
-      <tr>
-        <th></th>
-        <th>Nº</th>
-        <th>Cliente / Pedido</th>
-        <th>Ruta</th>
-        <th>Estado</th>
-        <th>ETD</th>
-        <th>ETA</th>
-        <th></th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for e in embarques %}
-      <tr>
-        <td style="width:36px;text-align:center;color:{{ embarque_estado_colors.get(e.estado, '#666') }};">
-          <i class="fas {{ embarque_estado_icons.get(e.estado, 'fa-ship') }}"></i>
-        </td>
-        <td><a href="{{ url_for('admin.embarque_detalle', id=e.id) }}" class="link-row">{{ e.numero }}</a></td>
-        <td>
-          <strong>{{ e.cliente_nombre }}</strong>
-          {% if e.pedido %}<div style="font-size:.75rem;color:var(--gray);"><i class="fas fa-cart-shopping" style="font-size:.65rem;"></i> {{ e.pedido.numero }}</div>{% endif %}
-        </td>
-        <td style="font-size:.8rem;">
-          <i class="fas fa-location-dot" style="color:var(--accent);font-size:.7rem;"></i> {{ e.puerto_origen or '—' }}
-          <i class="fas fa-arrow-right" style="margin:0 .25rem;font-size:.6rem;color:var(--gray);"></i>
-          <i class="fas fa-anchor" style="color:var(--orange);font-size:.7rem;"></i> {{ e.puerto_destino or '—' }}
-        </td>
-        <td>
-          <span class="estado-badge" style="background:{{ embarque_estado_colors.get(e.estado, '#eee') }}18;color:{{ embarque_estado_colors.get(e.estado, '#666') }};">
-            <i class="fas {{ embarque_estado_icons.get(e.estado, 'fa-circle') }}"></i>
-            {{ embarque_estados.get(e.estado, e.estado) }}
-          </span>
-        </td>
-        <td style="font-size:.85rem;">{{ e.etd.strftime("%d/%m/%Y") if e.etd else '—' }}</td>
-        <td style="font-size:.85rem;">{{ e.eta.strftime("%d/%m/%Y") if e.eta else '—' }}</td>
-        <td>
-          <a href="{{ url_for('admin.embarque_editar', id=e.id) }}" class="btn-icon" title="Editar"><i class="fas fa-pen"></i></a>
-        </td>
-      </tr>
-      {% endfor %}
-    </tbody>
-  </table>
-  {% else %}
-  <div class="empty-state">
-    <i class="fas fa-ship"></i>
-    <h3 style="font-weight:700;margin:.5rem 0;">Sin embarques</h3>
-    <p style="color:var(--gray);margin-bottom:1rem;">Crea un embarque desde un pedido listo para exportar.</p>
-    <a href="{{ url_for('admin.embarque_nuevo') }}" class="btn btn-green"><i class="fas fa-plus"></i> Crear embarque</a>
-  </div>
-  {% endif %}
 </div>
+
+{% if embarques %}
+<div class="hidden lg:block bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+  <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
+    <h2 class="font-bold text-ink flex items-center gap-2">
+      <i class="fas fa-anchor text-patagonia"></i> Operaciones marítimas
+    </h2>
+    <span class="text-xs font-semibold text-ink-muted bg-gray-50 px-3 py-1 rounded-full">{{ embarques|length }} embarque{% if embarques|length != 1 %}s{% endif %}</span>
+  </div>
+  <div class="overflow-x-auto">
+    <table class="w-full text-sm">
+      <thead>
+        <tr class="bg-gray-50/80 text-left">
+          <th class="px-4 py-3 text-[11px] font-bold uppercase tracking-wider text-ink-muted w-10"></th>
+          <th class="px-4 py-3 text-[11px] font-bold uppercase tracking-wider text-ink-muted">Nº</th>
+          <th class="px-4 py-3 text-[11px] font-bold uppercase tracking-wider text-ink-muted">Cliente / Pedido</th>
+          <th class="px-4 py-3 text-[11px] font-bold uppercase tracking-wider text-ink-muted">Ruta</th>
+          <th class="px-4 py-3 text-[11px] font-bold uppercase tracking-wider text-ink-muted">Estado</th>
+          <th class="px-4 py-3 text-[11px] font-bold uppercase tracking-wider text-ink-muted">ETD</th>
+          <th class="px-4 py-3 text-[11px] font-bold uppercase tracking-wider text-ink-muted">ETA</th>
+          <th class="px-6 py-3"></th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-gray-50">
+        {% for e in embarques %}
+        <tr class="hover:bg-cream/50 transition-colors group {% if e.estado in ['cancelado', 'cerrado'] %}opacity-60{% endif %}">
+          <td class="px-4 py-4 text-center">
+            <span class="w-9 h-9 rounded-xl flex items-center justify-center mx-auto" style="background:{{ embarque_estado_colors.get(e.estado, '#eee') }}18;color:{{ embarque_estado_colors.get(e.estado, '#666') }};">
+              <i class="fas {{ embarque_estado_icons.get(e.estado, 'fa-ship') }} text-sm"></i>
+            </span>
+          </td>
+          <td class="px-4 py-4">
+            <a href="{{ url_for('admin.embarque_detalle', id=e.id) }}" class="font-bold text-patagonia hover:text-patagonia-dark transition-colors">{{ e.numero }}</a>
+            {% if e.numero_contenedor %}<p class="text-[11px] text-ink-muted mt-0.5 font-mono">{{ e.numero_contenedor }}</p>{% endif %}
+          </td>
+          <td class="px-4 py-4">
+            <div class="flex items-center gap-3">
+              {{ cliente_avatar(e.cliente_nombre, 'sm') }}
+              <div class="min-w-0">
+                <p class="font-semibold text-ink truncate">{{ e.cliente_nombre }}</p>
+                {% if e.pedido %}<p class="text-xs text-ink-muted"><i class="fas fa-cart-shopping text-[10px] mr-1"></i>{{ e.pedido.numero }}</p>{% endif %}
+              </div>
+            </div>
+          </td>
+          <td class="px-4 py-4">
+            <div class="flex items-center gap-1.5 text-xs">
+              <span class="inline-flex items-center gap-1 text-ink-muted"><i class="fas fa-location-dot text-patagonia"></i>{{ e.puerto_origen or '—' }}</span>
+              <i class="fas fa-arrow-right text-gray-300 text-[10px]"></i>
+              <span class="inline-flex items-center gap-1 font-medium text-ink"><i class="fas fa-anchor text-sunset"></i>{{ e.puerto_destino or '—' }}</span>
+            </div>
+          </td>
+          <td class="px-4 py-4">{{ embarque_badge(e.estado) }}</td>
+          <td class="px-4 py-4 text-xs text-ink-muted whitespace-nowrap">{{ e.etd.strftime("%d/%m/%Y") if e.etd else '—' }}</td>
+          <td class="px-4 py-4 text-xs whitespace-nowrap {% if e.tiene_retraso %}text-red-600 font-semibold{% else %}text-ink-muted{% endif %}">
+            {{ e.eta.strftime("%d/%m/%Y") if e.eta else '—' }}
+          </td>
+          <td class="px-6 py-4">
+            <div class="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+              <a href="{{ url_for('admin.embarque_detalle', id=e.id) }}" class="w-9 h-9 rounded-xl border border-gray-200 flex items-center justify-center text-ink-muted hover:border-patagonia hover:text-patagonia hover:bg-patagonia-50 transition-colors" title="Ver">
+                <i class="fas fa-arrow-right text-xs"></i>
+              </a>
+              <a href="{{ url_for('admin.embarque_editar', id=e.id) }}" class="w-9 h-9 rounded-xl border border-gray-200 flex items-center justify-center text-ink-muted hover:border-patagonia hover:text-patagonia hover:bg-patagonia-50 transition-colors" title="Editar">
+                <i class="fas fa-pen text-xs"></i>
+              </a>
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="lg:hidden space-y-3">
+  {% for e in embarques %}
+  <a href="{{ url_for('admin.embarque_detalle', id=e.id) }}" class="block bg-white rounded-2xl border border-gray-100 p-4 shadow-sm hover:border-patagonia/30 hover:shadow-md transition-all">
+    <div class="flex items-start gap-3 mb-3">
+      <span class="w-10 h-10 rounded-xl flex items-center justify-center shrink-0" style="background:{{ embarque_estado_colors.get(e.estado, '#eee') }}18;color:{{ embarque_estado_colors.get(e.estado, '#666') }};">
+        <i class="fas {{ embarque_estado_icons.get(e.estado, 'fa-ship') }}"></i>
+      </span>
+      <div class="flex-1 min-w-0">
+        <p class="font-extrabold text-patagonia">{{ e.numero }}</p>
+        <p class="font-semibold text-ink text-sm truncate">{{ e.cliente_nombre }}</p>
+        <p class="text-xs text-ink-muted mt-1">{{ e.puerto_origen or '—' }} → {{ e.puerto_destino or '—' }}</p>
+      </div>
+      {{ embarque_badge(e.estado) }}
+    </div>
+    <div class="flex items-center justify-between text-xs text-ink-muted">
+      <span>ETD {{ e.etd.strftime("%d/%m") if e.etd else '—' }}</span>
+      <span class="{% if e.tiene_retraso %}text-red-600 font-semibold{% endif %}">ETA {{ e.eta.strftime("%d/%m") if e.eta else '—' }}</span>
+    </div>
+  </a>
+  {% endfor %}
+</div>
+
+{% else %}
+<div class="bg-white rounded-2xl border border-gray-100 p-12 text-center shadow-sm">
+  <div class="w-16 h-16 rounded-2xl bg-patagonia-50 text-patagonia flex items-center justify-center mx-auto mb-4 text-2xl">
+    <i class="fas fa-ship"></i>
+  </div>
+  <h3 class="font-bold text-ink mb-2">Sin embarques{% if filtro_estado %} con este estado{% endif %}</h3>
+  <p class="text-sm text-ink-muted mb-6 max-w-sm mx-auto">Crea un embarque desde un pedido listo para exportar o regístralo manualmente.</p>
+  {% if filtro_estado %}
+  <a href="{{ url_for('admin.embarques') }}" class="inline-flex items-center gap-2 px-5 py-2.5 rounded-full border border-gray-200 text-sm font-semibold hover:border-patagonia hover:text-patagonia transition-colors mr-2">
+    Ver todos
+  </a>
+  {% endif %}
+  <a href="{{ url_for('admin.embarque_nuevo') }}" class="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-patagonia text-white text-sm font-bold hover:bg-patagonia-dark transition-colors">
+    <i class="fas fa-plus text-xs"></i> Crear embarque
+  </a>
+</div>
+{% endif %}
 {% endblock %}

@@ -1,176 +1,224 @@
-{% extends "admin_layout.html" %}
+{% extends "admin_layout_tw.html" %}
+{% from "admin_macros_tw.html" import flag_circle, tw_input, requisito_icon %}
 {% block title %}{{ pais.nombre }}{% endblock %}
-{% block topbar_title %}{{ pais.nombre }} <span style="font-weight:500;color:var(--gray);font-size:.85rem;">({{ pais.codigo }})</span>{% endblock %}
+{% block topbar_title %}
+{{ flag_circle(pais.codigo, 'sm') }}
+<span>{{ pais.nombre }}</span>
+<span class="text-sm font-medium text-ink-muted">({{ pais.codigo }})</span>
+{% endblock %}
 {% block topbar_subtitle %}Requisitos de exportación y documentación PDF por país{% endblock %}
 {% block topbar_actions %}
-  <a href="{{ url_for('admin.pais_editar', id=pais.id) }}" class="btn-top ghost"><i class="fas fa-pen"></i> Editar</a>
-  <a href="{{ url_for('admin.paises') }}" class="btn-top ghost"><i class="fas fa-arrow-left"></i> Países</a>
+  <a href="{{ url_for('admin.pais_editar', id=pais.id) }}" class="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-gray-200 bg-white text-sm font-semibold hover:border-patagonia hover:text-patagonia transition-colors">
+    <i class="fas fa-pen text-xs"></i> Editar
+  </a>
+  <a href="{{ url_for('admin.paises') }}" class="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-gray-200 bg-white text-sm font-semibold hover:border-patagonia hover:text-patagonia transition-colors">
+    <i class="fas fa-arrow-left text-xs"></i> Países
+  </a>
 {% endblock %}
 
 {% block content %}
 {% if pais.notas %}
-<div class="alert-panel info" style="margin-bottom:1.25rem;">
-  <i class="fas fa-circle-info"></i>
+<div class="mb-6 flex items-start gap-3 px-5 py-4 rounded-2xl bg-blue-50 border border-blue-100 text-sm text-blue-900">
+  <i class="fas fa-circle-info text-blue-500 mt-0.5"></i>
   <span>{{ pais.notas }}</span>
 </div>
 {% endif %}
 
-<div class="panel" style="margin-bottom:1.25rem;">
-  <div class="panel-header">
-    <h3><i class="fas fa-file-pdf" style="color:var(--red);margin-right:.4rem;"></i>Subir documento PDF — {{ pais.nombre }}</h3>
+<!-- KPIs -->
+<div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
+  <div class="bg-white rounded-2xl border border-gray-100 p-4 shadow-sm">
+    <p class="text-2xl font-extrabold text-ink">{{ pais.requisitos|length }}</p>
+    <p class="text-xs text-ink-muted font-medium">Requisitos</p>
   </div>
-  <form method="POST" action="{{ url_for('admin.pais_documento_subir', id=pais.id) }}" enctype="multipart/form-data" class="form-grid" style="padding:1.5rem;">
+  <div class="bg-white rounded-2xl border border-gray-100 p-4 shadow-sm">
+    <p class="text-2xl font-extrabold text-red-600">{{ pais.requisitos_obligatorios|length }}</p>
+    <p class="text-xs text-ink-muted font-medium">Obligatorios</p>
+  </div>
+  <div class="bg-white rounded-2xl border border-gray-100 p-4 shadow-sm">
+    <p class="text-2xl font-extrabold text-ink">{{ documentos_pais|length }}</p>
+    <p class="text-xs text-ink-muted font-medium">Documentos PDF</p>
+  </div>
+  <div class="bg-white rounded-2xl border border-gray-100 p-4 shadow-sm">
+    {% if pais.activo %}
+    <p class="text-lg font-extrabold text-green-700 flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-green-500"></span> Activo</p>
+    {% else %}
+    <p class="text-lg font-extrabold text-ink-muted flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-gray-400"></span> Inactivo</p>
+    {% endif %}
+    <p class="text-xs text-ink-muted font-medium">Estado mercado</p>
+  </div>
+</div>
+
+<!-- Upload PDF -->
+<div class="bg-white rounded-2xl border border-gray-100 shadow-sm mb-6 overflow-hidden" id="pdfDropZone">
+  <div class="px-6 py-4 border-b border-gray-100 flex items-center gap-2">
+    <span class="w-9 h-9 rounded-xl bg-red-50 text-red-600 flex items-center justify-center"><i class="fas fa-file-pdf"></i></span>
+    <div>
+      <h2 class="font-bold text-ink">Subir documento PDF</h2>
+      <p class="text-xs text-ink-muted">{{ pais.nombre }} · Máx. 32 MB</p>
+    </div>
+  </div>
+  <form method="POST" action="{{ url_for('admin.pais_documento_subir', id=pais.id) }}" enctype="multipart/form-data" class="p-6">
     {{ doc_form.hidden_tag() }}
-    <div class="form-group full">
-      <label><i class="fas fa-file-lines"></i> Título del documento</label>
-      {{ doc_form.titulo(class="form-control", placeholder="Ej. Certificado fitosanitario SAG") }}
-    </div>
-    <div class="form-group">
-      <label><i class="fas fa-tag"></i> Tipo</label>
-      {{ doc_form.tipo(class="form-control") }}
-    </div>
-    <div class="form-group">
-      <label><i class="fas fa-calendar"></i> Vencimiento</label>
-      {{ doc_form.fecha_vencimiento(class="form-control") }}
-    </div>
-    <div class="form-group full">
-      <label><i class="fas fa-comment"></i> Comentarios</label>
-      {{ doc_form.comentarios(class="form-control", rows="2") }}
-    </div>
-    <div class="form-group full">
-      <label><i class="fas fa-file-pdf"></i> Archivo PDF *</label>
-      <div class="upload-box" id="pdfDropZone" style="margin-top:.5rem;">
-        <i class="fas fa-cloud-arrow-up"></i>
-        <p><strong>Arrastra tu PDF aquí</strong> o haz clic para seleccionar</p>
-        <p style="font-size:.75rem;margin-top:.35rem;">Máximo 32 MB · Solo PDF</p>
-        {{ doc_form.archivo(id="pdfInput", style="display:none;", accept="application/pdf,.pdf") }}
-        <p id="pdfFileName" style="font-size:.8rem;color:var(--accent);font-weight:600;margin-top:.75rem;"></p>
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+      {{ tw_input('Título del documento', doc_form.titulo, 'fa-file-lines', full=true) }}
+      {{ tw_input('Tipo', doc_form.tipo, 'fa-tag') }}
+      {{ tw_input('Vencimiento', doc_form.fecha_vencimiento, 'fa-calendar') }}
+      {{ tw_input('Comentarios', doc_form.comentarios, 'fa-comment', full=true, rows=2) }}
+      <div class="col-span-full">
+        <label class="block text-[11px] font-bold uppercase tracking-wider text-ink-muted mb-2">
+          <i class="fas fa-file-pdf text-red-500 mr-1"></i>Archivo PDF *
+        </label>
+        <div id="pdfDropArea" class="relative border-2 border-dashed border-gray-200 rounded-2xl p-8 text-center cursor-pointer hover:border-patagonia hover:bg-patagonia-50/30 transition-all group">
+          <div class="w-14 h-14 rounded-2xl bg-gray-50 group-hover:bg-white flex items-center justify-center mx-auto mb-3 text-2xl text-ink-muted group-hover:text-patagonia transition-colors">
+            <i class="fas fa-cloud-arrow-up"></i>
+          </div>
+          <p class="font-semibold text-ink text-sm">Arrastra tu PDF aquí o haz clic</p>
+          <p class="text-xs text-ink-muted mt-1">Solo archivos PDF · Máximo 32 MB</p>
+          {{ doc_form.archivo(id="pdfInput", class="hidden", accept="application/pdf,.pdf") }}
+          <p id="pdfFileName" class="text-sm text-patagonia font-semibold mt-3"></p>
+        </div>
+        {% if doc_form.archivo.errors %}
+        <p class="mt-2 text-xs text-red-600"><i class="fas fa-exclamation-circle mr-1"></i>{{ doc_form.archivo.errors[0] }}</p>
+        {% endif %}
       </div>
-      {% if doc_form.archivo.errors %}
-        {% for e in doc_form.archivo.errors %}<p class="form-errors">{{ e }}</p>{% endfor %}
-      {% endif %}
     </div>
-    <div class="form-actions full" style="grid-column:1/-1;padding:0;">
-      <button type="submit" class="btn btn-green"><i class="fas fa-upload"></i> Subir PDF</button>
+    <div class="mt-6 pt-5 border-t border-gray-100">
+      <button type="submit" class="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-patagonia text-white text-sm font-bold hover:bg-patagonia-dark shadow-lg shadow-patagonia/20 transition-all">
+        <i class="fas fa-upload"></i> Subir PDF
+      </button>
     </div>
   </form>
 </div>
 
 {% if documentos_pais %}
-<div class="panel" style="margin-bottom:1.25rem;">
-  <div class="panel-header"><h3><i class="fas fa-folder-open" style="color:var(--accent);margin-right:.4rem;"></i>Documentos de {{ pais.nombre }} ({{ documentos_pais|length }})</h3></div>
-  <table class="data-table">
-    <thead><tr><th>Documento</th><th>Tipo</th><th>Estado</th><th>PDF</th><th>Vence</th></tr></thead>
-    <tbody>
-      {% for d in documentos_pais %}
-      <tr>
-        <td><a href="{{ url_for('admin.documento_detalle', id=d.id) }}" class="link-row">{{ d.titulo }}</a></td>
-        <td style="font-size:.8rem;">{{ documento_tipos.get(d.tipo, d.tipo) }}</td>
-        <td>
-          <span class="estado-badge" style="background:{{ documento_estado_colors.get(d.estado, '#eee') }}18;color:{{ documento_estado_colors.get(d.estado, '#666') }};">
-            {{ documento_estados.get(d.estado, d.estado) }}
-          </span>
-        </td>
-        <td>
-          {% if d.tiene_archivo %}
-          <a href="{{ url_for('admin.documento_descargar', id=d.id) }}" class="btn btn-ghost" style="padding:.3rem .65rem;font-size:.72rem;"><i class="fas fa-download"></i> PDF</a>
-          {% else %}<span style="color:var(--gray);">—</span>{% endif %}
-        </td>
-        <td style="font-size:.8rem;">{{ d.fecha_vencimiento.strftime('%d/%m/%Y') if d.fecha_vencimiento else '—' }}</td>
-      </tr>
-      {% endfor %}
-    </tbody>
-  </table>
+<div class="bg-white rounded-2xl border border-gray-100 shadow-sm mb-6 overflow-hidden">
+  <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
+    <h2 class="font-bold text-ink flex items-center gap-2">
+      <i class="fas fa-folder-open text-sunset"></i> Documentos de {{ pais.nombre }}
+    </h2>
+    <span class="text-xs font-semibold bg-gray-50 text-ink-muted px-3 py-1 rounded-full">{{ documentos_pais|length }}</span>
+  </div>
+  <div class="divide-y divide-gray-50">
+    {% for d in documentos_pais %}
+    <div class="px-6 py-4 flex flex-wrap items-center gap-4 hover:bg-cream/30 transition-colors">
+      <span class="w-10 h-10 rounded-xl bg-red-50 text-red-600 flex items-center justify-center shrink-0"><i class="fas fa-file-pdf"></i></span>
+      <div class="flex-1 min-w-0">
+        <a href="{{ url_for('admin.documento_detalle', id=d.id) }}" class="font-semibold text-ink hover:text-patagonia transition-colors">{{ d.titulo }}</a>
+        <p class="text-xs text-ink-muted mt-0.5">{{ documento_tipos.get(d.tipo, d.tipo) }}</p>
+      </div>
+      <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold"
+            style="background:{{ documento_estado_colors.get(d.estado, '#eee') }}18;color:{{ documento_estado_colors.get(d.estado, '#666') }};">
+        <i class="fas {{ documento_estado_icons.get(d.estado, 'fa-circle') }} text-[10px]"></i>
+        {{ documento_estados.get(d.estado, d.estado) }}
+      </span>
+      {% if d.fecha_vencimiento %}
+      <span class="text-xs text-ink-muted"><i class="fas fa-calendar mr-1"></i>{{ d.fecha_vencimiento.strftime('%d/%m/%Y') }}</span>
+      {% endif %}
+      {% if d.tiene_archivo %}
+      <a href="{{ url_for('admin.documento_descargar', id=d.id) }}" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-gray-200 text-xs font-semibold hover:border-patagonia hover:text-patagonia transition-colors">
+        <i class="fas fa-download"></i> PDF
+      </a>
+      {% endif %}
+    </div>
+    {% endfor %}
+  </div>
 </div>
 {% endif %}
 
-<div class="grid-2">
-  <div class="panel">
-    <div class="panel-header"><h3><i class="fas fa-list-check" style="color:var(--accent);margin-right:.4rem;"></i>Requisitos ({{ pais.requisitos|length }})</h3></div>
+<div class="grid grid-cols-1 xl:grid-cols-5 gap-6">
+  <!-- Requisitos list -->
+  <div class="xl:col-span-3 bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+    <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
+      <h2 class="font-bold text-ink flex items-center gap-2">
+        <i class="fas fa-list-check text-patagonia"></i> Requisitos
+      </h2>
+      <span class="text-xs font-semibold bg-patagonia-50 text-patagonia px-3 py-1 rounded-full">{{ pais.requisitos|length }}</span>
+    </div>
+
     {% if pais.requisitos %}
-    <table class="data-table">
-      <thead><tr><th>Tipo</th><th>Requisito</th><th>Producto</th><th></th></tr></thead>
-      <tbody>
-        {% for r in pais.requisitos %}
-        {% set tipo_doc = requisito_a_documento_tipo.get(r.tipo, 'otro') %}
-        <tr>
-          <td><span class="badge" style="background:#eff6ff;color:#2563eb;">{{ requisito_tipos.get(r.tipo, r.tipo) }}</span></td>
-          <td>
-            <strong>{{ r.titulo }}</strong>
-            {% if r.obligatorio %}<span class="badge" style="background:#fff1f2;color:var(--red);margin-left:.35rem;">Obligatorio</span>{% endif %}
-            {% if r.descripcion %}<div style="font-size:.75rem;color:var(--gray);margin-top:.25rem;">{{ r.descripcion }}</div>{% endif %}
-          </td>
-          <td style="font-size:.8rem;">{{ r.producto.nombre if r.producto else 'Todos' }}</td>
-          <td>
-            <div style="display:flex;gap:.35rem;">
-              <a href="{{ url_for('admin.pais_detalle', id=pais.id, titulo=r.titulo, tipo_doc=tipo_doc) }}#pdfDropZone"
-                 class="btn-icon" title="Subir PDF" style="border-color:#fecaca;color:var(--red);">
-                <i class="fas fa-file-pdf"></i>
-              </a>
-              <form method="POST" action="{{ url_for('admin.pais_requisito_eliminar', pais_id=pais.id, req_id=r.id) }}" onsubmit="return confirm('¿Eliminar requisito?');">
-                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                <button type="submit" class="btn-icon del" title="Eliminar"><i class="fas fa-trash"></i></button>
-              </form>
+    <div class="divide-y divide-gray-50">
+      {% for r in pais.requisitos %}
+      {% set tipo_doc = requisito_a_documento_tipo.get(r.tipo, 'otro') %}
+      <div class="px-6 py-4 hover:bg-cream/30 transition-colors">
+        <div class="flex gap-3">
+          {{ requisito_icon(r.tipo) }}
+          <div class="flex-1 min-w-0">
+            <div class="flex flex-wrap items-center gap-2 mb-1">
+              <span class="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md bg-blue-50 text-blue-700">{{ requisito_tipos.get(r.tipo, r.tipo) }}</span>
+              {% if r.obligatorio %}
+              <span class="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md bg-red-50 text-red-600"><i class="fas fa-asterisk text-[8px] mr-0.5"></i>Obligatorio</span>
+              {% endif %}
             </div>
-          </td>
-        </tr>
-        {% endfor %}
-      </tbody>
-    </table>
+            <p class="font-semibold text-ink">{{ r.titulo }}</p>
+            {% if r.descripcion %}
+            <p class="text-xs text-ink-muted mt-1 leading-relaxed">{{ r.descripcion }}</p>
+            {% endif %}
+            <p class="text-xs text-ink-muted mt-2">
+              <i class="fas fa-seedling text-patagonia mr-1"></i>
+              {{ r.producto.nombre if r.producto else 'Todos los productos' }}
+            </p>
+          </div>
+          <div class="flex items-start gap-1 shrink-0">
+            <a href="{{ url_for('admin.pais_detalle', id=pais.id, titulo=r.titulo, tipo_doc=tipo_doc) }}#pdfDropZone"
+               class="inline-flex items-center justify-center w-9 h-9 rounded-xl border border-red-100 text-red-500 hover:bg-red-50 transition-colors" title="Subir PDF">
+              <i class="fas fa-file-pdf text-xs"></i>
+            </a>
+            <form method="POST" action="{{ url_for('admin.pais_requisito_eliminar', pais_id=pais.id, req_id=r.id) }}" onsubmit="return confirm('¿Eliminar requisito?');">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <button type="submit" class="inline-flex items-center justify-center w-9 h-9 rounded-xl border border-gray-200 text-ink-muted hover:border-red-200 hover:text-red-500 hover:bg-red-50 transition-colors" title="Eliminar">
+                <i class="fas fa-trash text-xs"></i>
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
     {% else %}
-    <div class="empty-state" style="padding:2rem;"><p>Sin requisitos. Agrega el primero al lado.</p></div>
+    <div class="p-10 text-center">
+      <div class="w-12 h-12 rounded-xl bg-gray-50 text-ink-muted flex items-center justify-center mx-auto mb-3"><i class="fas fa-clipboard-list"></i></div>
+      <p class="text-sm text-ink-muted">Sin requisitos. Agrega el primero con el formulario.</p>
+    </div>
     {% endif %}
   </div>
 
-  <div class="panel">
-    <div class="panel-header"><h3><i class="fas fa-plus" style="color:var(--accent);margin-right:.4rem;"></i>Agregar requisito</h3></div>
-    <form method="POST" action="{{ url_for('admin.pais_requisito_nuevo', id=pais.id) }}" class="form-grid" style="padding:1.5rem;">
+  <!-- Add requisito form -->
+  <div class="xl:col-span-2 bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden h-fit">
+    <div class="px-6 py-4 border-b border-gray-100 bg-gradient-to-r from-cream to-white">
+      <h2 class="font-bold text-ink flex items-center gap-2">
+        <i class="fas fa-plus text-sunset"></i> Agregar requisito
+      </h2>
+    </div>
+    <form method="POST" action="{{ url_for('admin.pais_requisito_nuevo', id=pais.id) }}" class="p-6">
       {{ req_form.hidden_tag() }}
-      <div class="form-group">
-        <label>Tipo</label>
-        {{ req_form.tipo(class="form-control") }}
+      <div class="space-y-4">
+        {{ tw_input('Tipo', req_form.tipo, 'fa-layer-group') }}
+        {{ tw_input('Obligatorio', req_form.obligatorio, 'fa-asterisk') }}
+        {{ tw_input('Título', req_form.titulo, 'fa-heading') }}
+        {{ tw_input('Descripción', req_form.descripcion, 'fa-align-left', rows=3) }}
+        {{ tw_input('Producto', req_form.product_id, 'fa-seedling') }}
+        {{ tw_input('Orden', req_form.orden, 'fa-sort-numeric-down') }}
       </div>
-      <div class="form-group">
-        <label>Obligatorio</label>
-        {{ req_form.obligatorio(class="form-control") }}
-      </div>
-      <div class="form-group full">
-        <label>Título</label>
-        {{ req_form.titulo(class="form-control") }}
-      </div>
-      <div class="form-group full">
-        <label>Descripción</label>
-        {{ req_form.descripcion(class="form-control", rows="3") }}
-      </div>
-      <div class="form-group">
-        <label>Producto</label>
-        {{ req_form.product_id(class="form-control") }}
-      </div>
-      <div class="form-group">
-        <label>Orden</label>
-        {{ req_form.orden(class="form-control") }}
-      </div>
-      <div class="form-actions full" style="grid-column:1/-1;padding:0;">
-        <button type="submit" class="btn btn-green"><i class="fas fa-plus"></i> Agregar</button>
-      </div>
+      <button type="submit" class="mt-6 w-full inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-sunset text-white text-sm font-bold hover:bg-sunset-dark shadow-lg shadow-sunset/20 transition-all">
+        <i class="fas fa-plus"></i> Agregar requisito
+      </button>
     </form>
   </div>
 </div>
 {% endblock %}
 
 {% block extra_js %}
-<script>
 (function () {
-  const zone = document.getElementById('pdfDropZone');
+  const area = document.getElementById('pdfDropArea');
   const input = document.getElementById('pdfInput');
   const label = document.getElementById('pdfFileName');
-  if (!zone || !input) return;
-  zone.addEventListener('click', () => input.click());
-  zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('dragover'); });
-  zone.addEventListener('dragleave', () => zone.classList.remove('dragover'));
-  zone.addEventListener('drop', e => {
+  if (!area || !input) return;
+  area.addEventListener('click', () => input.click());
+  area.addEventListener('dragover', e => { e.preventDefault(); area.classList.add('border-patagonia', 'bg-patagonia-50/50'); });
+  area.addEventListener('dragleave', () => area.classList.remove('border-patagonia', 'bg-patagonia-50/50'));
+  area.addEventListener('drop', e => {
     e.preventDefault();
-    zone.classList.remove('dragover');
+    area.classList.remove('border-patagonia', 'bg-patagonia-50/50');
     if (e.dataTransfer.files.length) {
       input.files = e.dataTransfer.files;
       label.textContent = '📄 ' + e.dataTransfer.files[0].name;
@@ -180,5 +228,4 @@
     if (input.files.length) label.textContent = '📄 ' + input.files[0].name;
   });
 })();
-</script>
 {% endblock %}

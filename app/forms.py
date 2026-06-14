@@ -10,7 +10,7 @@ from app.constants import (
     DOCUMENTO_TIPOS, DOCUMENTO_ESTADOS, REQUISITO_TIPOS,
     LOGISTICA_ETAPAS, USER_ROLES, TAREA_PRIORIDADES, TAREA_ESTADOS,
     CONTENEDOR_TIPOS, COSTO_TIPOS, CONTRATO_ESTADOS, PLANTILLA_TIPOS,
-    PRODUCTO_FORMATOS, CLIENTE_TIPOS,
+    PRODUCTO_FORMATOS, CLIENTE_TIPOS, MERCADOS_PESO,
 )
 
 
@@ -226,6 +226,11 @@ class UsuarioForm(FlaskForm):
 
 
 class ContainerCalcForm(FlaskForm):
+    mercado_destino = SelectField(
+        "Mercado destino",
+        choices=[(k, v["nombre"]) for k, v in MERCADOS_PESO.items()],
+        default="CL",
+    )
     tipo_contenedor = SelectField("Tipo contenedor", choices=[(k, v) for k, v in CONTENEDOR_TIPOS.items()], default="40")
     cajas_largo = FloatField("Largo caja (cm)", validators=[DataRequired(), NumberRange(min=1)])
     cajas_ancho = FloatField("Ancho caja (cm)", validators=[DataRequired(), NumberRange(min=1)])

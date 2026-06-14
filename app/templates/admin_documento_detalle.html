@@ -1,85 +1,160 @@
-{% extends "admin_layout.html" %}
+{% extends "admin_layout_tw.html" %}
+{% from "admin_macros_tw.html" import documento_badge, documento_tipo_icon, flag_circle %}
 {% block title %}{{ doc.titulo }}{% endblock %}
-{% block topbar_title %}{{ doc.titulo }}{% endblock %}
-{% block topbar_subtitle %}{{ documento_tipos.get(doc.tipo, doc.tipo) }} · {{ documento_estados.get(doc.estado, doc.estado) }}{% endblock %}
+{% block topbar_title %}
+<div class="flex items-center gap-3 min-w-0">
+  {{ documento_tipo_icon(doc.tipo) }}
+  <span class="truncate">{{ doc.titulo }}</span>
+</div>
+{% endblock %}
+{% block topbar_subtitle %}
+{{ documento_tipos.get(doc.tipo, doc.tipo) }} · {{ documento_badge(doc.estado) }}
+{% endblock %}
 {% block topbar_actions %}
   {% if doc.tiene_archivo %}
-  <a href="{{ url_for('admin.documento_descargar', id=doc.id) }}" class="btn-top accent"><i class="fas fa-download"></i> Descargar</a>
+  <a href="{{ url_for('admin.documento_descargar', id=doc.id) }}" class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-patagonia text-white text-sm font-bold hover:bg-patagonia-dark transition-colors">
+    <i class="fas fa-download text-xs"></i> Descargar PDF
+  </a>
   {% endif %}
-  <a href="{{ url_for('admin.documento_editar', id=doc.id) }}" class="btn-top ghost"><i class="fas fa-pen"></i> Editar</a>
-  <a href="{{ url_for('admin.documentos') }}" class="btn-top ghost"><i class="fas fa-arrow-left"></i> Lista</a>
+  <a href="{{ url_for('admin.documento_editar', id=doc.id) }}" class="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-gray-200 bg-white text-sm font-semibold hover:border-patagonia hover:text-patagonia transition-colors">
+    <i class="fas fa-pen text-xs"></i> Editar
+  </a>
+  <a href="{{ url_for('admin.documentos') }}" class="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-gray-200 bg-white text-sm font-semibold hover:border-patagonia hover:text-patagonia transition-colors">
+    <i class="fas fa-arrow-left text-xs"></i> Lista
+  </a>
 {% endblock %}
 
 {% block content %}
-<div class="kpi-grid" style="grid-template-columns:repeat(4,1fr);margin-bottom:1.25rem;">
-  <div class="kpi-card green">
-    <div class="kpi-icon"><i class="fas {{ documento_estado_icons.get(doc.estado, 'fa-file') }}"></i></div>
-    <div class="kpi-label">Estado</div>
-    <div class="kpi-value" style="font-size:.95rem;">
-      <span class="estado-badge" style="background:{{ documento_estado_colors.get(doc.estado) }}18;color:{{ documento_estado_colors.get(doc.estado) }};">
-        {{ documento_estados.get(doc.estado, doc.estado) }}
-      </span>
-    </div>
+<!-- KPIs -->
+<div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+  <div class="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm">
+    <p class="text-[10px] font-bold uppercase tracking-wider text-ink-muted mb-2">Estado</p>
+    {{ documento_badge(doc.estado) }}
   </div>
-  <div class="kpi-card blue">
-    <div class="kpi-icon"><i class="fas fa-tag"></i></div>
-    <div class="kpi-label">Tipo</div>
-    <div class="kpi-value" style="font-size:.9rem;">{{ documento_tipos.get(doc.tipo, doc.tipo) }}</div>
+  <div class="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm">
+    <p class="text-[10px] font-bold uppercase tracking-wider text-ink-muted mb-1">Tipo</p>
+    <p class="text-sm font-bold text-ink">{{ documento_tipos.get(doc.tipo, doc.tipo) }}</p>
   </div>
-  <div class="kpi-card orange">
-    <div class="kpi-icon"><i class="fas fa-calendar"></i></div>
-    <div class="kpi-label">Vencimiento</div>
-    <div class="kpi-value" style="font-size:.9rem;">
+  <div class="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm">
+    <p class="text-[10px] font-bold uppercase tracking-wider text-ink-muted mb-1">Vencimiento</p>
+    <p class="text-lg font-extrabold {% if doc.esta_vencido %}text-red-600{% elif doc.dias_para_vencer is not none and doc.dias_para_vencer <= 30 %}text-sunset{% else %}text-ink{% endif %}">
       {% if doc.fecha_vencimiento %}{{ doc.fecha_vencimiento.strftime('%d/%m/%Y') }}{% else %}Sin fecha{% endif %}
-    </div>
-    {% if doc.esta_vencido %}<div class="kpi-sub" style="color:var(--red);">Vencido</div>{% elif doc.dias_para_vencer is not none and doc.dias_para_vencer <= 30 %}<div class="kpi-sub">En {{ doc.dias_para_vencer }} días</div>{% endif %}
-  </div>
-  <div class="kpi-card dark">
-    <div class="kpi-icon"><i class="fas fa-paperclip"></i></div>
-    <div class="kpi-label">Archivo</div>
-    <div class="kpi-value" style="font-size:.85rem;">{% if doc.tiene_archivo %}Adjunto{% else %}Sin archivo{% endif %}</div>
-  </div>
-</div>
-
-<div class="grid-2">
-  <div class="panel">
-    <div class="panel-header"><h3>Vínculos</h3></div>
-    <div class="info-grid" style="background:var(--white);">
-      <div class="info-item"><label>Cliente</label><span>{% if doc.cliente %}<a href="{{ url_for('admin.cartera_detalle', id=doc.cliente.id) }}" class="link-row">{{ doc.cliente.nombre }}</a>{% else %}—{% endif %}</span></div>
-      <div class="info-item"><label>Embarque</label><span>{% if doc.embarque %}<a href="{{ url_for('admin.embarque_detalle', id=doc.embarque.id) }}" class="link-row">{{ doc.embarque.numero }}</a>{% else %}—{% endif %}</span></div>
-      <div class="info-item"><label>País</label><span>{% if doc.pais %}<a href="{{ url_for('admin.pais_detalle', id=doc.pais.id) }}" class="link-row">{{ doc.pais.nombre }}</a>{% else %}—{% endif %}</span></div>
-      <div class="info-item"><label>Producto</label><span>{{ doc.producto.nombre if doc.producto else '—' }}</span></div>
-      <div class="info-item"><label>Subido</label><span>{{ doc.uploaded_at.strftime('%d/%m/%Y %H:%M') if doc.uploaded_at else '—' }}</span></div>
-      <div class="info-item"><label>Archivo</label><span>{{ doc.original_filename or '—' }}</span></div>
-    </div>
-    {% if doc.comentarios %}
-    <div style="padding:1.25rem 1.5rem;border-top:1px solid var(--gray-mid);">
-      <label style="font-size:.65rem;font-weight:700;text-transform:uppercase;color:var(--gray);">Comentarios</label>
-      <p style="margin-top:.5rem;font-size:.9rem;line-height:1.6;">{{ doc.comentarios }}</p>
-    </div>
+    </p>
+    {% if doc.esta_vencido %}
+    <p class="text-xs text-red-500 font-semibold">Documento vencido</p>
+    {% elif doc.dias_para_vencer is not none and doc.dias_para_vencer <= 30 %}
+    <p class="text-xs text-sunset font-semibold">Vence en {{ doc.dias_para_vencer }} días</p>
     {% endif %}
   </div>
+  <div class="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm">
+    <p class="text-[10px] font-bold uppercase tracking-wider text-ink-muted mb-1">Archivo</p>
+    {% if doc.tiene_archivo %}
+    <p class="text-sm font-bold text-green-700 flex items-center gap-2"><i class="fas fa-file-pdf"></i> PDF adjunto</p>
+    <p class="text-[11px] text-ink-muted truncate mt-1">{{ doc.original_filename }}</p>
+    {% else %}
+    <p class="text-sm font-semibold text-ink-muted">Sin archivo</p>
+    {% endif %}
+  </div>
+</div>
 
-  <div class="panel">
-    <div class="panel-header"><h3>Cambiar estado</h3></div>
-    <div style="padding:1.5rem;display:flex;flex-wrap:wrap;gap:.5rem;">
-      {% for k, label in documento_estados.items() %}
-      {% if k != doc.estado %}
-      <form method="POST" action="{{ url_for('admin.documento_cambiar_estado', id=doc.id, estado=k) }}">
-        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-        <button type="submit" class="btn btn-ghost" style="font-size:.75rem;">
-          <i class="fas {{ documento_estado_icons.get(k) }}"></i> {{ label }}
-        </button>
-      </form>
-      {% endif %}
-      {% endfor %}
+<div class="grid grid-cols-1 xl:grid-cols-2 gap-6 mb-6">
+  <!-- Vínculos -->
+  <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+    <div class="px-6 py-4 border-b border-gray-100 flex items-center gap-2">
+      <i class="fas fa-link text-patagonia"></i>
+      <h2 class="font-bold text-ink">Vínculos y metadatos</h2>
     </div>
-    <div style="padding:0 1.5rem 1.5rem;border-top:1px solid var(--gray-light);margin-top:.5rem;padding-top:1.25rem;">
+    <div class="p-6 space-y-4">
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+        <div class="p-4 rounded-xl bg-gray-50/80">
+          <p class="text-[10px] font-bold uppercase text-ink-muted mb-1"><i class="fas fa-user text-patagonia mr-1"></i>Cliente</p>
+          {% if doc.cliente %}
+          <a href="{{ url_for('admin.cartera_detalle', id=doc.cliente.id) }}" class="font-semibold text-patagonia hover:underline">{{ doc.cliente.nombre }}</a>
+          {% else %}<span class="text-ink-muted">—</span>{% endif %}
+        </div>
+        <div class="p-4 rounded-xl bg-gray-50/80">
+          <p class="text-[10px] font-bold uppercase text-ink-muted mb-1"><i class="fas fa-ship text-patagonia mr-1"></i>Embarque</p>
+          {% if doc.embarque %}
+          <a href="{{ url_for('admin.embarque_detalle', id=doc.embarque.id) }}" class="font-semibold text-patagonia hover:underline">{{ doc.embarque.numero }}</a>
+          {% else %}<span class="text-ink-muted">—</span>{% endif %}
+        </div>
+        <div class="p-4 rounded-xl bg-gray-50/80">
+          <p class="text-[10px] font-bold uppercase text-ink-muted mb-1"><i class="fas fa-globe text-patagonia mr-1"></i>País</p>
+          {% if doc.pais %}
+          <a href="{{ url_for('admin.pais_detalle', id=doc.pais.id) }}" class="flex items-center gap-2 font-semibold text-patagonia hover:underline">
+            {{ flag_circle(doc.pais.codigo, 'sm') }}{{ doc.pais.nombre }}
+          </a>
+          {% else %}<span class="text-ink-muted">—</span>{% endif %}
+        </div>
+        <div class="p-4 rounded-xl bg-gray-50/80">
+          <p class="text-[10px] font-bold uppercase text-ink-muted mb-1"><i class="fas fa-box text-patagonia mr-1"></i>Producto</p>
+          <p class="font-semibold">{{ doc.producto.nombre if doc.producto else '—' }}</p>
+        </div>
+      </div>
+      <div class="flex flex-wrap gap-4 text-xs text-ink-muted pt-2 border-t border-gray-100">
+        <span><i class="fas fa-clock mr-1"></i>Subido {{ doc.uploaded_at.strftime('%d/%m/%Y %H:%M') if doc.uploaded_at else '—' }}</span>
+        {% if doc.tiene_archivo %}
+        <span><i class="fas fa-paperclip mr-1"></i>{{ doc.original_filename }}</span>
+        {% endif %}
+      </div>
+      {% if doc.comentarios %}
+      <div class="pt-4 border-t border-gray-100">
+        <p class="text-[10px] font-bold uppercase tracking-wider text-ink-muted mb-2"><i class="fas fa-comment text-patagonia mr-1"></i>Comentarios</p>
+        <p class="text-sm text-ink leading-relaxed">{{ doc.comentarios }}</p>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Cambiar estado -->
+  <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden h-fit">
+    <div class="px-6 py-4 border-b border-gray-100 flex items-center gap-2">
+      <i class="fas fa-arrows-rotate text-sunset"></i>
+      <h2 class="font-bold text-ink">Flujo de aprobación</h2>
+    </div>
+    <div class="p-6">
+      <p class="text-sm text-ink-muted mb-4">Cambia el estado del documento según su revisión:</p>
+      <div class="flex flex-wrap gap-2 mb-6">
+        {% for k, label in documento_estados.items() %}
+        {% if k != doc.estado %}
+        <form method="POST" action="{{ url_for('admin.documento_cambiar_estado', id=doc.id, estado=k) }}">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <button type="submit" class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border border-gray-200 text-sm font-semibold hover:border-patagonia hover:text-patagonia hover:bg-patagonia-50 transition-all">
+            <i class="fas {{ documento_estado_icons.get(k) }}"></i> {{ label }}
+          </button>
+        </form>
+        {% endif %}
+        {% endfor %}
+      </div>
+
+      <!-- Estado actual destacado -->
+      <div class="p-4 rounded-xl bg-cream border border-gray-100 mb-6">
+        <p class="text-[10px] font-bold uppercase text-ink-muted mb-2">Estado actual</p>
+        {{ documento_badge(doc.estado) }}
+      </div>
+
       <form method="POST" action="{{ url_for('admin.documento_eliminar', id=doc.id) }}" onsubmit="return confirm('¿Eliminar documento permanentemente?');">
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-        <button type="submit" class="btn btn-danger"><i class="fas fa-trash"></i> Eliminar documento</button>
+        <button type="submit" class="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-red-200 text-red-600 text-sm font-semibold hover:bg-red-50 transition-colors">
+          <i class="fas fa-trash"></i> Eliminar documento
+        </button>
       </form>
     </div>
   </div>
 </div>
+
+{% if doc.tiene_archivo %}
+<div class="bg-gradient-to-r from-patagonia-50 to-cream rounded-2xl border border-patagonia/20 p-6 flex flex-wrap items-center justify-between gap-4">
+  <div class="flex items-center gap-4">
+    <span class="w-14 h-14 rounded-2xl bg-red-50 text-red-600 flex items-center justify-center text-2xl"><i class="fas fa-file-pdf"></i></span>
+    <div>
+      <p class="font-bold text-ink">{{ doc.original_filename }}</p>
+      <p class="text-sm text-ink-muted">Documento PDF listo para descarga</p>
+    </div>
+  </div>
+  <a href="{{ url_for('admin.documento_descargar', id=doc.id) }}" class="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-patagonia text-white text-sm font-bold hover:bg-patagonia-dark shadow-lg shadow-patagonia/20 transition-all">
+    <i class="fas fa-download"></i> Descargar archivo
+  </a>
+</div>
+{% endif %}
 {% endblock %}

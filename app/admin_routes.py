@@ -42,6 +42,7 @@ from app.constants import (
     CONTENEDOR_TIPOS, COSTO_TIPOS, COSTO_TIPO_ICONS,
     CONTRATO_ESTADOS, CONTRATO_ESTADO_COLORS, PLANTILLA_TIPOS,
     AUDIT_ENTIDADES, AUDIT_ACCIONES, CLIENTE_TIPOS, PRODUCTO_FORMATOS,
+    MERCADOS_PESO,
 )
 from app.alertas import get_alertas
 from app.permissions import role_required, edit_required
@@ -113,6 +114,7 @@ def inject_admin_sidebar():
             "tarea_estados": TAREA_ESTADOS,
             "tarea_estado_colors": TAREA_ESTADO_COLORS,
             "contenedor_tipos": CONTENEDOR_TIPOS,
+            "mercados_peso": MERCADOS_PESO,
             "costo_tipos": COSTO_TIPOS,
             "costo_tipo_icons": COSTO_TIPO_ICONS,
             "contrato_estados": CONTRATO_ESTADOS,
@@ -1576,6 +1578,7 @@ def calculadora_contenedores():
             form.cajas_alto.data,
             form.peso_caja.data,
             form.cantidad_cajas.data,
+            mercado=form.mercado_destino.data,
         )
     return render_template(
         "admin_calculadora.html",

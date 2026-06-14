@@ -1,311 +1,385 @@
-{% extends "admin_layout.html" %}
+{% extends "admin_layout_tw.html" %}
+{% from "admin_macros_tw.html" import cliente_avatar, cliente_badge, producto_icon, tw_input, pais_chip %}
 {% block title %}{{ carpeta.nombre }}{% endblock %}
-{% block topbar_title %}{{ carpeta.nombre }}{% endblock %}
+{% block topbar_title %}
+{{ cliente_avatar(carpeta.nombre, 'sm') }}
+<span>{{ carpeta.nombre }}</span>
+{% endblock %}
 {% block topbar_subtitle %}
-  <span class="badge" style="background:{{ estado_colors.get(carpeta.estado, '#eee') }}22;color:{{ estado_colors.get(carpeta.estado, '#666') }};font-size:.7rem;">
-    {{ cliente_estados.get(carpeta.estado, carpeta.estado) }}
-  </span>
-  {% if carpeta.producto %} · {{ carpeta.producto.nombre }}{% endif %}
+{{ cliente_badge(carpeta.estado) }}
+{% if carpeta.producto %}<span class="text-ink-muted">· {{ carpeta.producto.nombre }}</span>{% endif %}
 {% endblock %}
 {% block topbar_actions %}
-  <a href="{{ url_for('admin.pedido_nueva', cliente_id=carpeta.id) }}" class="btn-top" style="background:var(--orange);color:#fff;"><i class="fas fa-cart-shopping"></i> Nuevo pedido</a>
-  <a href="{{ url_for('admin.cotizacion_nueva', cliente_id=carpeta.id) }}" class="btn-top accent"><i class="fas fa-file-invoice"></i> Cotizar</a>
-  <a href="{{ url_for('admin.cartera_editar', id=carpeta.id) }}" class="btn-top ghost"><i class="fas fa-pen"></i> Editar</a>
-  <a href="{{ url_for('admin.clientes') }}" class="btn-top ghost"><i class="fas fa-arrow-left"></i> Clientes</a>
+  <a href="{{ url_for('admin.pedido_nueva', cliente_id=carpeta.id) }}" class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-sunset text-white text-sm font-bold hover:bg-sunset-dark transition-colors">
+    <i class="fas fa-cart-shopping text-xs"></i> Nuevo pedido
+  </a>
+  <a href="{{ url_for('admin.cotizacion_nueva', cliente_id=carpeta.id) }}" class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-patagonia text-white text-sm font-bold hover:bg-patagonia-dark transition-colors">
+    <i class="fas fa-file-invoice text-xs"></i> Cotizar
+  </a>
+  <a href="{{ url_for('admin.cartera_editar', id=carpeta.id) }}" class="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-gray-200 bg-white text-sm font-semibold hover:border-patagonia hover:text-patagonia transition-colors">
+    <i class="fas fa-pen text-xs"></i> Editar
+  </a>
+  <a href="{{ url_for('admin.clientes') }}" class="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-gray-200 bg-white text-sm font-semibold hover:border-patagonia hover:text-patagonia transition-colors">
+    <i class="fas fa-arrow-left text-xs"></i> Clientes
+  </a>
 {% endblock %}
 
 {% block content %}
-<!-- Ficha comercial -->
-<div class="panel" style="margin-bottom:1.25rem;">
-  <div class="info-grid">
-    <div class="info-item"><label>Clasificación</label>
-      <span class="badge" style="background:{{ estado_colors.get(carpeta.estado, '#eee') }}22;color:{{ estado_colors.get(carpeta.estado, '#666') }};">{{ cliente_estados.get(carpeta.estado, carpeta.estado) }}</span>
+<!-- Perfil -->
+<div class="bg-white rounded-2xl border border-gray-100 shadow-sm mb-6 overflow-hidden">
+  <div class="px-6 py-6 bg-gradient-to-r from-cream via-white to-patagonia-50/30 border-b border-gray-100">
+    <div class="flex flex-wrap items-start gap-5">
+      {{ cliente_avatar(carpeta.nombre, 'lg') }}
+      <div class="flex-1 min-w-0">
+        <div class="flex flex-wrap items-center gap-2 mb-2">
+          <h2 class="text-xl font-extrabold text-ink">{{ carpeta.nombre }}</h2>
+          {{ cliente_badge(carpeta.estado) }}
+        </div>
+        {% if carpeta.empresa %}<p class="text-sm text-ink-muted font-medium">{{ carpeta.empresa }}</p>{% endif %}
+        <div class="flex flex-wrap gap-2 mt-4">
+          {% if carpeta.email %}
+          <a href="mailto:{{ carpeta.email }}" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white border border-gray-200 text-xs font-medium hover:border-patagonia hover:text-patagonia transition-colors">
+            <i class="fas fa-envelope text-patagonia"></i>{{ carpeta.email }}
+          </a>
+          {% endif %}
+          {% if carpeta.telefono %}
+          <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white border border-gray-200 text-xs font-medium">
+            <i class="fas fa-phone text-patagonia"></i>{{ carpeta.telefono }}
+          </span>
+          {% endif %}
+          {% if carpeta.pais %}
+          <span class="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white border border-gray-200 text-xs font-medium">
+            {{ pais_chip(carpeta.pais) }}{% if carpeta.ciudad %}, {{ carpeta.ciudad }}{% endif %}
+          </span>
+          {% endif %}
+        </div>
+      </div>
+      {% if carpeta.valor_estimado %}
+      <div class="bg-white rounded-xl border border-gray-100 px-5 py-4 text-right shrink-0">
+        <p class="text-[10px] font-bold uppercase tracking-wider text-ink-muted">Valor estimado</p>
+        <p class="text-2xl font-extrabold text-patagonia">{{ "{:,.0f}".format(carpeta.valor_estimado) }}</p>
+        <p class="text-xs text-ink-muted">{{ carpeta.moneda_estimada }}</p>
+      </div>
+      {% endif %}
     </div>
-    <div class="info-item"><label>Producto</label><span>{{ carpeta.producto.nombre if carpeta.producto else '—' }}</span></div>
-    {% if carpeta.valor_estimado %}
-    <div class="info-item"><label>Valor estimado</label><span>{{ "{:,.0f}".format(carpeta.valor_estimado) }} {{ carpeta.moneda_estimada }}</span></div>
+  </div>
+
+  <div class="grid grid-cols-2 sm:grid-cols-4 divide-x divide-y sm:divide-y-0 divide-gray-100">
+    <div class="px-5 py-4">
+      <p class="text-[10px] font-bold uppercase tracking-wider text-ink-muted mb-1">Producto</p>
+      {% if carpeta.producto %}
+      <div class="flex items-center gap-2">
+        {{ producto_icon(carpeta.producto.categoria) }}
+        <span class="text-sm font-semibold">{{ carpeta.producto.nombre }}</span>
+      </div>
+      {% else %}<span class="text-sm text-ink-muted">—</span>{% endif %}
+    </div>
+    <div class="px-5 py-4">
+      <p class="text-[10px] font-bold uppercase tracking-wider text-ink-muted mb-1">Tipo</p>
+      <p class="text-sm font-semibold">{{ cliente_tipos.get(carpeta.tipo_cliente, carpeta.tipo_cliente) if carpeta.tipo_cliente else '—' }}</p>
+    </div>
+    <div class="px-5 py-4">
+      <p class="text-[10px] font-bold uppercase tracking-wider text-ink-muted mb-1">Ejecutivo</p>
+      <p class="text-sm font-semibold">{{ carpeta.ejecutivo.nombre or carpeta.ejecutivo.username if carpeta.ejecutivo else '—' }}</p>
+    </div>
+    <div class="px-5 py-4">
+      <p class="text-[10px] font-bold uppercase tracking-wider text-ink-muted mb-1">Contacto</p>
+      <p class="text-sm font-semibold">{{ carpeta.contacto or '—' }}</p>
+    </div>
+  </div>
+
+  {% if carpeta.condiciones_comerciales or carpeta.notas %}
+  <div class="px-6 py-4 border-t border-gray-100 space-y-4">
+    {% if carpeta.condiciones_comerciales %}
+    <div>
+      <p class="text-[10px] font-bold uppercase tracking-wider text-ink-muted mb-2"><i class="fas fa-handshake text-patagonia mr-1"></i>Condiciones comerciales</p>
+      <p class="text-sm text-ink leading-relaxed whitespace-pre-wrap">{{ carpeta.condiciones_comerciales }}</p>
+    </div>
     {% endif %}
-    {% if carpeta.empresa %}<div class="info-item"><label>Empresa</label><span>{{ carpeta.empresa }}</span></div>{% endif %}
-    {% if carpeta.contacto %}<div class="info-item"><label>Contacto</label><span>{{ carpeta.contacto }}</span></div>{% endif %}
-    {% if carpeta.email %}<div class="info-item"><label>Email</label><span><a href="mailto:{{ carpeta.email }}" style="color:var(--accent);">{{ carpeta.email }}</a></span></div>{% endif %}
-    {% if carpeta.telefono %}<div class="info-item"><label>Teléfono</label><span>{{ carpeta.telefono }}</span></div>{% endif %}
-    {% if carpeta.pais %}<div class="info-item"><label>País</label><span>{{ carpeta.pais }}{% if carpeta.ciudad %}, {{ carpeta.ciudad }}{% endif %}</span></div>{% endif %}
-    {% if carpeta.tipo_cliente %}<div class="info-item"><label>Tipo</label><span>{{ cliente_tipos.get(carpeta.tipo_cliente, carpeta.tipo_cliente) }}</span></div>{% endif %}
-    {% if carpeta.ejecutivo %}<div class="info-item"><label>Ejecutivo</label><span>{{ carpeta.ejecutivo.nombre or carpeta.ejecutivo.username }}</span></div>{% endif %}
-  </div>
-  {% if carpeta.condiciones_comerciales %}
-  <div style="padding:1rem 1.5rem;border-bottom:1px solid var(--gray-mid);">
-    <label style="font-size:.65rem;font-weight:700;text-transform:uppercase;color:var(--gray);">Condiciones comerciales</label>
-    <p style="margin-top:.5rem;font-size:.9rem;line-height:1.6;white-space:pre-wrap;">{{ carpeta.condiciones_comerciales }}</p>
-  </div>
-  {% endif %}
-  {% if carpeta.notas %}
-  <div style="padding:1rem 1.5rem;border-bottom:1px solid var(--gray-mid);">
-    <label style="font-size:.65rem;font-weight:700;text-transform:uppercase;color:var(--gray);">Notas</label>
-    <p style="margin-top:.5rem;font-size:.9rem;line-height:1.6;white-space:pre-wrap;">{{ carpeta.notas }}</p>
+    {% if carpeta.notas %}
+    <div>
+      <p class="text-[10px] font-bold uppercase tracking-wider text-ink-muted mb-2"><i class="fas fa-note-sticky text-patagonia mr-1"></i>Notas</p>
+      <p class="text-sm text-ink-muted leading-relaxed whitespace-pre-wrap">{{ carpeta.notas }}</p>
+    </div>
+    {% endif %}
   </div>
   {% endif %}
 </div>
 
-<!-- Abonos -->
-<div class="panel" style="margin-bottom:1.25rem;">
-  <div class="panel-header">
-    <h3><i class="fas fa-coins" style="color:var(--orange);margin-right:.5rem;"></i>Abonos y pagos
-      {% if carpeta.tiene_abono %}<span style="font-weight:500;color:var(--gray);font-size:.85rem;">· Total {{ "{:,.0f}".format(carpeta.total_abonos) }}</span>{% endif %}
-    </h3>
+<!-- KPIs rápidos -->
+<div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
+  <div class="bg-white rounded-2xl border border-gray-100 p-4 shadow-sm">
+    <p class="text-2xl font-extrabold text-green-700">{% if carpeta.tiene_abono %}{{ "{:,.0f}".format(carpeta.total_abonos) }}{% else %}0{% endif %}</p>
+    <p class="text-xs text-ink-muted font-medium">Total abonos ({{ carpeta.abonos|length }})</p>
   </div>
-  {% if carpeta.abonos %}
-  <table class="data-table">
-    <thead><tr><th>Fecha</th><th>Tipo</th><th>Producto</th><th>Monto</th><th>Referencia</th><th></th></tr></thead>
-    <tbody>
+  <div class="bg-white rounded-2xl border border-gray-100 p-4 shadow-sm">
+    <p class="text-2xl font-extrabold text-ink">{{ carpeta.pedidos|length }}</p>
+    <p class="text-xs text-ink-muted font-medium">Pedidos</p>
+  </div>
+  <div class="bg-white rounded-2xl border border-gray-100 p-4 shadow-sm">
+    <p class="text-2xl font-extrabold text-ink">{{ carpeta.embarques|length }}</p>
+    <p class="text-xs text-ink-muted font-medium">Embarques</p>
+  </div>
+  <div class="bg-white rounded-2xl border border-gray-100 p-4 shadow-sm">
+    <p class="text-2xl font-extrabold text-ink">{{ carpeta.file_count }}</p>
+    <p class="text-xs text-ink-muted font-medium">Documentos</p>
+  </div>
+</div>
+
+<div class="grid grid-cols-1 xl:grid-cols-3 gap-6 mb-6">
+  <!-- Abonos -->
+  <div class="xl:col-span-2 bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+    <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
+      <h2 class="font-bold text-ink flex items-center gap-2">
+        <i class="fas fa-coins text-sunset"></i> Abonos y pagos
+      </h2>
+      {% if carpeta.tiene_abono %}
+      <span class="text-xs font-bold text-green-700 bg-green-50 px-3 py-1 rounded-full">Total {{ "{:,.0f}".format(carpeta.total_abonos) }}</span>
+      {% endif %}
+    </div>
+
+    {% if carpeta.abonos %}
+    <div class="divide-y divide-gray-50">
       {% for a in carpeta.abonos %}
-      <tr>
-        <td>{{ a.fecha.strftime("%d/%m/%Y") }}</td>
-        <td><span class="badge" style="background:#eff6ff;color:#2563eb;">{{ abono_tipos.get(a.tipo, a.tipo) }}</span></td>
-        <td style="font-size:.85rem;">{{ a.producto.nombre if a.producto else 'General' }}</td>
-        <td style="font-weight:700;">{{ "{:,.0f}".format(a.monto) }} {{ a.moneda }}</td>
-        <td style="font-size:.8rem;color:var(--gray);">{{ a.referencia or '—' }}</td>
-        <td>
-          <form method="POST" action="{{ url_for('admin.cartera_abono_eliminar', id=carpeta.id, abono_id=a.id) }}" onsubmit="return confirm('¿Eliminar abono?');">
-            <button type="submit" class="btn-icon del"><i class="fas fa-trash"></i></button>
-          </form>
-        </td>
-      </tr>
-      {% endfor %}
-    </tbody>
-  </table>
-  {% else %}
-  <div class="empty-state" style="padding:2rem;"><p>Sin abonos registrados para este cliente.</p></div>
-  {% endif %}
-
-  <div style="padding:1.25rem 1.5rem;background:#fafbfc;border-top:1px solid var(--gray-mid);">
-    <p style="font-size:.75rem;font-weight:700;text-transform:uppercase;color:var(--gray);margin-bottom:1rem;"><i class="fas fa-plus-circle"></i> Registrar abono</p>
-    <form method="POST" action="{{ url_for('admin.cartera_abono', id=carpeta.id) }}">
-      {{ abono_form.hidden_tag() }}
-      <div class="form-grid" style="padding:0;">
-        <div class="form-group">
-          <label>{{ abono_form.monto.label.text }}</label>
-          {{ abono_form.monto(class="form-control", placeholder="0") }}
+      <div class="px-6 py-4 flex flex-wrap items-center gap-4 hover:bg-cream/30 transition-colors">
+        <span class="w-10 h-10 rounded-xl bg-blue-50 text-blue-700 flex items-center justify-center shrink-0"><i class="fas fa-coins"></i></span>
+        <div class="flex-1 min-w-0">
+          <p class="font-bold text-ink">{{ "{:,.0f}".format(a.monto) }} {{ a.moneda }}</p>
+          <p class="text-xs text-ink-muted">{{ abono_tipos.get(a.tipo, a.tipo) }} · {{ a.producto.nombre if a.producto else 'General' }}</p>
+          {% if a.referencia %}<p class="text-[11px] text-ink-muted/70 mt-0.5">Ref: {{ a.referencia }}</p>{% endif %}
         </div>
-        <div class="form-group">
-          <label>{{ abono_form.moneda.label.text }}</label>
-          {{ abono_form.moneda(class="form-control") }}
-        </div>
-        <div class="form-group">
-          <label>{{ abono_form.tipo.label.text }}</label>
-          {{ abono_form.tipo(class="form-control") }}
-        </div>
-        <div class="form-group">
-          <label>{{ abono_form.product_id.label.text }}</label>
-          {{ abono_form.product_id(class="form-control") }}
-        </div>
-        <div class="form-group">
-          <label>{{ abono_form.fecha.label.text }}</label>
-          {{ abono_form.fecha(class="form-control") }}
-        </div>
-        <div class="form-group">
-          <label>{{ abono_form.referencia.label.text }}</label>
-          {{ abono_form.referencia(class="form-control") }}
-        </div>
-        <div class="form-group full">
-          <label>{{ abono_form.notas.label.text }}</label>
-          {{ abono_form.notas(class="form-control", rows=2) }}
-        </div>
-      </div>
-      <button type="submit" class="btn btn-green" style="margin-top:.5rem;"><i class="fas fa-coins"></i> Registrar abono</button>
-    </form>
-  </div>
-</div>
-
-<!-- Historial de compras -->
-<div class="panel" style="margin-bottom:1.25rem;">
-  <div class="panel-header">
-    <h3><i class="fas fa-history" style="color:var(--accent);margin-right:.5rem;"></i>Historial de compras</h3>
-    <span style="font-size:.8rem;color:var(--gray);">{{ pedidos_hist|length }} pedido(s) · {{ contratos_vigentes|length }} contrato(s) vigente(s)</span>
-  </div>
-  {% if contratos_vigentes %}
-  <div style="padding:1rem 1.5rem;border-bottom:1px solid var(--gray-mid);">
-    <p style="font-size:.7rem;font-weight:700;text-transform:uppercase;color:var(--gray);margin-bottom:.75rem;">Contratos vigentes</p>
-    <table class="data-table">
-      <thead><tr><th>Nº</th><th>Producto</th><th>Vigencia</th><th>Estado</th></tr></thead>
-      <tbody>
-        {% for c in contratos_vigentes %}
-        <tr>
-          <td><a href="{{ url_for('admin.contrato_detalle', id=c.id) }}" class="link-row">{{ c.numero }}</a></td>
-          <td style="font-size:.85rem;">{{ c.producto.nombre if c.producto else '—' }}</td>
-          <td style="font-size:.8rem;">{{ c.fecha_inicio.strftime('%d/%m/%Y') if c.fecha_inicio else '—' }} → {{ c.fecha_fin.strftime('%d/%m/%Y') if c.fecha_fin else '—' }}</td>
-          <td><span class="badge" style="background:#ecfdf5;color:#15803d;">{{ c.estado }}</span></td>
-        </tr>
-        {% endfor %}
-      </tbody>
-    </table>
-  </div>
-  {% endif %}
-  {% if pedidos_hist %}
-  <table class="data-table">
-    <thead><tr><th>Pedido</th><th>Estado</th><th>Total</th><th>Fecha</th><th>Embarques</th></tr></thead>
-    <tbody>
-      {% for p in pedidos_hist %}
-      <tr>
-        <td><a href="{{ url_for('admin.pedido_detalle', id=p.id) }}" class="link-row">{{ p.numero }}</a></td>
-        <td>
-          <span class="estado-badge" style="background:{{ pedido_estado_colors.get(p.estado, '#eee') }}18;color:{{ pedido_estado_colors.get(p.estado, '#666') }};">
-            {{ pedido_estados.get(p.estado, p.estado) }}
-          </span>
-        </td>
-        <td style="font-weight:700;">{{ "{:,.2f}".format(p.total) }} {{ p.moneda }}</td>
-        <td style="font-size:.85rem;">{{ p.fecha_pedido.strftime("%d/%m/%Y") }}</td>
-        <td style="font-size:.8rem;">{{ p.embarques|length }}</td>
-      </tr>
-      {% endfor %}
-    </tbody>
-  </table>
-  {% else %}
-  <div class="empty-state" style="padding:2rem;"><p>Sin historial de compras para este cliente.</p></div>
-  {% endif %}
-</div>
-
-<!-- Portal cliente -->
-<div class="panel" style="margin-bottom:1.25rem;">
-  <div class="panel-header">
-    <h3><i class="fas fa-door-open" style="color:var(--orange);margin-right:.5rem;"></i>Portal internacional</h3>
-    {% if carpeta.portal_activo %}
-    <span class="badge" style="background:#ecfdf5;color:#15803d;"><i class="fas fa-circle-check"></i> Activo</span>
-    {% else %}
-    <span class="badge" style="background:#f3f4f6;color:var(--gray);">Inactivo</span>
-    {% endif %}
-  </div>
-  <div style="padding:1.25rem 1.5rem;">
-    <p style="font-size:.85rem;color:var(--gray);margin-bottom:1rem;">
-      El cliente accede en <a href="{{ url_for('portal.login', _external=True) }}" target="_blank" style="color:var(--accent);">{{ url_for('portal.login', _external=True) }}</a>
-      {% if carpeta.portal_email %} con <strong>{{ carpeta.portal_email }}</strong>{% endif %}.
-    </p>
-    <form method="POST" action="{{ url_for('admin.cartera_portal', id=carpeta.id) }}">
-      {{ portal_form.hidden_tag() }}
-      <div class="form-grid" style="padding:0;">
-        <div class="form-group">
-          <label>{{ portal_form.portal_email.label.text }}</label>
-          {{ portal_form.portal_email(class="form-control") }}
-        </div>
-        <div class="form-group">
-          <label>{{ portal_form.password.label.text }}</label>
-          {{ portal_form.password(class="form-control", placeholder="Nueva contraseña") }}
-        </div>
-        <div class="form-group">
-          <label>{{ portal_form.activo.label.text }}</label>
-          {{ portal_form.activo(class="form-control") }}
-        </div>
-      </div>
-      <button type="submit" class="btn btn-green" style="margin-top:.75rem;"><i class="fas fa-key"></i> Guardar acceso portal</button>
-    </form>
-  </div>
-</div>
-
-<!-- Pedidos -->
-<div class="panel" style="margin-bottom:1.25rem;">
-  <div class="panel-header">
-    <h3><i class="fas fa-cart-shopping" style="color:var(--accent);margin-right:.5rem;"></i>Pedidos ({{ carpeta.pedidos|length }})</h3>
-    <a href="{{ url_for('admin.pedido_nueva', cliente_id=carpeta.id) }}" class="btn btn-green" style="padding:.45rem .9rem;font-size:.75rem;"><i class="fas fa-plus"></i> Nuevo pedido</a>
-  </div>
-  {% if carpeta.pedidos %}
-  <table class="data-table">
-    <thead><tr><th>Nº</th><th>Estado</th><th>Total</th><th>Fecha</th><th></th></tr></thead>
-    <tbody>
-      {% for p in carpeta.pedidos %}
-      <tr>
-        <td><a href="{{ url_for('admin.pedido_detalle', id=p.id) }}" class="link-row">{{ p.numero }}</a></td>
-        <td>
-          <span class="estado-badge" style="background:{{ pedido_estado_colors.get(p.estado, '#eee') }}18;color:{{ pedido_estado_colors.get(p.estado, '#666') }};">
-            <i class="fas {{ pedido_estado_icons.get(p.estado, 'fa-circle') }}"></i>
-            {{ pedido_estados.get(p.estado, p.estado) }}
-          </span>
-        </td>
-        <td style="font-weight:700;">{{ "{:,.2f}".format(p.total) }} {{ p.moneda }}</td>
-        <td style="font-size:.85rem;">{{ p.fecha_pedido.strftime("%d/%m/%Y") }}</td>
-        <td><a href="{{ url_for('admin.pedido_editar', id=p.id) }}" class="btn-icon" title="Editar"><i class="fas fa-pen"></i></a></td>
-      </tr>
-      {% endfor %}
-    </tbody>
-  </table>
-  {% else %}
-  <div class="empty-state" style="padding:2rem;">
-    <p>Sin pedidos para este cliente.</p>
-    <a href="{{ url_for('admin.pedido_nueva', cliente_id=carpeta.id) }}" class="btn btn-ghost" style="margin-top:.5rem;font-size:.75rem;">Crear primer pedido</a>
-  </div>
-  {% endif %}
-</div>
-
-<!-- Embarques -->
-<div class="panel" style="margin-bottom:1.25rem;">
-  <div class="panel-header">
-    <h3><i class="fas fa-ship" style="color:var(--accent);margin-right:.5rem;"></i>Embarques ({{ carpeta.embarques|length }})</h3>
-    <a href="{{ url_for('admin.embarque_nuevo') }}" class="btn btn-green" style="padding:.45rem .9rem;font-size:.75rem;"><i class="fas fa-plus"></i> Nuevo embarque</a>
-  </div>
-  {% if carpeta.embarques %}
-  <table class="data-table">
-    <thead><tr><th></th><th>Nº</th><th>Pedido</th><th>Ruta</th><th>Estado</th><th>ETA</th></tr></thead>
-    <tbody>
-      {% for e in carpeta.embarques %}
-      <tr>
-        <td style="color:{{ embarque_estado_colors.get(e.estado, '#666') }};"><i class="fas {{ embarque_estado_icons.get(e.estado, 'fa-ship') }}"></i></td>
-        <td><a href="{{ url_for('admin.embarque_detalle', id=e.id) }}" class="link-row">{{ e.numero }}</a></td>
-        <td style="font-size:.85rem;">{% if e.pedido %}{{ e.pedido.numero }}{% else %}—{% endif %}</td>
-        <td style="font-size:.8rem;">{{ e.puerto_origen or '—' }} → {{ e.puerto_destino or '—' }}</td>
-        <td>
-          <span class="estado-badge" style="background:{{ embarque_estado_colors.get(e.estado, '#eee') }}18;color:{{ embarque_estado_colors.get(e.estado, '#666') }};">
-            <i class="fas {{ embarque_estado_icons.get(e.estado) }}"></i>
-            {{ embarque_estados.get(e.estado, e.estado) }}
-          </span>
-        </td>
-        <td style="font-size:.85rem;">{{ e.eta.strftime("%d/%m/%Y") if e.eta else '—' }}</td>
-      </tr>
-      {% endfor %}
-    </tbody>
-  </table>
-  {% else %}
-  <div class="empty-state" style="padding:2rem;"><p>Sin embarques para este cliente.</p></div>
-  {% endif %}
-</div>
-
-<!-- Archivos -->
-<div class="panel">
-  <div class="panel-header">
-    <h3><i class="fas fa-folder" style="color:var(--accent);margin-right:.5rem;"></i>Documentos ({{ carpeta.file_count }})</h3>
-    <form method="POST" action="{{ url_for('admin.cartera_eliminar', id=carpeta.id) }}" onsubmit="return confirm('¿Eliminar cliente y todos sus datos?');">
-      <button type="submit" class="btn btn-danger"><i class="fas fa-trash"></i> Eliminar cliente</button>
-    </form>
-  </div>
-  {% if carpeta.files %}
-  <ul class="file-list">
-    {% for f in carpeta.files %}
-    <li class="file-item">
-      <div class="file-icon"><i class="fas fa-file"></i></div>
-      <div class="file-info">
-        <div class="name">{{ f.original_filename }}</div>
-        <div class="sub">{{ f.uploaded_at.strftime("%d/%m/%Y %H:%M") }} · {{ (f.size_bytes / 1024)|round(1) }} KB</div>
-      </div>
-      <div class="file-actions">
-        <a href="{{ url_for('admin.cartera_descargar', id=carpeta.id, file_id=f.id) }}" class="btn-icon dl"><i class="fas fa-download"></i></a>
-        <form method="POST" action="{{ url_for('admin.cartera_eliminar_archivo', id=carpeta.id, file_id=f.id) }}" onsubmit="return confirm('¿Eliminar?');">
-          <button type="submit" class="btn-icon del"><i class="fas fa-trash"></i></button>
+        <span class="text-xs text-ink-muted whitespace-nowrap">{{ a.fecha.strftime("%d/%m/%Y") }}</span>
+        <form method="POST" action="{{ url_for('admin.cartera_abono_eliminar', id=carpeta.id, abono_id=a.id) }}" onsubmit="return confirm('¿Eliminar abono?');">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <button type="submit" class="w-8 h-8 rounded-lg border border-gray-200 text-ink-muted hover:border-red-200 hover:text-red-500 hover:bg-red-50 transition-colors" title="Eliminar">
+            <i class="fas fa-trash text-xs"></i>
+          </button>
         </form>
       </div>
-    </li>
-    {% endfor %}
-  </ul>
-  {% else %}
-  <div class="empty-state" style="padding:2rem;"><p>Sin documentos adjuntos.</p></div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="p-8 text-center text-sm text-ink-muted">Sin abonos registrados.</div>
+    {% endif %}
+
+    <div class="px-6 py-5 bg-gray-50/80 border-t border-gray-100">
+      <p class="text-[11px] font-bold uppercase tracking-wider text-ink-muted mb-4"><i class="fas fa-plus-circle text-patagonia mr-1"></i>Registrar abono</p>
+      <form method="POST" action="{{ url_for('admin.cartera_abono', id=carpeta.id) }}">
+        {{ abono_form.hidden_tag() }}
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {{ tw_input('Monto', abono_form.monto, 'fa-dollar-sign') }}
+          {{ tw_input('Moneda', abono_form.moneda, 'fa-coins') }}
+          {{ tw_input('Tipo', abono_form.tipo, 'fa-tag') }}
+          {{ tw_input('Producto', abono_form.product_id, 'fa-seedling') }}
+          {{ tw_input('Fecha', abono_form.fecha, 'fa-calendar') }}
+          {{ tw_input('Referencia', abono_form.referencia, 'fa-hashtag') }}
+          {{ tw_input('Notas', abono_form.notas, 'fa-comment', full=true, rows=2) }}
+        </div>
+        <button type="submit" class="mt-4 inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-patagonia text-white text-sm font-bold hover:bg-patagonia-dark transition-colors">
+          <i class="fas fa-coins"></i> Registrar abono
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Portal -->
+  <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden h-fit">
+    <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
+      <h2 class="font-bold text-ink flex items-center gap-2">
+        <i class="fas fa-door-open text-sunset"></i> Portal
+      </h2>
+      {% if carpeta.portal_activo %}
+      <span class="inline-flex items-center gap-1 text-xs font-bold text-green-700 bg-green-50 px-2.5 py-1 rounded-full"><span class="w-1.5 h-1.5 rounded-full bg-green-500"></span> Activo</span>
+      {% else %}
+      <span class="text-xs font-semibold text-ink-muted bg-gray-100 px-2.5 py-1 rounded-full">Inactivo</span>
+      {% endif %}
+    </div>
+    <div class="p-6">
+      <p class="text-xs text-ink-muted mb-4 leading-relaxed">
+        Acceso en <a href="{{ url_for('portal.login', _external=True) }}" target="_blank" class="text-patagonia font-semibold hover:underline">{{ url_for('portal.login', _external=True) }}</a>
+        {% if carpeta.portal_email %} con <strong class="text-ink">{{ carpeta.portal_email }}</strong>{% endif %}.
+      </p>
+      <form method="POST" action="{{ url_for('admin.cartera_portal', id=carpeta.id) }}" class="space-y-4">
+        {{ portal_form.hidden_tag() }}
+        {{ tw_input('Email portal', portal_form.portal_email, 'fa-envelope') }}
+        {{ tw_input('Contraseña', portal_form.password, 'fa-key') }}
+        {{ tw_input('Portal activo', portal_form.activo, 'fa-toggle-on') }}
+        <button type="submit" class="w-full inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-ink text-white text-sm font-bold hover:bg-patagonia transition-colors">
+          <i class="fas fa-key"></i> Guardar acceso
+        </button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Historial -->
+<div class="bg-white rounded-2xl border border-gray-100 shadow-sm mb-6 overflow-hidden">
+  <div class="px-6 py-4 border-b border-gray-100 flex flex-wrap items-center justify-between gap-2">
+    <h2 class="font-bold text-ink flex items-center gap-2">
+      <i class="fas fa-history text-patagonia"></i> Historial de compras
+    </h2>
+    <span class="text-xs text-ink-muted">{{ pedidos_hist|length }} pedido(s) · {{ contratos_vigentes|length }} contrato(s)</span>
+  </div>
+
+  {% if contratos_vigentes %}
+  <div class="px-6 py-4 border-b border-gray-100 bg-cream/30">
+    <p class="text-[10px] font-bold uppercase tracking-wider text-ink-muted mb-3">Contratos vigentes</p>
+    <div class="space-y-2">
+      {% for c in contratos_vigentes %}
+      <a href="{{ url_for('admin.contrato_detalle', id=c.id) }}" class="flex flex-wrap items-center gap-3 p-3 rounded-xl bg-white border border-gray-100 hover:border-patagonia/30 transition-colors">
+        <span class="w-8 h-8 rounded-lg bg-green-50 text-green-700 flex items-center justify-center"><i class="fas fa-file-contract text-xs"></i></span>
+        <div class="flex-1 min-w-0">
+          <p class="font-semibold text-ink">{{ c.numero }}</p>
+          <p class="text-xs text-ink-muted">{{ c.producto.nombre if c.producto else '—' }}</p>
+        </div>
+        <span class="text-xs text-ink-muted">{{ c.fecha_inicio.strftime('%d/%m/%Y') if c.fecha_inicio else '—' }} → {{ c.fecha_fin.strftime('%d/%m/%Y') if c.fecha_fin else '—' }}</span>
+        <span class="text-xs font-semibold text-green-700 bg-green-50 px-2 py-0.5 rounded-full">{{ c.estado }}</span>
+      </a>
+      {% endfor %}
+    </div>
+  </div>
   {% endif %}
-  <div class="upload-zone">
-    <form method="POST" action="{{ url_for('admin.cartera_upload_multiple', id=carpeta.id) }}" enctype="multipart/form-data">
-      <div class="upload-box" id="dropZone">
-        <i class="fas fa-cloud-arrow-up"></i>
-        <p><strong>Subir documentos</strong> — contratos, cotizaciones, comprobantes</p>
-        <input type="file" name="archivos" id="fileInput" multiple>
+
+  {% if pedidos_hist %}
+  <div class="divide-y divide-gray-50">
+    {% for p in pedidos_hist %}
+    <a href="{{ url_for('admin.pedido_detalle', id=p.id) }}" class="flex flex-wrap items-center gap-4 px-6 py-4 hover:bg-cream/30 transition-colors">
+      <span class="w-10 h-10 rounded-xl bg-sunset/10 text-sunset flex items-center justify-center shrink-0"><i class="fas fa-cart-shopping"></i></span>
+      <div class="flex-1 min-w-0">
+        <p class="font-semibold text-ink">{{ p.numero }}</p>
+        <p class="text-xs text-ink-muted">{{ p.fecha_pedido.strftime("%d/%m/%Y") }} · {{ p.embarques|length }} embarque(s)</p>
       </div>
-      <div id="filePreview" style="margin-top:1rem;display:none;">
-        <ul id="fileList" style="list-style:none;font-size:.8rem;color:var(--gray);"></ul>
-        <button type="submit" class="btn btn-green" style="margin-top:.75rem;"><i class="fas fa-upload"></i> Subir</button>
+      <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold"
+            style="background:{{ pedido_estado_colors.get(p.estado, '#eee') }}18;color:{{ pedido_estado_colors.get(p.estado, '#666') }};">
+        <i class="fas {{ pedido_estado_icons.get(p.estado, 'fa-circle') }} text-[10px]"></i>
+        {{ pedido_estados.get(p.estado, p.estado) }}
+      </span>
+      <span class="font-bold text-ink whitespace-nowrap">{{ "{:,.2f}".format(p.total) }} {{ p.moneda }}</span>
+    </a>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="p-8 text-center text-sm text-ink-muted">Sin historial de compras.</div>
+  {% endif %}
+</div>
+
+<!-- Pedidos + Embarques -->
+<div class="grid grid-cols-1 xl:grid-cols-2 gap-6 mb-6">
+  <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+    <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
+      <h2 class="font-bold text-ink flex items-center gap-2"><i class="fas fa-cart-shopping text-sunset"></i> Pedidos</h2>
+      <a href="{{ url_for('admin.pedido_nueva', cliente_id=carpeta.id) }}" class="text-xs font-bold text-patagonia hover:underline flex items-center gap-1">
+        <i class="fas fa-plus"></i> Nuevo
+      </a>
+    </div>
+    {% if carpeta.pedidos %}
+    <div class="divide-y divide-gray-50">
+      {% for p in carpeta.pedidos %}
+      <div class="px-6 py-3 flex items-center gap-3 hover:bg-cream/30 transition-colors">
+        <a href="{{ url_for('admin.pedido_detalle', id=p.id) }}" class="flex-1 min-w-0">
+          <p class="font-semibold text-ink text-sm hover:text-patagonia">{{ p.numero }}</p>
+          <p class="text-xs text-ink-muted">{{ p.fecha_pedido.strftime("%d/%m/%Y") }}</p>
+        </a>
+        <span class="text-xs font-semibold px-2 py-0.5 rounded-full" style="background:{{ pedido_estado_colors.get(p.estado, '#eee') }}18;color:{{ pedido_estado_colors.get(p.estado, '#666') }};">
+          {{ pedido_estados.get(p.estado, p.estado) }}
+        </span>
+        <span class="text-sm font-bold">{{ "{:,.0f}".format(p.total) }}</span>
+        <a href="{{ url_for('admin.pedido_editar', id=p.id) }}" class="w-8 h-8 rounded-lg border border-gray-200 flex items-center justify-center text-ink-muted hover:text-patagonia hover:border-patagonia transition-colors">
+          <i class="fas fa-pen text-xs"></i>
+        </a>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="p-8 text-center">
+      <p class="text-sm text-ink-muted mb-3">Sin pedidos.</p>
+      <a href="{{ url_for('admin.pedido_nueva', cliente_id=carpeta.id) }}" class="text-xs font-bold text-patagonia hover:underline">Crear primer pedido</a>
+    </div>
+    {% endif %}
+  </div>
+
+  <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+    <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
+      <h2 class="font-bold text-ink flex items-center gap-2"><i class="fas fa-ship text-patagonia"></i> Embarques</h2>
+      <a href="{{ url_for('admin.embarque_nuevo') }}" class="text-xs font-bold text-patagonia hover:underline flex items-center gap-1">
+        <i class="fas fa-plus"></i> Nuevo
+      </a>
+    </div>
+    {% if carpeta.embarques %}
+    <div class="divide-y divide-gray-50">
+      {% for e in carpeta.embarques %}
+      <a href="{{ url_for('admin.embarque_detalle', id=e.id) }}" class="flex items-center gap-3 px-6 py-3 hover:bg-cream/30 transition-colors">
+        <span class="w-8 h-8 rounded-lg flex items-center justify-center shrink-0" style="background:{{ embarque_estado_colors.get(e.estado, '#eee') }}18;color:{{ embarque_estado_colors.get(e.estado, '#666') }};">
+          <i class="fas {{ embarque_estado_icons.get(e.estado, 'fa-ship') }} text-xs"></i>
+        </span>
+        <div class="flex-1 min-w-0">
+          <p class="font-semibold text-ink text-sm">{{ e.numero }}</p>
+          <p class="text-[11px] text-ink-muted truncate">{{ e.puerto_origen or '—' }} → {{ e.puerto_destino or '—' }}</p>
+        </div>
+        <span class="text-xs text-ink-muted">{{ e.eta.strftime("%d/%m/%Y") if e.eta else '—' }}</span>
+      </a>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="p-8 text-center text-sm text-ink-muted">Sin embarques.</div>
+    {% endif %}
+  </div>
+</div>
+
+<!-- Documentos -->
+<div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+  <div class="px-6 py-4 border-b border-gray-100 flex flex-wrap items-center justify-between gap-3">
+    <h2 class="font-bold text-ink flex items-center gap-2">
+      <i class="fas fa-folder-open text-patagonia"></i> Documentos ({{ carpeta.file_count }})
+    </h2>
+    <form method="POST" action="{{ url_for('admin.cartera_eliminar', id=carpeta.id) }}" onsubmit="return confirm('¿Eliminar cliente y todos sus datos?');">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <button type="submit" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-red-200 text-red-600 text-xs font-semibold hover:bg-red-50 transition-colors">
+        <i class="fas fa-trash"></i> Eliminar cliente
+      </button>
+    </form>
+  </div>
+
+  {% if carpeta.files %}
+  <div class="divide-y divide-gray-50">
+    {% for f in carpeta.files %}
+    <div class="px-6 py-4 flex items-center gap-4 hover:bg-cream/30 transition-colors">
+      <span class="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0"><i class="fas fa-file"></i></span>
+      <div class="flex-1 min-w-0">
+        <p class="font-semibold text-ink text-sm truncate">{{ f.original_filename }}</p>
+        <p class="text-xs text-ink-muted">{{ f.uploaded_at.strftime("%d/%m/%Y %H:%M") }} · {{ (f.size_bytes / 1024)|round(1) }} KB</p>
+      </div>
+      <a href="{{ url_for('admin.cartera_descargar', id=carpeta.id, file_id=f.id) }}" class="w-9 h-9 rounded-xl border border-gray-200 flex items-center justify-center text-patagonia hover:bg-patagonia-50 transition-colors" title="Descargar">
+        <i class="fas fa-download text-xs"></i>
+      </a>
+      <form method="POST" action="{{ url_for('admin.cartera_eliminar_archivo', id=carpeta.id, file_id=f.id) }}" onsubmit="return confirm('¿Eliminar archivo?');">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button type="submit" class="w-9 h-9 rounded-xl border border-gray-200 flex items-center justify-center text-ink-muted hover:border-red-200 hover:text-red-500 hover:bg-red-50 transition-colors" title="Eliminar">
+          <i class="fas fa-trash text-xs"></i>
+        </button>
+      </form>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="px-6 py-6 text-center text-sm text-ink-muted">Sin documentos adjuntos.</div>
+  {% endif %}
+
+  <div class="px-6 py-5 bg-gray-50/80 border-t border-gray-100">
+    <form method="POST" action="{{ url_for('admin.cartera_upload_multiple', id=carpeta.id) }}" enctype="multipart/form-data">
+      <div id="dropZone" class="border-2 border-dashed border-gray-200 rounded-2xl p-8 text-center cursor-pointer hover:border-patagonia hover:bg-patagonia-50/30 transition-all">
+        <div class="w-12 h-12 rounded-xl bg-white flex items-center justify-center mx-auto mb-3 text-xl text-ink-muted">
+          <i class="fas fa-cloud-arrow-up"></i>
+        </div>
+        <p class="font-semibold text-sm text-ink">Subir documentos</p>
+        <p class="text-xs text-ink-muted mt-1">Contratos, cotizaciones, comprobantes</p>
+        <input type="file" name="archivos" id="fileInput" multiple class="hidden">
+      </div>
+      <div id="filePreview" class="mt-4 hidden">
+        <ul id="fileList" class="text-sm text-ink-muted space-y-1 mb-3"></ul>
+        <button type="submit" class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-patagonia text-white text-sm font-bold hover:bg-patagonia-dark transition-colors">
+          <i class="fas fa-upload"></i> Subir archivos
+        </button>
       </div>
     </form>
   </div>
@@ -313,14 +387,17 @@
 {% endblock %}
 
 {% block extra_js %}
-const dropZone = document.getElementById('dropZone');
-const fileInput = document.getElementById('fileInput');
-const filePreview = document.getElementById('filePreview');
-const fileList = document.getElementById('fileList');
-dropZone?.addEventListener('click', () => fileInput.click());
-fileInput?.addEventListener('change', () => {
-  if (!fileInput.files.length) return;
-  fileList.innerHTML = Array.from(fileInput.files).map(f => `<li>${f.name}</li>`).join('');
-  filePreview.style.display = 'block';
-});
+(function () {
+  const dropZone = document.getElementById('dropZone');
+  const fileInput = document.getElementById('fileInput');
+  const filePreview = document.getElementById('filePreview');
+  const fileList = document.getElementById('fileList');
+  if (!dropZone || !fileInput) return;
+  dropZone.addEventListener('click', () => fileInput.click());
+  fileInput.addEventListener('change', () => {
+    if (!fileInput.files.length) return;
+    fileList.innerHTML = Array.from(fileInput.files).map(f => `<li class="flex items-center gap-2"><i class="fas fa-file text-patagonia"></i>${f.name}</li>`).join('');
+    filePreview.classList.remove('hidden');
+  });
+})();
 {% endblock %}

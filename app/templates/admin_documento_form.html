@@ -1,90 +1,111 @@
-{% extends "admin_layout.html" %}
+{% extends "admin_layout_tw.html" %}
+{% from "admin_macros_tw.html" import tw_input, flag_circle %}
 {% block title %}{% if editing %}Editar documento{% else %}Nuevo documento{% endif %}{% endblock %}
-{% block topbar_title %}{% if editing %}{{ doc.titulo }}{% else %}{% if desde_pais and pais %}Documento — {{ pais.nombre }}{% else %}Registrar documento{% endif %}{% endif %}{% endblock %}
+{% block topbar_title %}
+{% if editing %}{{ doc.titulo }}{% elif desde_pais and pais %}Documento — {{ pais.nombre }}{% else %}Registrar documento{% endif %}
+{% endblock %}
 {% block topbar_subtitle %}{% if desde_pais %}Sube el PDF requerido para este país{% else %}Clasificación por cliente, embarque, país o producto{% endif %}{% endblock %}
 {% block topbar_actions %}
   {% if desde_pais and pais %}
-  <a href="{{ url_for('admin.pais_detalle', id=pais.id) }}" class="btn-top ghost"><i class="fas fa-arrow-left"></i> {{ pais.nombre }}</a>
+  <a href="{{ url_for('admin.pais_detalle', id=pais.id) }}" class="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-gray-200 bg-white text-sm font-semibold hover:border-patagonia hover:text-patagonia transition-colors">
+    <i class="fas fa-arrow-left text-xs"></i> {{ pais.nombre }}
+  </a>
   {% else %}
-  <a href="{{ url_for('admin.documentos') }}" class="btn-top ghost"><i class="fas fa-arrow-left"></i> Documentos</a>
+  <a href="{{ url_for('admin.documentos') }}" class="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-gray-200 bg-white text-sm font-semibold hover:border-patagonia hover:text-patagonia transition-colors">
+    <i class="fas fa-arrow-left text-xs"></i> Documentos
+  </a>
   {% endif %}
 {% endblock %}
 
 {% block content %}
-<div class="panel">
-  <form method="POST" enctype="multipart/form-data" class="form-grid" style="padding-top:1.5rem;">
-    {{ form.hidden_tag() }}
-    <div class="form-group full">
-      <label><i class="fas fa-file-lines"></i> Título</label>
-      {{ form.titulo(class="form-control") }}
+<div class="max-w-3xl">
+  {% if desde_pais and pais %}
+  <div class="mb-6 flex items-center gap-4 px-5 py-4 rounded-2xl bg-cream border border-gray-100">
+    {{ flag_circle(pais.codigo, 'md') }}
+    <div>
+      <p class="font-bold text-ink">Documento para {{ pais.nombre }}</p>
+      <p class="text-xs text-ink-muted">El PDF quedará vinculado al requisito del país</p>
     </div>
-    <div class="form-group">
-      <label><i class="fas fa-tag"></i> Tipo</label>
-      {{ form.tipo(class="form-control") }}
-    </div>
-    <div class="form-group">
-      <label><i class="fas fa-circle-check"></i> Estado</label>
-      {{ form.estado(class="form-control") }}
-    </div>
-    <div class="form-group">
-      <label><i class="fas fa-user"></i> Cliente</label>
-      {{ form.folder_id(class="form-control") }}
-    </div>
-    <div class="form-group">
-      <label><i class="fas fa-ship"></i> Embarque</label>
-      {{ form.shipment_id(class="form-control") }}
-    </div>
-    <div class="form-group">
-      <label><i class="fas fa-globe"></i> País</label>
-      {{ form.country_id(class="form-control") }}
-    </div>
-    <div class="form-group">
-      <label><i class="fas fa-box"></i> Producto</label>
-      {{ form.product_id(class="form-control") }}
-    </div>
-    <div class="form-group">
-      <label><i class="fas fa-calendar"></i> Vencimiento</label>
-      {{ form.fecha_vencimiento(class="form-control") }}
-    </div>
-    <div class="form-group full">
-      <label><i class="fas fa-comment"></i> Comentarios internos</label>
-      {{ form.comentarios(class="form-control", rows="3") }}
-    </div>
-    <div class="form-group full">
-      <label><i class="fas fa-file-pdf"></i> Archivo PDF</label>
-      <div class="upload-box" id="pdfDropZone" style="margin-top:.5rem;">
-        <i class="fas fa-file-pdf" style="color:var(--red);"></i>
-        <p><strong>Selecciona o arrastra un PDF</strong></p>
-        {{ form.archivo(id="pdfInput", style="display:none;", accept="application/pdf,.pdf") }}
-        <p id="pdfFileName" style="font-size:.8rem;color:var(--accent);font-weight:600;margin-top:.75rem;">
-          {% if editing and doc.tiene_archivo %}Actual: {{ doc.original_filename }}{% endif %}
-        </p>
+  </div>
+  {% endif %}
+
+  <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+    <div class="px-6 py-5 border-b border-gray-100 bg-gradient-to-r from-cream to-white flex items-center gap-3">
+      <span class="w-11 h-11 rounded-xl bg-red-50 text-red-600 flex items-center justify-center text-lg"><i class="fas fa-file-pdf"></i></span>
+      <div>
+        <h2 class="font-bold text-ink">{% if editing %}Editar documento{% else %}Nuevo documento{% endif %}</h2>
+        <p class="text-xs text-ink-muted">Solo archivos PDF · Máx. 32 MB</p>
       </div>
-      {% if form.archivo.errors %}
-        {% for e in form.archivo.errors %}<p class="form-errors">{{ e }}</p>{% endfor %}
-      {% endif %}
     </div>
-    <div class="form-actions full" style="grid-column:1/-1;padding-left:1.5rem;">
-      <button type="submit" class="btn btn-green"><i class="fas fa-save"></i> Guardar</button>
-      {% if editing %}
-      <a href="{{ url_for('admin.documento_detalle', id=doc.id) }}" class="btn btn-ghost">Cancelar</a>
-      {% endif %}
-    </div>
-  </form>
+
+    <form method="POST" enctype="multipart/form-data" class="p-6">
+      {{ form.hidden_tag() }}
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+        {{ tw_input('Título', form.titulo, 'fa-file-lines', full=true) }}
+        {{ tw_input('Tipo', form.tipo, 'fa-tag') }}
+        {{ tw_input('Estado', form.estado, 'fa-circle-check') }}
+        {{ tw_input('Cliente', form.folder_id, 'fa-user') }}
+        {{ tw_input('Embarque', form.shipment_id, 'fa-ship') }}
+        {{ tw_input('País', form.country_id, 'fa-globe') }}
+        {{ tw_input('Producto', form.product_id, 'fa-box') }}
+        {{ tw_input('Vencimiento', form.fecha_vencimiento, 'fa-calendar') }}
+        {{ tw_input('Comentarios internos', form.comentarios, 'fa-comment', full=true, rows=3) }}
+
+        <div class="col-span-full">
+          <label class="block text-[11px] font-bold uppercase tracking-wider text-ink-muted mb-2">
+            <i class="fas fa-file-pdf text-red-500 mr-1"></i>Archivo PDF
+          </label>
+          <div id="pdfDropArea" class="border-2 border-dashed border-gray-200 rounded-2xl p-8 text-center cursor-pointer hover:border-patagonia hover:bg-patagonia-50/30 transition-all">
+            <div class="w-12 h-12 rounded-xl bg-red-50 text-red-600 flex items-center justify-center mx-auto mb-3 text-xl">
+              <i class="fas fa-cloud-arrow-up"></i>
+            </div>
+            <p class="font-semibold text-sm text-ink">Selecciona o arrastra un PDF</p>
+            <p class="text-xs text-ink-muted mt-1">{% if editing %}Deja vacío para mantener el archivo actual{% else %}Requerido para documentación oficial{% endif %}</p>
+            {{ form.archivo(id="pdfInput", class="hidden", accept="application/pdf,.pdf") }}
+            <p id="pdfFileName" class="text-sm text-patagonia font-semibold mt-3">
+              {% if editing and doc.tiene_archivo %}Actual: {{ doc.original_filename }}{% endif %}
+            </p>
+          </div>
+          {% if form.archivo.errors %}
+          <p class="mt-2 text-xs text-red-600"><i class="fas fa-exclamation-circle mr-1"></i>{{ form.archivo.errors[0] }}</p>
+          {% endif %}
+        </div>
+      </div>
+
+      <div class="flex flex-wrap items-center gap-3 mt-8 pt-6 border-t border-gray-100">
+        <button type="submit" class="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-patagonia text-white text-sm font-bold hover:bg-patagonia-dark shadow-lg shadow-patagonia/20 transition-all">
+          <i class="fas fa-save"></i> Guardar documento
+        </button>
+        {% if editing %}
+        <a href="{{ url_for('admin.documento_detalle', id=doc.id) }}" class="inline-flex items-center gap-2 px-5 py-3 rounded-xl border border-gray-200 text-sm font-semibold text-ink-muted hover:border-gray-300 transition-colors">
+          Cancelar
+        </a>
+        {% endif %}
+      </div>
+    </form>
+  </div>
 </div>
 {% endblock %}
 
 {% block extra_js %}
-<script>
 (function () {
-  const zone = document.getElementById('pdfDropZone');
+  const area = document.getElementById('pdfDropArea');
   const input = document.getElementById('pdfInput');
   const label = document.getElementById('pdfFileName');
-  if (!zone || !input) return;
-  zone.addEventListener('click', () => input.click());
+  if (!area || !input) return;
+  area.addEventListener('click', () => input.click());
+  area.addEventListener('dragover', e => { e.preventDefault(); area.classList.add('border-patagonia', 'bg-patagonia-50/50'); });
+  area.addEventListener('dragleave', () => area.classList.remove('border-patagonia', 'bg-patagonia-50/50'));
+  area.addEventListener('drop', e => {
+    e.preventDefault();
+    area.classList.remove('border-patagonia', 'bg-patagonia-50/50');
+    if (e.dataTransfer.files.length) {
+      input.files = e.dataTransfer.files;
+      label.textContent = '📄 ' + e.dataTransfer.files[0].name;
+    }
+  });
   input.addEventListener('change', () => {
     if (input.files.length) label.textContent = '📄 ' + input.files[0].name;
   });
 })();
-</script>
 {% endblock %}
