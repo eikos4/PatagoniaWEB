@@ -27,5 +27,9 @@ def create_app():
 
     with app.app_context():
         from .models import AdminUser, ContactMessage, ClientFolder, ClientFile, Product, ClientAbono, Quotation, Order, Shipment
+        from .seed import seed_default_admin, seed_default_products
+
+        seed_default_admin()
+        seed_default_products()
 
     return app
