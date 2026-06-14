@@ -1,0 +1,184 @@
+{% extends "admin_layout.html" %}
+{% block title %}{{ pais.nombre }}{% endblock %}
+{% block topbar_title %}{{ pais.nombre }} <span style="font-weight:500;color:var(--gray);font-size:.85rem;">({{ pais.codigo }})</span>{% endblock %}
+{% block topbar_subtitle %}Requisitos de exportación y documentación PDF por país{% endblock %}
+{% block topbar_actions %}
+  <a href="{{ url_for('admin.pais_editar', id=pais.id) }}" class="btn-top ghost"><i class="fas fa-pen"></i> Editar</a>
+  <a href="{{ url_for('admin.paises') }}" class="btn-top ghost"><i class="fas fa-arrow-left"></i> Países</a>
+{% endblock %}
+
+{% block content %}
+{% if pais.notas %}
+<div class="alert-panel info" style="margin-bottom:1.25rem;">
+  <i class="fas fa-circle-info"></i>
+  <span>{{ pais.notas }}</span>
+</div>
+{% endif %}
+
+<div class="panel" style="margin-bottom:1.25rem;">
+  <div class="panel-header">
+    <h3><i class="fas fa-file-pdf" style="color:var(--red);margin-right:.4rem;"></i>Subir documento PDF — {{ pais.nombre }}</h3>
+  </div>
+  <form method="POST" action="{{ url_for('admin.pais_documento_subir', id=pais.id) }}" enctype="multipart/form-data" class="form-grid" style="padding:1.5rem;">
+    {{ doc_form.hidden_tag() }}
+    <div class="form-group full">
+      <label><i class="fas fa-file-lines"></i> Título del documento</label>
+      {{ doc_form.titulo(class="form-control", placeholder="Ej. Certificado fitosanitario SAG") }}
+    </div>
+    <div class="form-group">
+      <label><i class="fas fa-tag"></i> Tipo</label>
+      {{ doc_form.tipo(class="form-control") }}
+    </div>
+    <div class="form-group">
+      <label><i class="fas fa-calendar"></i> Vencimiento</label>
+      {{ doc_form.fecha_vencimiento(class="form-control") }}
+    </div>
+    <div class="form-group full">
+      <label><i class="fas fa-comment"></i> Comentarios</label>
+      {{ doc_form.comentarios(class="form-control", rows="2") }}
+    </div>
+    <div class="form-group full">
+      <label><i class="fas fa-file-pdf"></i> Archivo PDF *</label>
+      <div class="upload-box" id="pdfDropZone" style="margin-top:.5rem;">
+        <i class="fas fa-cloud-arrow-up"></i>
+        <p><strong>Arrastra tu PDF aquí</strong> o haz clic para seleccionar</p>
+        <p style="font-size:.75rem;margin-top:.35rem;">Máximo 32 MB · Solo PDF</p>
+        {{ doc_form.archivo(id="pdfInput", style="display:none;", accept="application/pdf,.pdf") }}
+        <p id="pdfFileName" style="font-size:.8rem;color:var(--accent);font-weight:600;margin-top:.75rem;"></p>
+      </div>
+      {% if doc_form.archivo.errors %}
+        {% for e in doc_form.archivo.errors %}<p class="form-errors">{{ e }}</p>{% endfor %}
+      {% endif %}
+    </div>
+    <div class="form-actions full" style="grid-column:1/-1;padding:0;">
+      <button type="submit" class="btn btn-green"><i class="fas fa-upload"></i> Subir PDF</button>
+    </div>
+  </form>
+</div>
+
+{% if documentos_pais %}
+<div class="panel" style="margin-bottom:1.25rem;">
+  <div class="panel-header"><h3><i class="fas fa-folder-open" style="color:var(--accent);margin-right:.4rem;"></i>Documentos de {{ pais.nombre }} ({{ documentos_pais|length }})</h3></div>
+  <table class="data-table">
+    <thead><tr><th>Documento</th><th>Tipo</th><th>Estado</th><th>PDF</th><th>Vence</th></tr></thead>
+    <tbody>
+      {% for d in documentos_pais %}
+      <tr>
+        <td><a href="{{ url_for('admin.documento_detalle', id=d.id) }}" class="link-row">{{ d.titulo }}</a></td>
+        <td style="font-size:.8rem;">{{ documento_tipos.get(d.tipo, d.tipo) }}</td>
+        <td>
+          <span class="estado-badge" style="background:{{ documento_estado_colors.get(d.estado, '#eee') }}18;color:{{ documento_estado_colors.get(d.estado, '#666') }};">
+            {{ documento_estados.get(d.estado, d.estado) }}
+          </span>
+        </td>
+        <td>
+          {% if d.tiene_archivo %}
+          <a href="{{ url_for('admin.documento_descargar', id=d.id) }}" class="btn btn-ghost" style="padding:.3rem .65rem;font-size:.72rem;"><i class="fas fa-download"></i> PDF</a>
+          {% else %}<span style="color:var(--gray);">—</span>{% endif %}
+        </td>
+        <td style="font-size:.8rem;">{{ d.fecha_vencimiento.strftime('%d/%m/%Y') if d.fecha_vencimiento else '—' }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endif %}
+
+<div class="grid-2">
+  <div class="panel">
+    <div class="panel-header"><h3><i class="fas fa-list-check" style="color:var(--accent);margin-right:.4rem;"></i>Requisitos ({{ pais.requisitos|length }})</h3></div>
+    {% if pais.requisitos %}
+    <table class="data-table">
+      <thead><tr><th>Tipo</th><th>Requisito</th><th>Producto</th><th></th></tr></thead>
+      <tbody>
+        {% for r in pais.requisitos %}
+        {% set tipo_doc = requisito_a_documento_tipo.get(r.tipo, 'otro') %}
+        <tr>
+          <td><span class="badge" style="background:#eff6ff;color:#2563eb;">{{ requisito_tipos.get(r.tipo, r.tipo) }}</span></td>
+          <td>
+            <strong>{{ r.titulo }}</strong>
+            {% if r.obligatorio %}<span class="badge" style="background:#fff1f2;color:var(--red);margin-left:.35rem;">Obligatorio</span>{% endif %}
+            {% if r.descripcion %}<div style="font-size:.75rem;color:var(--gray);margin-top:.25rem;">{{ r.descripcion }}</div>{% endif %}
+          </td>
+          <td style="font-size:.8rem;">{{ r.producto.nombre if r.producto else 'Todos' }}</td>
+          <td>
+            <div style="display:flex;gap:.35rem;">
+              <a href="{{ url_for('admin.pais_detalle', id=pais.id, titulo=r.titulo, tipo_doc=tipo_doc) }}#pdfDropZone"
+                 class="btn-icon" title="Subir PDF" style="border-color:#fecaca;color:var(--red);">
+                <i class="fas fa-file-pdf"></i>
+              </a>
+              <form method="POST" action="{{ url_for('admin.pais_requisito_eliminar', pais_id=pais.id, req_id=r.id) }}" onsubmit="return confirm('¿Eliminar requisito?');">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button type="submit" class="btn-icon del" title="Eliminar"><i class="fas fa-trash"></i></button>
+              </form>
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <div class="empty-state" style="padding:2rem;"><p>Sin requisitos. Agrega el primero al lado.</p></div>
+    {% endif %}
+  </div>
+
+  <div class="panel">
+    <div class="panel-header"><h3><i class="fas fa-plus" style="color:var(--accent);margin-right:.4rem;"></i>Agregar requisito</h3></div>
+    <form method="POST" action="{{ url_for('admin.pais_requisito_nuevo', id=pais.id) }}" class="form-grid" style="padding:1.5rem;">
+      {{ req_form.hidden_tag() }}
+      <div class="form-group">
+        <label>Tipo</label>
+        {{ req_form.tipo(class="form-control") }}
+      </div>
+      <div class="form-group">
+        <label>Obligatorio</label>
+        {{ req_form.obligatorio(class="form-control") }}
+      </div>
+      <div class="form-group full">
+        <label>Título</label>
+        {{ req_form.titulo(class="form-control") }}
+      </div>
+      <div class="form-group full">
+        <label>Descripción</label>
+        {{ req_form.descripcion(class="form-control", rows="3") }}
+      </div>
+      <div class="form-group">
+        <label>Producto</label>
+        {{ req_form.product_id(class="form-control") }}
+      </div>
+      <div class="form-group">
+        <label>Orden</label>
+        {{ req_form.orden(class="form-control") }}
+      </div>
+      <div class="form-actions full" style="grid-column:1/-1;padding:0;">
+        <button type="submit" class="btn btn-green"><i class="fas fa-plus"></i> Agregar</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function () {
+  const zone = document.getElementById('pdfDropZone');
+  const input = document.getElementById('pdfInput');
+  const label = document.getElementById('pdfFileName');
+  if (!zone || !input) return;
+  zone.addEventListener('click', () => input.click());
+  zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('dragover'); });
+  zone.addEventListener('dragleave', () => zone.classList.remove('dragover'));
+  zone.addEventListener('drop', e => {
+    e.preventDefault();
+    zone.classList.remove('dragover');
+    if (e.dataTransfer.files.length) {
+      input.files = e.dataTransfer.files;
+      label.textContent = '📄 ' + e.dataTransfer.files[0].name;
+    }
+  });
+  input.addEventListener('change', () => {
+    if (input.files.length) label.textContent = '📄 ' + input.files[0].name;
+  });
+})();
+</script>
+{% endblock %}

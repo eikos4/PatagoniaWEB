@@ -1,0 +1,90 @@
+{% extends "admin_layout.html" %}
+{% block title %}{% if editing %}Editar documento{% else %}Nuevo documento{% endif %}{% endblock %}
+{% block topbar_title %}{% if editing %}{{ doc.titulo }}{% else %}{% if desde_pais and pais %}Documento — {{ pais.nombre }}{% else %}Registrar documento{% endif %}{% endif %}{% endblock %}
+{% block topbar_subtitle %}{% if desde_pais %}Sube el PDF requerido para este país{% else %}Clasificación por cliente, embarque, país o producto{% endif %}{% endblock %}
+{% block topbar_actions %}
+  {% if desde_pais and pais %}
+  <a href="{{ url_for('admin.pais_detalle', id=pais.id) }}" class="btn-top ghost"><i class="fas fa-arrow-left"></i> {{ pais.nombre }}</a>
+  {% else %}
+  <a href="{{ url_for('admin.documentos') }}" class="btn-top ghost"><i class="fas fa-arrow-left"></i> Documentos</a>
+  {% endif %}
+{% endblock %}
+
+{% block content %}
+<div class="panel">
+  <form method="POST" enctype="multipart/form-data" class="form-grid" style="padding-top:1.5rem;">
+    {{ form.hidden_tag() }}
+    <div class="form-group full">
+      <label><i class="fas fa-file-lines"></i> Título</label>
+      {{ form.titulo(class="form-control") }}
+    </div>
+    <div class="form-group">
+      <label><i class="fas fa-tag"></i> Tipo</label>
+      {{ form.tipo(class="form-control") }}
+    </div>
+    <div class="form-group">
+      <label><i class="fas fa-circle-check"></i> Estado</label>
+      {{ form.estado(class="form-control") }}
+    </div>
+    <div class="form-group">
+      <label><i class="fas fa-user"></i> Cliente</label>
+      {{ form.folder_id(class="form-control") }}
+    </div>
+    <div class="form-group">
+      <label><i class="fas fa-ship"></i> Embarque</label>
+      {{ form.shipment_id(class="form-control") }}
+    </div>
+    <div class="form-group">
+      <label><i class="fas fa-globe"></i> País</label>
+      {{ form.country_id(class="form-control") }}
+    </div>
+    <div class="form-group">
+      <label><i class="fas fa-box"></i> Producto</label>
+      {{ form.product_id(class="form-control") }}
+    </div>
+    <div class="form-group">
+      <label><i class="fas fa-calendar"></i> Vencimiento</label>
+      {{ form.fecha_vencimiento(class="form-control") }}
+    </div>
+    <div class="form-group full">
+      <label><i class="fas fa-comment"></i> Comentarios internos</label>
+      {{ form.comentarios(class="form-control", rows="3") }}
+    </div>
+    <div class="form-group full">
+      <label><i class="fas fa-file-pdf"></i> Archivo PDF</label>
+      <div class="upload-box" id="pdfDropZone" style="margin-top:.5rem;">
+        <i class="fas fa-file-pdf" style="color:var(--red);"></i>
+        <p><strong>Selecciona o arrastra un PDF</strong></p>
+        {{ form.archivo(id="pdfInput", style="display:none;", accept="application/pdf,.pdf") }}
+        <p id="pdfFileName" style="font-size:.8rem;color:var(--accent);font-weight:600;margin-top:.75rem;">
+          {% if editing and doc.tiene_archivo %}Actual: {{ doc.original_filename }}{% endif %}
+        </p>
+      </div>
+      {% if form.archivo.errors %}
+        {% for e in form.archivo.errors %}<p class="form-errors">{{ e }}</p>{% endfor %}
+      {% endif %}
+    </div>
+    <div class="form-actions full" style="grid-column:1/-1;padding-left:1.5rem;">
+      <button type="submit" class="btn btn-green"><i class="fas fa-save"></i> Guardar</button>
+      {% if editing %}
+      <a href="{{ url_for('admin.documento_detalle', id=doc.id) }}" class="btn btn-ghost">Cancelar</a>
+      {% endif %}
+    </div>
+  </form>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function () {
+  const zone = document.getElementById('pdfDropZone');
+  const input = document.getElementById('pdfInput');
+  const label = document.getElementById('pdfFileName');
+  if (!zone || !input) return;
+  zone.addEventListener('click', () => input.click());
+  input.addEventListener('change', () => {
+    if (input.files.length) label.textContent = '📄 ' + input.files[0].name;
+  });
+})();
+</script>
+{% endblock %}

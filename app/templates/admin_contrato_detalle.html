@@ -1,0 +1,81 @@
+{% extends "admin_layout.html" %}
+{% block title %}{{ contrato.numero }}{% endblock %}
+{% block topbar_title %}{{ contrato.numero }}{% endblock %}
+{% block topbar_subtitle %}{{ contrato.titulo }} · {{ contrato_estados.get(contrato.estado) }}{% endblock %}
+{% block topbar_actions %}
+  {% if puede_editar %}
+  <a href="{{ url_for('admin.contrato_editar', id=contrato.id) }}" class="btn-top accent"><i class="fas fa-pen"></i> Editar</a>
+  {% endif %}
+  <a href="{{ url_for('admin.contratos') }}" class="btn-top ghost"><i class="fas fa-arrow-left"></i> Lista</a>
+{% endblock %}
+
+{% block content %}
+<div class="kpi-grid" style="grid-template-columns:repeat(3,1fr);margin-bottom:1.25rem;">
+  <div class="kpi-card green">
+    <div class="kpi-label">Estado</div>
+    <div class="kpi-value" style="font-size:.9rem;">
+      <span class="estado-badge" style="background:{{ contrato_estado_colors.get(contrato.estado) }}18;color:{{ contrato_estado_colors.get(contrato.estado) }};">
+        {{ contrato_estados.get(contrato.estado) }}
+      </span>
+    </div>
+  </div>
+  <div class="kpi-card blue">
+    <div class="kpi-label">Vigencia</div>
+    <div class="kpi-value" style="font-size:.9rem;">
+      {{ contrato.fecha_inicio.strftime('%d/%m/%Y') if contrato.fecha_inicio else '—' }}
+      → {{ contrato.fecha_fin.strftime('%d/%m/%Y') if contrato.fecha_fin else '—' }}
+    </div>
+  </div>
+  <div class="kpi-card orange">
+    <div class="kpi-label">Renovación</div>
+    <div class="kpi-value" style="font-size:1rem;">{% if contrato.renovacion_auto %}Automática{% else %}Manual{% endif %}</div>
+  </div>
+</div>
+
+<div class="grid-2">
+  <div class="panel">
+    <div class="panel-header"><h3>Partes del contrato</h3></div>
+    <div class="info-grid" style="background:var(--white);border:none;">
+      <div class="info-item"><label>Cliente</label>
+        <span>{% if contrato.cliente %}<a href="{{ url_for('admin.cartera_detalle', id=contrato.cliente.id) }}" class="link-row">{{ contrato.cliente.nombre }}</a>{% else %}—{% endif %}</span>
+      </div>
+      <div class="info-item"><label>País</label><span>{{ contrato.pais.nombre if contrato.pais else '—' }}</span></div>
+      <div class="info-item"><label>Producto</label><span>{{ contrato.producto.nombre if contrato.producto else '—' }}</span></div>
+      <div class="info-item"><label>Responsable</label><span>{{ contrato.responsable.nombre or contrato.responsable.username if contrato.responsable else '—' }}</span></div>
+    </div>
+  </div>
+  <div class="panel">
+    <div class="panel-header"><h3>Archivo PDF</h3></div>
+    <div style="padding:1.5rem;text-align:center;">
+      {% if contrato.tiene_archivo %}
+      <i class="fas fa-file-pdf" style="font-size:2.5rem;color:var(--red);margin-bottom:.75rem;"></i>
+      <p style="font-weight:600;">{{ contrato.original_filename }}</p>
+      <a href="{{ url_for('admin.contrato_descargar', id=contrato.id) }}" class="btn btn-green" style="margin-top:1rem;"><i class="fas fa-download"></i> Descargar</a>
+      {% else %}
+      <p style="color:var(--gray);">Sin archivo adjunto.</p>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+{% if contrato.condiciones %}
+<div class="panel" style="margin-top:1.25rem;">
+  <div class="panel-header"><h3>Condiciones comerciales</h3></div>
+  <div style="padding:1.25rem 1.5rem;white-space:pre-wrap;font-size:.9rem;">{{ contrato.condiciones }}</div>
+</div>
+{% endif %}
+
+{% if contrato.notas %}
+<div class="panel" style="margin-top:1.25rem;">
+  <div class="panel-header"><h3>Notas internas</h3></div>
+  <div style="padding:1.25rem 1.5rem;white-space:pre-wrap;font-size:.9rem;">{{ contrato.notas }}</div>
+</div>
+{% endif %}
+
+{% if puede_editar %}
+<form method="POST" action="{{ url_for('admin.contrato_eliminar', id=contrato.id) }}" onsubmit="return confirm('¿Eliminar contrato?');" style="margin-top:1.25rem;">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  <button type="submit" class="btn btn-danger"><i class="fas fa-trash"></i> Eliminar contrato</button>
+</form>
+{% endif %}
+{% endblock %}

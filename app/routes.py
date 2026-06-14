@@ -12,6 +12,12 @@ def index():
     return render_template("index.html", form=form)
 
 
+@main.route("/index5", methods=["GET"])
+def index5():
+    form = ContactoForm()
+    return render_template("index5.html", form=form)
+
+
 @main.route("/contacto", methods=["POST"])
 def contacto():
     form = ContactoForm()
@@ -36,7 +42,9 @@ def contacto():
     flash("⚠️ Hay errores en el formulario", "danger")
 
     # Si falla, vuelve a la página de origen (index o servicios)
-    template = "services.html" if "servicios" in (request.referrer or "") else "index.html"
+    template = "services.html" if "servicios" in (request.referrer or "") else (
+        "index5.html" if "index5" in (request.referrer or "") else "index.html"
+    )
     return render_template(template, form=form), 400
 
 

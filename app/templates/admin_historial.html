@@ -1,0 +1,49 @@
+{% extends "admin_layout.html" %}
+{% block title %}Historial{% endblock %}
+{% block topbar_title %}Historial de operaciones{% endblock %}
+{% block topbar_subtitle %}Trazabilidad: quién hizo qué y cuándo{% endblock %}
+
+{% block content %}
+<div class="panel">
+  <div class="panel-header">
+    <h3><i class="fas fa-clock-rotate-left" style="color:var(--accent);margin-right:.5rem;"></i>Últimas 200 acciones</h3>
+  </div>
+  <div class="filter-bar">
+    <a href="{{ url_for('admin.historial') }}" class="filter-chip {% if not filtro_entidad %}active{% endif %}">Todas</a>
+    {% for key, label in audit_entidades.items() %}
+    <a href="{{ url_for('admin.historial', entidad=key) }}" class="filter-chip {% if filtro_entidad == key %}active{% endif %}">{{ label }}</a>
+    {% endfor %}
+  </div>
+  {% if logs %}
+  <table class="data-table">
+    <thead>
+      <tr><th>Fecha</th><th>Usuario</th><th>Acción</th><th>Entidad</th><th>Referencia</th><th>Detalle</th></tr>
+    </thead>
+    <tbody>
+      {% for log in logs %}
+      <tr>
+        <td style="font-size:.78rem;white-space:nowrap;">{{ log.created_at.strftime('%d/%m/%Y %H:%M') }}</td>
+        <td style="font-size:.8rem;">{{ log.usuario.nombre or log.usuario.username if log.usuario else 'Sistema' }}</td>
+        <td>
+          <span class="estado-badge" style="background:var(--accent-light);color:var(--accent);font-size:.62rem;">
+            {{ audit_acciones.get(log.accion, log.accion) }}
+          </span>
+        </td>
+        <td style="font-size:.8rem;">{{ audit_entidades.get(log.entidad_tipo, log.entidad_tipo) }}</td>
+        <td style="font-size:.8rem;font-weight:600;">
+          {% if log.entidad_tipo == 'embarque' and log.entidad_id %}
+          <a href="{{ url_for('admin.embarque_detalle', id=log.entidad_id) }}" class="link-row">{{ log.entidad_ref or log.entidad_id }}</a>
+          {% elif log.entidad_tipo == 'contrato' and log.entidad_id %}
+          <a href="{{ url_for('admin.contrato_detalle', id=log.entidad_id) }}" class="link-row">{{ log.entidad_ref or log.entidad_id }}</a>
+          {% else %}{{ log.entidad_ref or (log.entidad_id or '—') }}{% endif %}
+        </td>
+        <td style="font-size:.78rem;color:var(--gray);max-width:200px;overflow:hidden;text-overflow:ellipsis;">{{ log.detalle or '—' }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <div class="empty-state"><i class="fas fa-clock-rotate-left"></i><p>Sin registros{% if filtro_entidad %} para esta entidad{% endif %}.</p></div>
+  {% endif %}
+</div>
+{% endblock %}

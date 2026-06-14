@@ -1,0 +1,58 @@
+{% macro status_badge(estado, estados, colores, iconos) %}
+{% set color = colores.get(estado, '#6b7280') %}
+<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold"
+      style="background:{{ color }}18;color:{{ color }};">
+  <i class="fas {{ iconos.get(estado, 'fa-circle') }} text-[10px]"></i>
+  {{ estados.get(estado, estado) }}
+</span>
+{% endmacro %}
+
+{% macro progress_pct(embarque) %}
+{% if embarque.hitos %}
+{{ ((embarque.etapas_completadas * 100) / embarque.hitos|length)|int }}
+{% else %}0{% endif %}
+{% endmacro %}
+
+{% macro timeline(embarque, etapas, iconos) %}
+<div class="relative">
+  <div class="h-2 rounded-full bg-gray-100 overflow-hidden mb-6">
+    <div class="h-full rounded-full bg-gradient-to-r from-patagonia to-sunset transition-all duration-500"
+         style="width:{{ progress_pct(embarque) }}%;"></div>
+  </div>
+  <div class="grid grid-cols-2 sm:grid-cols-5 gap-2">
+    {% for key, label in etapas.items() %}
+    {% set hito = embarque.hitos|selectattr('etapa', 'equalto', key)|first %}
+    {% set done = hito.completado if hito else false %}
+    <div class="flex flex-col items-center text-center gap-1.5 {% if not loop.last %}sm:relative{% endif %}">
+      <div class="w-9 h-9 rounded-xl flex items-center justify-center text-sm shrink-0
+                  {% if done %}bg-patagonia text-white shadow-md shadow-patagonia/30{% else %}bg-gray-100 text-gray-400{% endif %}">
+        <i class="fas {{ iconos.get(key, 'fa-circle') }}"></i>
+      </div>
+      <span class="text-[10px] font-semibold leading-tight {% if done %}text-patagonia{% else %}text-gray-400{% endif %}">{{ label }}</span>
+      {% if hito and hito.fecha %}
+      <span class="text-[9px] text-gray-400">{{ hito.fecha.strftime('%d/%m') }}</span>
+      {% endif %}
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endmacro %}
+
+{% macro route_visual(origen, destino) %}
+<div class="flex items-center gap-3 py-3">
+  <div class="text-center shrink-0">
+    <div class="w-10 h-10 rounded-full bg-patagonia-50 flex items-center justify-center text-patagonia mb-1"><i class="fas fa-anchor"></i></div>
+    <div class="text-xs font-bold text-ink max-w-[80px] truncate">{{ origen or 'Chile' }}</div>
+  </div>
+  <div class="flex-1 flex flex-col items-center gap-1 min-w-0">
+    <div class="w-full h-0.5 bg-gradient-to-r from-patagonia via-sunset to-patagonia relative">
+      <i class="fas fa-ship absolute left-1/2 -translate-x-1/2 -top-2 text-sunset text-sm bg-cream px-1"></i>
+    </div>
+    <span class="text-[10px] font-semibold text-ink-muted uppercase tracking-wider">Tránsito marítimo</span>
+  </div>
+  <div class="text-center shrink-0">
+    <div class="w-10 h-10 rounded-full bg-sunset/10 flex items-center justify-center text-sunset mb-1"><i class="fas fa-flag-checkered"></i></div>
+    <div class="text-xs font-bold text-ink max-w-[80px] truncate">{{ destino or 'Destino' }}</div>
+  </div>
+</div>
+{% endmacro %}

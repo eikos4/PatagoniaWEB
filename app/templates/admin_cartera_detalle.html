@@ -29,8 +29,16 @@
     {% if carpeta.contacto %}<div class="info-item"><label>Contacto</label><span>{{ carpeta.contacto }}</span></div>{% endif %}
     {% if carpeta.email %}<div class="info-item"><label>Email</label><span><a href="mailto:{{ carpeta.email }}" style="color:var(--accent);">{{ carpeta.email }}</a></span></div>{% endif %}
     {% if carpeta.telefono %}<div class="info-item"><label>Teléfono</label><span>{{ carpeta.telefono }}</span></div>{% endif %}
-    {% if carpeta.pais %}<div class="info-item"><label>País</label><span>{{ carpeta.pais }}</span></div>{% endif %}
+    {% if carpeta.pais %}<div class="info-item"><label>País</label><span>{{ carpeta.pais }}{% if carpeta.ciudad %}, {{ carpeta.ciudad }}{% endif %}</span></div>{% endif %}
+    {% if carpeta.tipo_cliente %}<div class="info-item"><label>Tipo</label><span>{{ cliente_tipos.get(carpeta.tipo_cliente, carpeta.tipo_cliente) }}</span></div>{% endif %}
+    {% if carpeta.ejecutivo %}<div class="info-item"><label>Ejecutivo</label><span>{{ carpeta.ejecutivo.nombre or carpeta.ejecutivo.username }}</span></div>{% endif %}
   </div>
+  {% if carpeta.condiciones_comerciales %}
+  <div style="padding:1rem 1.5rem;border-bottom:1px solid var(--gray-mid);">
+    <label style="font-size:.65rem;font-weight:700;text-transform:uppercase;color:var(--gray);">Condiciones comerciales</label>
+    <p style="margin-top:.5rem;font-size:.9rem;line-height:1.6;white-space:pre-wrap;">{{ carpeta.condiciones_comerciales }}</p>
+  </div>
+  {% endif %}
   {% if carpeta.notas %}
   <div style="padding:1rem 1.5rem;border-bottom:1px solid var(--gray-mid);">
     <label style="font-size:.65rem;font-weight:700;text-transform:uppercase;color:var(--gray);">Notas</label>
@@ -105,6 +113,90 @@
         </div>
       </div>
       <button type="submit" class="btn btn-green" style="margin-top:.5rem;"><i class="fas fa-coins"></i> Registrar abono</button>
+    </form>
+  </div>
+</div>
+
+<!-- Historial de compras -->
+<div class="panel" style="margin-bottom:1.25rem;">
+  <div class="panel-header">
+    <h3><i class="fas fa-history" style="color:var(--accent);margin-right:.5rem;"></i>Historial de compras</h3>
+    <span style="font-size:.8rem;color:var(--gray);">{{ pedidos_hist|length }} pedido(s) · {{ contratos_vigentes|length }} contrato(s) vigente(s)</span>
+  </div>
+  {% if contratos_vigentes %}
+  <div style="padding:1rem 1.5rem;border-bottom:1px solid var(--gray-mid);">
+    <p style="font-size:.7rem;font-weight:700;text-transform:uppercase;color:var(--gray);margin-bottom:.75rem;">Contratos vigentes</p>
+    <table class="data-table">
+      <thead><tr><th>Nº</th><th>Producto</th><th>Vigencia</th><th>Estado</th></tr></thead>
+      <tbody>
+        {% for c in contratos_vigentes %}
+        <tr>
+          <td><a href="{{ url_for('admin.contrato_detalle', id=c.id) }}" class="link-row">{{ c.numero }}</a></td>
+          <td style="font-size:.85rem;">{{ c.producto.nombre if c.producto else '—' }}</td>
+          <td style="font-size:.8rem;">{{ c.fecha_inicio.strftime('%d/%m/%Y') if c.fecha_inicio else '—' }} → {{ c.fecha_fin.strftime('%d/%m/%Y') if c.fecha_fin else '—' }}</td>
+          <td><span class="badge" style="background:#ecfdf5;color:#15803d;">{{ c.estado }}</span></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% endif %}
+  {% if pedidos_hist %}
+  <table class="data-table">
+    <thead><tr><th>Pedido</th><th>Estado</th><th>Total</th><th>Fecha</th><th>Embarques</th></tr></thead>
+    <tbody>
+      {% for p in pedidos_hist %}
+      <tr>
+        <td><a href="{{ url_for('admin.pedido_detalle', id=p.id) }}" class="link-row">{{ p.numero }}</a></td>
+        <td>
+          <span class="estado-badge" style="background:{{ pedido_estado_colors.get(p.estado, '#eee') }}18;color:{{ pedido_estado_colors.get(p.estado, '#666') }};">
+            {{ pedido_estados.get(p.estado, p.estado) }}
+          </span>
+        </td>
+        <td style="font-weight:700;">{{ "{:,.2f}".format(p.total) }} {{ p.moneda }}</td>
+        <td style="font-size:.85rem;">{{ p.fecha_pedido.strftime("%d/%m/%Y") }}</td>
+        <td style="font-size:.8rem;">{{ p.embarques|length }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <div class="empty-state" style="padding:2rem;"><p>Sin historial de compras para este cliente.</p></div>
+  {% endif %}
+</div>
+
+<!-- Portal cliente -->
+<div class="panel" style="margin-bottom:1.25rem;">
+  <div class="panel-header">
+    <h3><i class="fas fa-door-open" style="color:var(--orange);margin-right:.5rem;"></i>Portal internacional</h3>
+    {% if carpeta.portal_activo %}
+    <span class="badge" style="background:#ecfdf5;color:#15803d;"><i class="fas fa-circle-check"></i> Activo</span>
+    {% else %}
+    <span class="badge" style="background:#f3f4f6;color:var(--gray);">Inactivo</span>
+    {% endif %}
+  </div>
+  <div style="padding:1.25rem 1.5rem;">
+    <p style="font-size:.85rem;color:var(--gray);margin-bottom:1rem;">
+      El cliente accede en <a href="{{ url_for('portal.login', _external=True) }}" target="_blank" style="color:var(--accent);">{{ url_for('portal.login', _external=True) }}</a>
+      {% if carpeta.portal_email %} con <strong>{{ carpeta.portal_email }}</strong>{% endif %}.
+    </p>
+    <form method="POST" action="{{ url_for('admin.cartera_portal', id=carpeta.id) }}">
+      {{ portal_form.hidden_tag() }}
+      <div class="form-grid" style="padding:0;">
+        <div class="form-group">
+          <label>{{ portal_form.portal_email.label.text }}</label>
+          {{ portal_form.portal_email(class="form-control") }}
+        </div>
+        <div class="form-group">
+          <label>{{ portal_form.password.label.text }}</label>
+          {{ portal_form.password(class="form-control", placeholder="Nueva contraseña") }}
+        </div>
+        <div class="form-group">
+          <label>{{ portal_form.activo.label.text }}</label>
+          {{ portal_form.activo(class="form-control") }}
+        </div>
+      </div>
+      <button type="submit" class="btn btn-green" style="margin-top:.75rem;"><i class="fas fa-key"></i> Guardar acceso portal</button>
     </form>
   </div>
 </div>

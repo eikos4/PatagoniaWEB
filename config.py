@@ -27,6 +27,18 @@ COMPANY_ADDRESS = "Sur de Chile · Exportación a México --Perú--Colombia"
 LOGO_FILENAME = "img/1.png"
 
 UPLOAD_FOLDER = os.path.join(BASE_DIR, "uploads", "clientes")
+DOCUMENTS_FOLDER = os.path.join(BASE_DIR, "uploads", "documentos")
+TEMPLATES_FOLDER = os.path.join(BASE_DIR, "uploads", "plantillas")
+CONTRACTS_FOLDER = os.path.join(BASE_DIR, "uploads", "contratos")
+PRODUCTS_FOLDER = os.path.join(BASE_DIR, "uploads", "productos")
+
+# SMTP para notificaciones (opcional)
+SMTP_HOST = os.environ.get("SMTP_HOST", "")
+SMTP_PORT = int(os.environ.get("SMTP_PORT", "587"))
+SMTP_USER = os.environ.get("SMTP_USER", "")
+SMTP_PASSWORD = os.environ.get("SMTP_PASSWORD", "")
+SMTP_FROM = os.environ.get("SMTP_FROM", CONTACT_EMAIL)
+NOTIFY_EMAIL = os.environ.get("NOTIFY_EMAIL", CONTACT_EMAIL)
 MAX_CONTENT_LENGTH = 32 * 1024 * 1024  # 32 MB
 ALLOWED_EXTENSIONS = {
     "pdf", "png", "jpg", "jpeg", "gif", "webp",

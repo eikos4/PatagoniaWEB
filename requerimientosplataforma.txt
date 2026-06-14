@@ -1,0 +1,460 @@
+Funcionalidades principales de la plataforma
+1. Panel general / Dashboard ejecutivo
+
+Vista central para el CEO o gerente general.
+
+Debe mostrar:
+
+Exportaciones activas.
+Países atendidos.
+Clientes internacionales.
+Contenedores en tránsito.
+Documentos pendientes.
+Ventas por país.
+Costos logísticos.
+Alertas críticas.
+Estado general de cada operación.
+
+Ejemplo:
+
+Chile → México | 2 contenedores en tránsito | Documentos completos | ETA: 12 días
+
+2. Gestión de clientes internacionales
+
+Módulo para registrar y administrar compradores, distribuidores o importadores.
+
+Datos recomendados:
+
+Nombre de empresa.
+País.
+Ciudad.
+Contacto comercial.
+Correo y teléfono.
+Tipo de cliente.
+Productos que compra.
+Historial de compras.
+Condiciones comerciales.
+Documentos asociados.
+Estado: activo, prospecto, inactivo.
+
+Esto sirve para tener el CRM de exportación ordenado.
+
+3. Gestión de países y requisitos
+
+Un módulo por país destino:
+
+México.
+Colombia.
+España.
+Holanda.
+Estados Unidos.
+China.
+Brasil.
+Otros.
+
+Dentro de cada país podrías guardar:
+
+Requisitos fitosanitarios.
+Documentos obligatorios.
+Etiquetado requerido.
+Autoridades relevantes.
+Certificaciones necesarias.
+Condiciones comerciales.
+Observaciones por producto.
+
+Ejemplo:
+
+México → requiere certificado fitosanitario SAG, requisitos SENASICA, factura comercial, certificado de origen y pedimento de importación.
+
+4. Gestión documental
+
+Este sería uno de los módulos más importantes.
+
+Debe permitir subir, ordenar y controlar documentos como:
+
+Certificado fitosanitario.
+Certificado de origen.
+Factura comercial.
+Packing list.
+Bill of Lading / BL.
+Guía de despacho.
+Contratos.
+Pólizas de seguro.
+Documentos aduaneros.
+Etiquetas.
+Certificados de calidad.
+Documentos del cliente.
+Documentos del contenedor.
+
+Funciones clave:
+
+Subida de archivos PDF, Excel, Word o imágenes.
+Clasificación por país, cliente, producto y embarque.
+Fecha de vencimiento.
+Estado: pendiente, aprobado, rechazado, vencido.
+Historial de versiones.
+Comentarios internos.
+Alertas automáticas.
+5. Gestión de productos exportados
+
+Módulo para registrar los productos de Patagonia Sur.
+
+Categorías posibles:
+
+Frutas frescas.
+Frutas congeladas IQF.
+Productos del mar.
+Vinos.
+Alimentos procesados.
+Otros productos.
+
+Datos por producto:
+
+Nombre comercial.
+Categoría.
+Formato de venta.
+Peso por caja.
+Dimensiones.
+Temperatura requerida.
+Vida útil.
+Países permitidos.
+Certificaciones necesarias.
+Fotos del producto.
+Ficha técnica.
+6. Gestión de embarques
+
+Cada exportación debería convertirse en un “embarque” o “operación”.
+
+Datos del embarque:
+
+Código interno.
+Cliente.
+País destino.
+Producto.
+Cantidad.
+Contenedor asociado.
+Fecha de carga.
+Fecha de salida.
+Fecha estimada de llegada.
+Puerto de origen.
+Puerto de destino.
+Empresa naviera.
+Estado del embarque.
+Documentos asociados.
+Responsable interno.
+
+Estados sugeridos:
+
+En preparación.
+Documentación pendiente.
+Listo para despacho.
+En tránsito.
+En destino.
+Entregado.
+Cerrado.
+Con incidencia.
+7. Calculadora de contenedores
+
+Esta funcionalidad le daría mucho valor práctico.
+
+Podría calcular:
+
+Metros cúbicos disponibles.
+Volumen total de carga.
+Porcentaje de ocupación.
+Cantidad de cajas que caben.
+Peso total.
+Peso disponible restante.
+Distribución por tipo de producto.
+Alertas por sobrepeso o exceso de volumen.
+
+Campos básicos:
+
+Largo, ancho y alto del contenedor.
+Largo, ancho y alto de caja.
+Peso por caja.
+Cantidad de cajas.
+Tipo de contenedor: 20 pies, 40 pies, reefer, high cube.
+
+Resultado:
+
+Capacidad utilizada: 83%
+Cajas estimadas: 1.240
+Peso total: 21.500 kg
+Estado: carga válida
+
+8. Gestión logística
+
+Módulo para controlar la operación desde origen hasta destino.
+
+Debe incluir:
+
+Transporte terrestre.
+Puerto de salida.
+Naviera.
+Contenedor.
+Número de booking.
+Número de BL.
+Ruta marítima.
+Puerto de destino.
+Agente de aduana.
+Fecha estimada de llegada.
+Seguimiento del estado.
+
+También podría tener una línea de tiempo:
+
+Producción → Packing → Certificación → Carga → Puerto → Zarpe → Tránsito → Arribo → Aduana → Cliente
+
+9. Seguimiento de contenedores
+
+Idealmente, el sistema debería permitir registrar o integrar tracking.
+
+Datos útiles:
+
+Número de contenedor.
+Naviera.
+Estado actual.
+Última ubicación conocida.
+Fecha de salida.
+Fecha estimada de llegada.
+Días en tránsito.
+Retrasos.
+Observaciones.
+
+Incluso aunque al inicio sea manual, después podría conectarse con APIs de tracking marítimo.
+
+10. Alertas y vencimientos
+
+Sistema de notificaciones internas.
+
+Alertas recomendadas:
+
+Documento vencido.
+Documento faltante.
+Certificado pendiente.
+Embarque próximo a salir.
+Contenedor retrasado.
+Cliente sin contrato vigente.
+Producto sin ficha técnica.
+País con requisitos incompletos.
+Pago pendiente.
+Cambio de estado del embarque.
+
+Canales posibles:
+
+Dentro de la plataforma.
+Correo.
+WhatsApp.
+Notificación móvil.
+11. Roles y permisos
+
+Importante si la usan varias personas.
+
+Roles sugeridos:
+
+CEO / Gerente general
+Acceso total.
+Reportes globales.
+Ventas por país.
+Documentación completa.
+Indicadores estratégicos.
+Encargado comercial
+Clientes.
+Cotizaciones.
+Contratos.
+Seguimiento comercial.
+Encargado documental
+Certificados.
+Facturas.
+Packing list.
+BL.
+Validación documental.
+Encargado logístico
+Contenedores.
+Transporte.
+Navieras.
+Fechas.
+Tracking.
+Encargado por país
+Clientes y operaciones de su mercado.
+Documentos de su país.
+Requisitos locales.
+Usuario lectura
+Solo visualiza información.
+12. Reportes e indicadores
+
+Módulo de análisis para tomar decisiones.
+
+KPIs recomendados:
+
+Ventas por país.
+Ventas por producto.
+Clientes activos.
+Exportaciones por mes.
+Contenedores enviados.
+Costo logístico promedio.
+Tiempo promedio de entrega.
+Documentos vencidos.
+Embarques con retraso.
+Margen por operación.
+Países más rentables.
+Productos más exportados.
+
+Visualmente podría tener gráficos tipo:
+
+Barras por país.
+Torta por producto.
+Línea de ventas mensual.
+Ranking de clientes.
+Mapa de destinos.
+13. Gestión de costos y rentabilidad
+
+Para analizar si una exportación conviene o no.
+
+Costos posibles:
+
+Producto.
+Packing.
+Transporte interno.
+Certificaciones.
+Aduana.
+Flete marítimo.
+Seguro.
+Comisión comercial.
+Costos bancarios.
+Otros gastos.
+
+Resultado:
+
+Costo total.
+Precio de venta.
+Margen bruto.
+Rentabilidad.
+Utilidad estimada.
+
+Esto sería oro para el CEO. Oro con Excel no se pelea, pero sí se jubila.
+
+14. Cotizaciones comerciales
+
+Módulo para generar cotizaciones a clientes internacionales.
+
+Debe permitir:
+
+Seleccionar cliente.
+Producto.
+Cantidad.
+Precio unitario.
+Incoterm.
+Puerto de destino.
+Moneda.
+Condiciones de pago.
+Validez de la oferta.
+Generar PDF.
+
+Estados:
+
+Borrador.
+Enviada.
+Aceptada.
+Rechazada.
+Convertida en embarque.
+15. Gestión de contratos
+
+Para mantener orden legal y comercial.
+
+Datos:
+
+Cliente.
+País.
+Producto.
+Fecha inicio.
+Fecha término.
+Condiciones comerciales.
+Archivo PDF.
+Responsable.
+Estado.
+Renovación automática o manual.
+Alertas de vencimiento.
+16. Módulo de cumplimiento normativo
+
+Este módulo puede ser simple al inicio y crecer después.
+
+Debe permitir guardar:
+
+Normas por país.
+Requisitos por producto.
+Certificaciones necesarias.
+Restricciones.
+Observaciones.
+Documentos legales.
+Fechas de actualización.
+
+Ejemplo:
+
+Uvas a México → requisito fitosanitario específico + inspección + documentación de origen.
+
+17. Historial de operaciones
+
+Cada cliente, producto o embarque debería tener trazabilidad.
+
+Debe registrar:
+
+Quién creó la operación.
+Quién subió documentos.
+Quién aprobó.
+Qué cambió.
+Fecha y hora.
+Comentarios.
+Archivos anteriores.
+
+Esto ayuda mucho si después hay problemas con aduana, cliente o logística.
+
+18. Biblioteca de documentos y plantillas
+
+Un repositorio interno con:
+
+Plantillas de factura comercial.
+Plantillas de packing list.
+Contratos tipo.
+Formatos de cotización.
+Fichas técnicas.
+Etiquetas.
+Manuales internos.
+Procedimientos por país.
+19. Módulo de tareas internas
+
+Para organizar al equipo.
+
+Ejemplo de tareas:
+
+Solicitar certificado fitosanitario.
+Validar packing list.
+Confirmar booking.
+Enviar documentos al cliente.
+Revisar contrato.
+Confirmar pago.
+Actualizar estado de contenedor.
+
+Campos:
+
+Responsable.
+Fecha límite.
+Prioridad.
+Estado.
+Comentarios.
+Relación con embarque o cliente.
+20. Portal para clientes internacionales
+
+Funcionalidad futura muy potente.
+
+El cliente podría entrar y ver:
+
+Sus embarques.
+Documentos disponibles.
+Estado de pedidos.
+Facturas.
+Fecha estimada de llegada.
+Historial de compras.
+Contacto del ejecutivo.
+
+Esto le daría una imagen mucho más profesional a Patagonia Sur.

@@ -1,0 +1,61 @@
+{% extends "admin_layout.html" %}
+{% block title %}Usuarios{% endblock %}
+{% block topbar_title %}Usuarios y roles{% endblock %}
+{% block topbar_subtitle %}Gestión de accesos al panel administrativo{% endblock %}
+{% block topbar_actions %}
+  <a href="{{ url_for('admin.usuario_nuevo') }}" class="btn-top accent"><i class="fas fa-user-plus"></i> Nuevo usuario</a>
+{% endblock %}
+
+{% block content %}
+<div class="panel">
+  <div class="panel-header">
+    <h3><i class="fas fa-users-gear" style="color:var(--accent);margin-right:.5rem;"></i>{{ usuarios|length }} usuario{% if usuarios|length != 1 %}s{% endif %}</h3>
+  </div>
+  <table class="data-table">
+    <thead>
+      <tr>
+        <th>Usuario</th>
+        <th>Nombre</th>
+        <th>Rol</th>
+        <th>Estado</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for u in usuarios %}
+      <tr>
+        <td><strong>{{ u.username }}</strong></td>
+        <td>{{ u.nombre or '—' }}</td>
+        <td>
+          <span class="estado-badge" style="background:var(--accent-light);color:var(--accent);">
+            {{ user_roles.get(u.rol, u.rol) }}
+          </span>
+        </td>
+        <td>
+          {% if u.activo %}
+          <span class="estado-badge" style="background:#ecfdf5;color:var(--green-ok);"><i class="fas fa-circle"></i> Activo</span>
+          {% else %}
+          <span class="estado-badge" style="background:#f3f4f6;color:var(--gray);"><i class="fas fa-ban"></i> Inactivo</span>
+          {% endif %}
+        </td>
+        <td>
+          <a href="{{ url_for('admin.usuario_editar', id=u.id) }}" class="btn-icon" title="Editar"><i class="fas fa-pen"></i></a>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<div class="panel" style="margin-top:1.25rem;">
+  <div class="panel-header"><h3><i class="fas fa-shield-halved" style="color:var(--accent);margin-right:.4rem;"></i>Roles disponibles</h3></div>
+  <div style="padding:1.25rem 1.5rem;font-size:.85rem;line-height:1.8;">
+    {% for key, label in user_roles.items() %}
+    <div><strong>{{ label }}</strong> <span style="color:var(--gray);">({{ key }})</span>
+      {% if key == 'ceo' %} — acceso total y gestión de usuarios{% endif %}
+      {% if key == 'lectura' %} — solo consulta, sin edición{% endif %}
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

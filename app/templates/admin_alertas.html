@@ -1,0 +1,39 @@
+{% extends "admin_layout.html" %}
+{% block title %}Alertas{% endblock %}
+{% block topbar_title %}Centro de alertas{% endblock %}
+{% block topbar_subtitle %}Documentos, embarques, cotizaciones y cumplimiento{% endblock %}
+{% block topbar_actions %}
+  <a href="{{ url_for('admin.dashboard') }}" class="btn-top ghost"><i class="fas fa-chart-pie"></i> Dashboard</a>
+{% endblock %}
+
+{% block content %}
+{% if alertas %}
+<div style="display:flex;flex-direction:column;gap:.75rem;">
+  {% for a in alertas %}
+  <div class="panel" style="padding:1rem 1.25rem;display:flex;align-items:flex-start;gap:1rem;border-left:4px solid {% if a.nivel == 'critica' %}var(--red){% elif a.nivel == 'advertencia' %}var(--orange){% else %}#2563eb{% endif %};">
+    <div style="width:40px;height:40px;border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0;background:{% if a.nivel == 'critica' %}#fff1f2{% elif a.nivel == 'advertencia' %}#fff7ed{% else %}#eff6ff{% endif %};color:{% if a.nivel == 'critica' %}var(--red){% elif a.nivel == 'advertencia' %}var(--orange){% else %}#2563eb{% endif %};">
+      <i class="fas {{ a.icono }}"></i>
+    </div>
+    <div style="flex:1;">
+      <div style="display:flex;align-items:center;gap:.5rem;flex-wrap:wrap;">
+        <strong>{{ a.titulo }}</strong>
+        <span class="badge" style="background:var(--gray-light);color:var(--gray);text-transform:capitalize;">{{ a.categoria }}</span>
+        <span class="badge" style="background:{% if a.nivel == 'critica' %}#fff1f2;color:var(--red){% elif a.nivel == 'advertencia' %}#fff7ed;color:var(--orange){% else %}#eff6ff;color:#2563eb{% endif %};">{{ a.nivel }}</span>
+      </div>
+      <p style="font-size:.85rem;color:var(--gray);margin-top:.35rem;">{{ a.mensaje }}</p>
+      {% if a.endpoint %}
+      <a href="{% if a.entity_id %}{{ url_for(a.endpoint, id=a.entity_id) }}{% else %}{{ url_for(a.endpoint) }}{% endif %}" class="btn btn-ghost" style="margin-top:.65rem;padding:.45rem .9rem;font-size:.75rem;">
+        <i class="fas fa-arrow-right"></i> Ver detalle
+      </a>
+      {% endif %}
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% else %}
+<div class="empty-state">
+  <i class="fas fa-circle-check"></i>
+  <p>No hay alertas críticas en este momento. Todo bajo control.</p>
+</div>
+{% endif %}
+{% endblock %}

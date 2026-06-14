@@ -1,307 +1,235 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es" class="h-full">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Administrador · {{ config.STORE_NAME or 'Patagonia Sur SpA' }}</title>
+  <title>Administrador · {{ config.STORE_NAME or 'Patagonia Sur' }}</title>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌿</text></svg>">
+  <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/lipis/flag-icons@7.2.3/css/flag-icons.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            cream: { DEFAULT: '#F7F3EA', 50: '#FDFCF9', 100: '#F7F3EA' },
+            patagonia: { DEFAULT: '#587232', dark: '#465C28', light: '#6E9150', 50: '#EEF3E8' },
+            sunset: { DEFAULT: '#EA942A', dark: '#C97A1F' },
+            ink: { DEFAULT: '#111111', muted: '#6B7280' },
+          },
+          fontFamily: { sans: ['Inter', 'system-ui', 'sans-serif'] },
+        },
+      },
+    };
+  </script>
   <style>
-    :root {
-      --black: #111111;
-      --gray: #666666;
-      --gray-light: #f2f2f2;
-      --gray-mid: #e8e8e8;
-      --white: #ffffff;
-      --cream: #F7F3EA;
-      --accent: #587232;
-      --accent-dark: #465C28;
-      --orange: #EA942A;
-    }
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body {
-      font-family: 'Inter', -apple-system, sans-serif;
-      min-height: 100vh;
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      background: var(--cream);
-      color: var(--black);
-    }
-
-    /* Panel izquierdo — marca */
-    .login-brand {
-      background: var(--black);
-      color: var(--white);
+    /* flag-icons usa ::before + em — necesita font-size explícito, no w-full/scale */
+    .flag-wrap {
       display: flex;
-      flex-direction: column;
+      align-items: center;
       justify-content: center;
-      padding: 4rem;
-      position: relative;
+      width: 2.75rem;
+      height: 2.75rem;
+      border-radius: 9999px;
       overflow: hidden;
+      flex-shrink: 0;
     }
-    .login-brand::before {
-      content: '';
-      position: absolute; inset: 0;
-      background:
-        linear-gradient(135deg, rgba(88,114,50,.25) 0%, transparent 50%),
-        url("{{ url_for('static', filename='img/bolsas.png') }}") center/cover no-repeat;
-      opacity: .35;
+    .flag-wrap .fi {
+      font-size: 2.75rem;
+      line-height: 1;
+      width: 1em;
+      height: 1em;
+      display: block;
+      border-radius: 9999px;
     }
-    .login-brand::after {
-      content: '';
-      position: absolute; inset: 0;
-      background: linear-gradient(to top, rgba(17,17,17,.92), rgba(17,17,17,.6));
+    .flag-wrap-lg {
+      width: 2.25rem;
+      height: 2.25rem;
     }
-    .login-brand-content { position: relative; z-index: 1; max-width: 400px; }
-    .login-brand .logo-box {
-      width: 56px; height: 56px;
-      background: var(--accent);
-      display: flex; align-items: center; justify-content: center;
-      font-weight: 800; font-size: 1rem; letter-spacing: .05em;
-      margin-bottom: 2rem;
-    }
-    .login-brand h1 {
-      font-size: 2rem; font-weight: 800; line-height: 1.15;
-      margin-bottom: 1rem;
-    }
-    .login-brand h1 span { color: var(--orange); }
-    .login-brand p {
-      font-size: .95rem; line-height: 1.75;
-      color: rgba(255,255,255,.7); margin-bottom: 2.5rem;
-    }
-    .login-brand-features {
-      list-style: none; display: flex; flex-direction: column; gap: 1rem;
-    }
-    .login-brand-features li {
-      display: flex; align-items: center; gap: .75rem;
-      font-size: .85rem; color: rgba(255,255,255,.75);
-    }
-    .login-brand-features i {
-      width: 32px; height: 32px;
-      background: rgba(88,114,50,.4);
-      display: flex; align-items: center; justify-content: center;
-      font-size: .8rem; color: #a8d4b8; flex-shrink: 0;
-    }
-
-    /* Panel derecho — formulario */
-    .login-form-panel {
-      display: flex; align-items: center; justify-content: center;
-      padding: 3rem 2rem;
-      background: var(--white);
-    }
-    .login-form-wrap { width: 100%; max-width: 400px; }
-
-    .login-form-wrap .eyebrow {
-      font-size: .7rem; font-weight: 700;
-      letter-spacing: .2em; text-transform: uppercase;
-      color: var(--accent); margin-bottom: .75rem;
-    }
-    .login-form-wrap h2 {
-      font-size: 1.75rem; font-weight: 800;
-      margin-bottom: .5rem;
-    }
-    .login-form-wrap .subtitle {
-      font-size: .9rem; color: var(--gray);
-      margin-bottom: 2rem; line-height: 1.6;
-    }
-
-    .flash-msg {
-      font-size: .85rem; padding: .85rem 1rem;
-      margin-bottom: 1.25rem; border: 1px solid;
-      display: flex; align-items: center; gap: .5rem;
-    }
-    .flash-msg.success { background: #f0fdf4; border-color: #bbf7d0; color: #166534; }
-    .flash-msg.danger, .flash-msg.error { background: #fff1f2; border-color: #fecdd3; color: #9f1239; }
-    .flash-msg.info { background: var(--cream); border-color: var(--gray-mid); color: var(--gray); }
-
-    .form-group { margin-bottom: 1.25rem; }
-    .form-group label {
-      display: block; font-size: .7rem; font-weight: 700;
-      letter-spacing: .08em; text-transform: uppercase;
-      color: var(--gray); margin-bottom: .5rem;
-    }
-    .form-group label i { color: var(--accent); margin-right: .35rem; }
-    .input-wrap { position: relative; }
-    .form-control {
-      width: 100%; padding: .9rem 1rem;
-      border: 1px solid var(--gray-mid);
-      background: var(--gray-light);
-      font-size: .9rem; font-family: inherit;
-      transition: border-color .2s, background .2s, box-shadow .2s;
-    }
-    .form-control:focus {
-      outline: none; border-color: var(--accent);
-      background: var(--white);
-      box-shadow: 0 0 0 3px rgba(88,114,50,.12);
-    }
-    .form-control.has-toggle { padding-right: 3rem; }
-    .toggle-pass {
-      position: absolute; right: .75rem; top: 50%;
-      transform: translateY(-50%);
-      background: none; border: none; cursor: pointer;
-      color: var(--gray); padding: .25rem;
-      transition: color .2s;
-    }
-    .toggle-pass:hover { color: var(--accent); }
-    .field-error {
-      font-size: .75rem; color: #9f1239;
-      margin-top: .35rem;
-    }
-
-    .form-options {
-      display: flex; align-items: center;
-      margin-bottom: 1.5rem; font-size: .85rem; color: var(--gray);
-    }
-    .form-options label {
-      display: flex; align-items: center; gap: .5rem; cursor: pointer;
-    }
-
-    .btn-login {
-      width: 100%; padding: 1rem 1.5rem;
-      background: var(--black); color: var(--white);
-      border: none; font-family: inherit;
-      font-size: .8rem; font-weight: 700;
-      letter-spacing: .08em; text-transform: uppercase;
-      cursor: pointer; transition: background .25s, transform .2s;
-      display: flex; align-items: center; justify-content: center; gap: .5rem;
-    }
-    .btn-login:hover { background: var(--accent); }
-    .btn-login:disabled { opacity: .7; cursor: wait; }
-
-    .login-note {
-      margin-top: 1.5rem; padding-top: 1.25rem;
-      border-top: 1px solid var(--gray-mid);
-      font-size: .75rem; color: var(--gray); line-height: 1.6;
-      display: flex; gap: .5rem; align-items: flex-start;
-    }
-    .login-note i { color: var(--accent); margin-top: .15rem; }
-
-    .back-link {
-      display: inline-flex; align-items: center; gap: .5rem;
-      margin-top: 2rem; font-size: .85rem;
-      color: var(--gray); text-decoration: none;
-      transition: color .2s;
-    }
-    .back-link:hover { color: var(--accent); }
-
-    .login-footer {
-      margin-top: 1.5rem; font-size: .7rem;
-      color: #aaa; letter-spacing: .02em;
-    }
-
-    @media (max-width: 900px) {
-      body { grid-template-columns: 1fr; }
-      .login-brand { padding: 3rem 2rem; min-height: auto; }
-      .login-brand-features { display: none; }
+    .flag-wrap-lg .fi {
+      font-size: 2.25rem;
     }
   </style>
 </head>
-<body>
+<body class="h-full font-sans antialiased">
+
+<div class="min-h-full lg:grid lg:grid-cols-2">
 
   <!-- Panel marca -->
-  <aside class="login-brand">
-    <div class="login-brand-content">
-      <div class="logo-box">PS</div>
-      <h1>Patagonia <span>Sur</span></h1>
-      <p>Panel de administración para gestionar cotizaciones y mensajes de contacto de la exportadora.</p>
-      <ul class="login-brand-features">
-        <li><i class="fas fa-envelope"></i> Mensajes de cotización</li>
-        <li><i class="fas fa-ship"></i> Exportación Chile → México</li>
-        <li><i class="fas fa-shield-alt"></i> Acceso restringido</li>
+  <aside class="relative min-h-[44vh] lg:min-h-full overflow-hidden flex flex-col justify-center bg-ink text-white">
+    <div class="absolute inset-0 bg-cover bg-center opacity-30"
+         style="background-image:url('{{ url_for('static', filename='img/bolsas.png') }}')"></div>
+    <div class="absolute inset-0 bg-gradient-to-br from-ink/95 via-patagonia-dark/40 to-ink/90"></div>
+    <div class="absolute bottom-0 left-0 w-80 h-80 bg-sunset/15 rounded-full blur-3xl"></div>
+
+    <div class="relative z-10 p-8 sm:p-10 lg:p-14 max-w-lg">
+      <div class="w-14 h-14 rounded-2xl bg-patagonia flex items-center justify-center font-extrabold text-lg tracking-wider mb-8 shadow-lg shadow-patagonia/40">PS</div>
+
+      <h1 class="text-3xl sm:text-4xl font-black leading-tight mb-3">
+        Patagonia <span class="text-sunset">Sur</span>
+      </h1>
+      <p class="text-white/70 text-sm leading-relaxed mb-8">
+        Panel administrativo · Exportación de frutas, mariscos y vinos del sur de Chile.
+      </p>
+
+      <!-- Banderas mercados -->
+      <div class="mb-8">
+        <p class="text-[10px] font-bold uppercase tracking-widest text-white/45 mb-4">Mercados de exportación</p>
+        <div class="flex flex-wrap items-center gap-3">
+          {% set mercados = [
+            ('cl', 'Chile', true),
+            ('mx', 'México', false),
+            ('co', 'Colombia', false),
+            ('es', 'España', false),
+            ('pe', 'Perú', false),
+          ] %}
+          {% for code, nombre, origen in mercados %}
+          <div class="group flex flex-col items-center gap-1.5" title="{{ nombre }}">
+            <div class="flag-wrap ring-2 ring-white/20 shadow-lg group-hover:ring-sunset/60 group-hover:scale-110 transition-all duration-300
+                        {% if origen %}ring-patagonia ring-offset-2 ring-offset-ink{% endif %}">
+              <span class="fi fi-{{ code }} fis"></span>
+            </div>
+            <span class="text-[10px] font-bold text-white/60 group-hover:text-white transition-colors">{{ nombre }}</span>
+          </div>
+          {% if not loop.last and loop.index < 5 %}
+          <i class="fas fa-arrow-right text-white/25 text-xs hidden sm:block {% if loop.index == 1 %}text-sunset/70{% endif %}"></i>
+          {% endif %}
+          {% endfor %}
+        </div>
+      </div>
+
+      <!-- Ruta principal -->
+      <div class="hidden lg:flex items-center gap-3 p-4 rounded-2xl bg-white/5 backdrop-blur-sm border border-white/10 mb-8">
+        <div class="flag-wrap flag-wrap-lg ring-1 ring-white/20">
+          <span class="fi fi-cl fis"></span>
+        </div>
+        <div class="flex-1 h-px bg-gradient-to-r from-patagonia via-sunset to-white/30 relative">
+          <i class="fas fa-ship absolute left-1/2 -translate-x-1/2 -top-2.5 text-sunset text-sm bg-ink/80 px-1 rounded"></i>
+        </div>
+        <div class="flag-wrap flag-wrap-lg ring-1 ring-white/20">
+          <span class="fi fi-mx fis"></span>
+        </div>
+        <span class="text-xs font-bold text-white/70 whitespace-nowrap">Chile → México</span>
+      </div>
+
+      <ul class="hidden lg:flex flex-col gap-3">
+        <li class="flex items-center gap-3 text-sm text-white/75">
+          <span class="w-8 h-8 rounded-lg bg-patagonia/40 flex items-center justify-center text-green-200 shrink-0"><i class="fas fa-envelope text-xs"></i></span>
+          Mensajes y cotizaciones
+        </li>
+        <li class="flex items-center gap-3 text-sm text-white/75">
+          <span class="w-8 h-8 rounded-lg bg-patagonia/40 flex items-center justify-center text-green-200 shrink-0"><i class="fas fa-ship text-xs"></i></span>
+          Embarques y logística internacional
+        </li>
+        <li class="flex items-center gap-3 text-sm text-white/75">
+          <span class="w-8 h-8 rounded-lg bg-patagonia/40 flex items-center justify-center text-green-200 shrink-0"><i class="fas fa-shield-halved text-xs"></i></span>
+          Acceso restringido · Sesiones registradas
+        </li>
       </ul>
     </div>
   </aside>
 
   <!-- Formulario -->
-  <main class="login-form-panel">
-    <div class="login-form-wrap">
-      <p class="eyebrow">Administrador</p>
-      <h2>Iniciar sesión</h2>
-      <p class="subtitle">Ingresa tus credenciales para acceder al panel de {{ config.STORE_NAME or 'Patagonia Sur SpA' }}.</p>
+  <main class="flex items-center justify-center p-6 sm:p-10 lg:p-14 bg-white relative">
+    <div class="hidden lg:block absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-ink via-patagonia to-sunset"></div>
+    <div class="lg:hidden absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-ink via-patagonia to-sunset"></div>
+
+    <div class="w-full max-w-md">
+      <p class="text-[11px] font-bold uppercase tracking-[.2em] text-patagonia mb-2">Administrador</p>
+      <h2 class="text-2xl sm:text-3xl font-black text-ink mb-2">Iniciar sesión</h2>
+      <p class="text-ink-muted text-sm leading-relaxed mb-8">
+        Accede al panel de {{ config.STORE_NAME or 'Patagonia Sur SpA' }}.
+      </p>
 
       {% with messages = get_flashed_messages(with_categories=true) %}
         {% if messages %}
           {% for category, message in messages %}
-            <div class="flash-msg {{ category }}">
-              <i class="fas {% if category == 'success' %}fa-circle-check{% elif category in ['error','danger'] %}fa-circle-exclamation{% else %}fa-circle-info{% endif %}"></i>
-              {{ message }}
-            </div>
+          <div class="mb-6 flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium
+            {% if category == 'success' %}bg-green-50 text-green-800 border border-green-200
+            {% elif category in ['danger','error'] %}bg-red-50 text-red-800 border border-red-200
+            {% else %}bg-cream text-ink-muted border border-gray-200{% endif %}">
+            <i class="fas fa-{% if category == 'success' %}circle-check{% elif category in ['error','danger'] %}circle-exclamation{% else %}circle-info{% endif %}"></i>
+            {{ message }}
+          </div>
           {% endfor %}
         {% endif %}
       {% endwith %}
 
-      <form method="POST" action="{{ url_for('admin.login') }}" id="loginForm" novalidate>
+      <form method="POST" action="{{ url_for('admin.login') }}" id="loginForm" class="space-y-5" novalidate>
         {{ form.hidden_tag() }}
 
-        <div class="form-group">
-          <label for="username"><i class="fas fa-user"></i>Usuario</label>
-          {{ form.username(class="form-control", id="username", placeholder="correo@patagoniasur.cl", autocomplete="username") }}
+        <div>
+          <label for="username" class="block text-[11px] font-bold uppercase tracking-wider text-ink-muted mb-2">
+            <i class="fas fa-user text-patagonia mr-1"></i> Usuario
+          </label>
+          {{ form.username(class="w-full px-4 py-3.5 rounded-xl border border-gray-200 bg-gray-50 text-sm focus:bg-white focus:border-patagonia focus:ring-2 focus:ring-patagonia/20 outline-none transition-all", id="username", placeholder="correo@patagoniasur.cl", autocomplete="username") }}
           {% if form.username.errors %}
-            <p class="field-error"><i class="fas fa-exclamation-circle"></i> {{ form.username.errors[0] }}</p>
+          <p class="mt-1.5 text-xs text-red-600 font-medium"><i class="fas fa-exclamation-circle mr-1"></i>{{ form.username.errors[0] }}</p>
           {% endif %}
         </div>
 
-        <div class="form-group">
-          <label for="password"><i class="fas fa-lock"></i>Contraseña</label>
-          <div class="input-wrap">
-            {{ form.password(class="form-control has-toggle", id="password", type="password", placeholder="••••••••", autocomplete="current-password") }}
-            <button type="button" class="toggle-pass" id="togglePass" aria-label="Mostrar contraseña">
+        <div>
+          <label for="password" class="block text-[11px] font-bold uppercase tracking-wider text-ink-muted mb-2">
+            <i class="fas fa-lock text-patagonia mr-1"></i> Contraseña
+          </label>
+          <div class="relative">
+            {{ form.password(class="w-full px-4 py-3.5 pr-12 rounded-xl border border-gray-200 bg-gray-50 text-sm focus:bg-white focus:border-patagonia focus:ring-2 focus:ring-patagonia/20 outline-none transition-all", id="password", type="password", placeholder="••••••••", autocomplete="current-password") }}
+            <button type="button" id="togglePass" class="absolute right-3 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center text-ink-muted hover:text-patagonia transition-colors" aria-label="Mostrar contraseña">
               <i class="fas fa-eye" id="eyeIcon"></i>
             </button>
           </div>
           {% if form.password.errors %}
-            <p class="field-error"><i class="fas fa-exclamation-circle"></i> {{ form.password.errors[0] }}</p>
+          <p class="mt-1.5 text-xs text-red-600 font-medium"><i class="fas fa-exclamation-circle mr-1"></i>{{ form.password.errors[0] }}</p>
           {% endif %}
         </div>
 
-        <div class="form-options">
-          <label>
-            <input type="checkbox" name="remember">
-            Recuérdame
-          </label>
-        </div>
+        <label class="flex items-center gap-2 text-sm text-ink-muted cursor-pointer">
+          <input type="checkbox" name="remember" class="w-4 h-4 rounded border-gray-300 text-patagonia focus:ring-patagonia/30">
+          Recuérdame
+        </label>
 
-        <button type="submit" class="btn-login" id="loginBtn">
+        <button type="submit" id="loginBtn"
+          class="w-full flex items-center justify-center gap-2 py-4 rounded-xl bg-ink text-white text-sm font-bold uppercase tracking-wide hover:bg-patagonia shadow-lg hover:shadow-patagonia/25 hover:-translate-y-0.5 transition-all disabled:opacity-70 disabled:cursor-wait disabled:transform-none">
           <i class="fas fa-right-to-bracket"></i>
           Ingresar al panel
         </button>
 
-        <div class="login-note">
-          <i class="fas fa-lock"></i>
-          <span>Acceso exclusivo para administradores de Patagonia Sur. Todas las sesiones pueden ser registradas.</span>
+        <div class="flex items-start gap-3 pt-4 border-t border-gray-100">
+          <i class="fas fa-lock text-patagonia mt-0.5 text-sm"></i>
+          <p class="text-xs text-ink-muted leading-relaxed">Acceso exclusivo para administradores. Todas las sesiones pueden ser registradas.</p>
         </div>
       </form>
 
-      <a href="{{ url_for('main.index') }}" class="back-link">
-        <i class="fas fa-arrow-left"></i> Volver al sitio público
+      <a href="{{ url_for('main.index') }}" class="inline-flex items-center gap-2 mt-8 text-sm font-semibold text-ink-muted hover:text-patagonia transition-colors">
+        <i class="fas fa-arrow-left text-xs"></i> Volver al sitio público
       </a>
-      <p class="login-footer">© {{ config.STORE_NAME or 'Patagonia Sur SpA' }} · Panel administrativo</p>
+      <p class="mt-4 text-[11px] text-gray-400">© {{ config.STORE_NAME or 'Patagonia Sur' }} · Panel administrativo</p>
     </div>
   </main>
+</div>
 
-  <script>
-    (function () {
-      const pass = document.getElementById('password');
-      const toggle = document.getElementById('togglePass');
-      const eye = document.getElementById('eyeIcon');
-      const btn = document.getElementById('loginBtn');
-      const form = document.getElementById('loginForm');
+<script>
+  (function () {
+    const pass = document.getElementById('password');
+    const toggle = document.getElementById('togglePass');
+    const eye = document.getElementById('eyeIcon');
+    const btn = document.getElementById('loginBtn');
+    const form = document.getElementById('loginForm');
 
-      if (toggle && pass && eye) {
-        toggle.addEventListener('click', () => {
-          const isPwd = pass.type === 'password';
-          pass.type = isPwd ? 'text' : 'password';
-          eye.classList.toggle('fa-eye', !isPwd);
-          eye.classList.toggle('fa-eye-slash', isPwd);
-        });
-      }
+    toggle?.addEventListener('click', () => {
+      const isPwd = pass.type === 'password';
+      pass.type = isPwd ? 'text' : 'password';
+      eye.classList.toggle('fa-eye', !isPwd);
+      eye.classList.toggle('fa-eye-slash', isPwd);
+    });
 
-      form?.addEventListener('submit', () => {
-        btn.disabled = true;
-        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Verificando...';
-      });
-    })();
-  </script>
+    form?.addEventListener('submit', () => {
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Verificando...';
+    });
+  })();
+</script>
 </body>
 </html>

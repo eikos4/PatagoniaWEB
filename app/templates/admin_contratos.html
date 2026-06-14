@@ -1,0 +1,53 @@
+{% extends "admin_layout.html" %}
+{% block title %}Contratos{% endblock %}
+{% block topbar_title %}Gestión de contratos{% endblock %}
+{% block topbar_subtitle %}Acuerdos comerciales con clientes internacionales{% endblock %}
+{% block topbar_actions %}
+  {% if puede_editar %}
+  <a href="{{ url_for('admin.contrato_nuevo') }}" class="btn-top accent"><i class="fas fa-plus"></i> Nuevo contrato</a>
+  {% endif %}
+{% endblock %}
+
+{% block content %}
+<div class="panel">
+  <div class="panel-header">
+    <h3><i class="fas fa-file-contract" style="color:var(--accent);margin-right:.5rem;"></i>{{ contratos|length }} contrato{% if contratos|length != 1 %}s{% endif %}</h3>
+  </div>
+  <div class="filter-bar">
+    <a href="{{ url_for('admin.contratos') }}" class="filter-chip {% if not filtro_estado %}active{% endif %}">Todos</a>
+    {% for key, label in contrato_estados.items() %}
+    <a href="{{ url_for('admin.contratos', estado=key) }}" class="filter-chip {% if filtro_estado == key %}active{% endif %}">{{ label }}</a>
+    {% endfor %}
+  </div>
+  {% if contratos %}
+  <table class="data-table">
+    <thead>
+      <tr><th>Nº</th><th>Título</th><th>Cliente</th><th>País</th><th>Estado</th><th>Vence</th><th></th></tr>
+    </thead>
+    <tbody>
+      {% for c in contratos %}
+      <tr>
+        <td><a href="{{ url_for('admin.contrato_detalle', id=c.id) }}" class="link-row">{{ c.numero }}</a></td>
+        <td>{{ c.titulo }}</td>
+        <td style="font-size:.8rem;">{{ c.cliente.nombre if c.cliente else '—' }}</td>
+        <td style="font-size:.8rem;">{{ c.pais.nombre if c.pais else '—' }}</td>
+        <td>
+          <span class="estado-badge" style="background:{{ contrato_estado_colors.get(c.estado) }}18;color:{{ contrato_estado_colors.get(c.estado) }};">
+            {{ contrato_estados.get(c.estado) }}
+          </span>
+        </td>
+        <td style="font-size:.8rem;">
+          {% if c.fecha_fin %}
+            {% if c.esta_vencido %}<span style="color:var(--red);">{{ c.fecha_fin.strftime('%d/%m/%Y') }}</span>{% else %}{{ c.fecha_fin.strftime('%d/%m/%Y') }}{% endif %}
+          {% else %}—{% endif %}
+        </td>
+        <td><a href="{{ url_for('admin.contrato_editar', id=c.id) }}" class="btn-icon"><i class="fas fa-pen"></i></a></td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <div class="empty-state"><i class="fas fa-file-contract"></i><p>No hay contratos{% if filtro_estado %} con este estado{% endif %}.</p></div>
+  {% endif %}
+</div>
+{% endblock %}

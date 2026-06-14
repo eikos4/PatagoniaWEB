@@ -1,0 +1,196 @@
+{% extends "portal_layout.html" %}
+{% from "portal_macros.html" import status_badge, timeline, route_visual, progress_pct %}
+{% set active_nav = 'inicio' %}
+{% block title %}Mi cuenta{% endblock %}
+{% block content %}
+
+<!-- Welcome -->
+<div class="mb-8">
+  <p class="text-xs font-bold uppercase tracking-widest text-patagonia mb-1">Bienvenido</p>
+  <h1 class="text-2xl sm:text-3xl font-black text-ink">Hola, {{ cliente.contacto or cliente.nombre }}</h1>
+  <p class="text-ink-muted mt-1">{{ cliente.empresa or cliente.nombre }}{% if cliente.pais %} · {{ cliente.ciudad or '' }}{% if cliente.ciudad %}, {% endif %}{{ cliente.pais }}{% endif %}</p>
+</div>
+
+<!-- KPIs -->
+<div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+  <div class="bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
+    <div class="w-10 h-10 rounded-xl bg-patagonia-50 text-patagonia flex items-center justify-center mb-3"><i class="fas fa-ship"></i></div>
+    <div class="text-3xl font-black text-patagonia">{{ embarques_activos|length }}</div>
+    <div class="text-xs font-semibold text-ink-muted uppercase tracking-wider mt-1">En tránsito / activos</div>
+  </div>
+  <div class="bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
+    <div class="w-10 h-10 rounded-xl bg-sunset/10 text-sunset flex items-center justify-center mb-3"><i class="fas fa-circle-check"></i></div>
+    <div class="text-3xl font-black text-ink">{{ embarques_entregados|length }}</div>
+    <div class="text-xs font-semibold text-ink-muted uppercase tracking-wider mt-1">Entregados</div>
+  </div>
+  <div class="bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
+    <div class="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center mb-3"><i class="fas fa-box"></i></div>
+    <div class="text-3xl font-black text-ink">{{ pedidos|length }}</div>
+    <div class="text-xs font-semibold text-ink-muted uppercase tracking-wider mt-1">Pedidos</div>
+  </div>
+  <div class="bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
+    <div class="w-10 h-10 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center mb-3"><i class="fas fa-file-lines"></i></div>
+    <div class="text-3xl font-black text-ink">{{ documentos|length }}</div>
+    <div class="text-xs font-semibold text-ink-muted uppercase tracking-wider mt-1">Documentos</div>
+  </div>
+</div>
+
+<div class="grid lg:grid-cols-3 gap-6">
+
+  <!-- Embarques activos -->
+  <div class="lg:col-span-2 space-y-5">
+    <div class="flex items-center justify-between">
+      <h2 class="text-lg font-bold flex items-center gap-2"><i class="fas fa-map-location-dot text-patagonia"></i> Seguimiento de envíos</h2>
+      <a href="{{ url_for('portal.embarques') }}" class="text-sm font-semibold text-patagonia hover:underline">Ver todos</a>
+    </div>
+
+    {% if embarque_destacado %}
+    <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+      <div class="bg-gradient-to-r from-patagonia to-patagonia-dark px-5 py-4 text-white flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <div class="text-[10px] font-bold uppercase tracking-widest text-white/70 mb-1">Envío principal</div>
+          <div class="font-black text-lg">{{ embarque_destacado.numero }}</div>
+        </div>
+        {{ status_badge(embarque_destacado.estado, embarque_estados, embarque_estado_colores, embarque_estado_iconos) }}
+      </div>
+      <div class="p-5">
+        {{ route_visual(embarque_destacado.puerto_origen, embarque_destacado.puerto_destino) }}
+
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-5">
+          <div class="bg-cream rounded-xl p-3">
+            <div class="text-[10px] font-bold uppercase text-ink-muted mb-1">Contenedor</div>
+            <div class="text-sm font-bold font-mono truncate">{{ embarque_destacado.numero_contenedor or 'Por asignar' }}</div>
+          </div>
+          <div class="bg-cream rounded-xl p-3">
+            <div class="text-[10px] font-bold uppercase text-ink-muted mb-1">Naviera</div>
+            <div class="text-sm font-bold truncate">{{ embarque_destacado.naviera or '—' }}</div>
+          </div>
+          <div class="bg-cream rounded-xl p-3">
+            <div class="text-[10px] font-bold uppercase text-ink-muted mb-1">ETA</div>
+            <div class="text-sm font-bold {% if embarque_destacado.tiene_retraso %}text-red-600{% endif %}">
+              {{ embarque_destacado.eta.strftime('%d/%m/%Y') if embarque_destacado.eta else 'Por confirmar' }}
+            </div>
+          </div>
+          <div class="bg-cream rounded-xl p-3">
+            <div class="text-[10px] font-bold uppercase text-ink-muted mb-1">Progreso</div>
+            <div class="text-sm font-bold text-patagonia">{{ progress_pct(embarque_destacado) }}%</div>
+          </div>
+        </div>
+
+        {% if embarque_destacado.ultima_ubicacion %}
+        <div class="flex items-start gap-2 p-3 rounded-xl bg-blue-50 text-blue-900 text-sm mb-5">
+          <i class="fas fa-location-dot mt-0.5 text-blue-500"></i>
+          <span><strong>Última ubicación:</strong> {{ embarque_destacado.ultima_ubicacion }}</span>
+        </div>
+        {% endif %}
+
+        {{ timeline(embarque_destacado, logistica_etapas, logistica_etapa_iconos) }}
+
+        <a href="{{ url_for('portal.embarque_detalle', id=embarque_destacado.id) }}"
+           class="mt-5 inline-flex items-center gap-2 text-sm font-bold text-patagonia hover:underline">
+          Ver detalle completo <i class="fas fa-arrow-right text-xs"></i>
+        </a>
+      </div>
+    </div>
+    {% endif %}
+
+    {% if embarques_activos %}
+    <div class="grid sm:grid-cols-2 gap-4">
+      {% for e in embarques_activos[:4] %}
+      {% if not embarque_destacado or e.id != embarque_destacado.id %}
+      <a href="{{ url_for('portal.embarque_detalle', id=e.id) }}"
+         class="block bg-white rounded-2xl border border-gray-100 p-4 hover:border-patagonia/40 hover:shadow-md transition-all group">
+        <div class="flex items-start justify-between gap-2 mb-3">
+          <div class="font-bold text-sm group-hover:text-patagonia transition-colors">{{ e.numero }}</div>
+          {{ status_badge(e.estado, embarque_estados, embarque_estado_colores, embarque_estado_iconos) }}
+        </div>
+        <div class="text-xs text-ink-muted mb-2">{{ e.puerto_origen or 'Chile' }} → {{ e.puerto_destino or '—' }}</div>
+        {% if e.numero_contenedor %}
+        <div class="flex items-center gap-2 text-xs font-mono bg-cream rounded-lg px-2 py-1.5 mb-3">
+          <i class="fas fa-container-storage text-patagonia"></i> {{ e.numero_contenedor }}
+        </div>
+        {% endif %}
+        <div class="h-1.5 rounded-full bg-gray-100 overflow-hidden">
+          <div class="h-full bg-patagonia rounded-full" style="width:{{ progress_pct(e) }}%;"></div>
+        </div>
+      </a>
+      {% endif %}
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="bg-white rounded-2xl border border-dashed border-gray-200 p-10 text-center">
+      <i class="fas fa-ship text-4xl text-gray-200 mb-3"></i>
+      <p class="text-ink-muted font-medium">No hay embarques activos en este momento.</p>
+    </div>
+    {% endif %}
+  </div>
+
+  <!-- Sidebar info -->
+  <div class="space-y-5">
+    {% if ejecutivo %}
+    <div class="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm">
+      <h3 class="text-sm font-bold uppercase tracking-wider text-ink-muted mb-4 flex items-center gap-2">
+        <i class="fas fa-user-tie text-patagonia"></i> Tu ejecutivo
+      </h3>
+      <div class="flex items-center gap-4">
+        <div class="w-12 h-12 rounded-full bg-patagonia text-white flex items-center justify-center font-bold text-lg">
+          {{ (ejecutivo.nombre or ejecutivo.username)[0]|upper }}
+        </div>
+        <div>
+          <div class="font-bold">{{ ejecutivo.nombre or 'Ejecutivo comercial' }}</div>
+          <a href="mailto:{{ ejecutivo.username }}" class="text-sm text-patagonia hover:underline">{{ ejecutivo.username }}</a>
+        </div>
+      </div>
+    </div>
+    {% endif %}
+
+    {% if documentos %}
+    <div class="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="text-sm font-bold uppercase tracking-wider text-ink-muted">Documentos recientes</h3>
+        <a href="{{ url_for('portal.documentos') }}" class="text-xs font-bold text-patagonia">Ver todos</a>
+      </div>
+      <ul class="space-y-3">
+        {% for d in documentos[:4] %}
+        <li class="flex items-center gap-3">
+          <span class="w-9 h-9 rounded-lg bg-cream flex items-center justify-center text-patagonia shrink-0"><i class="fas fa-file-pdf"></i></span>
+          <div class="flex-1 min-w-0">
+            <div class="text-sm font-semibold truncate">{{ d.titulo }}</div>
+            <div class="text-xs text-ink-muted">{{ documento_tipos.get(d.tipo, d.tipo) }}</div>
+          </div>
+          {% if d.tiene_archivo %}
+          <a href="{{ url_for('portal.documento_descargar', id=d.id) }}" class="w-8 h-8 rounded-lg bg-patagonia-50 text-patagonia flex items-center justify-center hover:bg-patagonia hover:text-white transition-colors">
+            <i class="fas fa-download text-xs"></i>
+          </a>
+          {% endif %}
+        </li>
+        {% endfor %}
+      </ul>
+    </div>
+    {% endif %}
+
+    {% if pedidos %}
+    <div class="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="text-sm font-bold uppercase tracking-wider text-ink-muted">Últimos pedidos</h3>
+        <a href="{{ url_for('portal.pedidos') }}" class="text-xs font-bold text-patagonia">Ver todos</a>
+      </div>
+      <ul class="space-y-3">
+        {% for p in pedidos[:3] %}
+        <li class="flex items-center justify-between gap-2 py-2 border-b border-gray-50 last:border-0">
+          <div>
+            <div class="text-sm font-bold">{{ p.numero }}</div>
+            <div class="text-xs text-ink-muted">{{ p.fecha_pedido.strftime('%d/%m/%Y') }}</div>
+          </div>
+          <div class="text-right">
+            <div class="text-sm font-bold">{{ "{:,.0f}".format(p.total) }} {{ p.moneda }}</div>
+            <div class="text-[10px] font-semibold text-patagonia">{{ pedido_estados.get(p.estado, p.estado) }}</div>
+          </div>
+        </li>
+        {% endfor %}
+      </ul>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

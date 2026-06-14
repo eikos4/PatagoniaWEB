@@ -1,0 +1,120 @@
+{% extends "portal_layout.html" %}
+{% from "portal_macros.html" import status_badge, timeline, route_visual, progress_pct %}
+{% set active_nav = 'embarques' %}
+{% block title %}{{ embarque.numero }}{% endblock %}
+{% block content %}
+
+<a href="{{ url_for('portal.embarques') }}" class="inline-flex items-center gap-2 text-sm font-semibold text-ink-muted hover:text-patagonia mb-6 transition-colors">
+  <i class="fas fa-arrow-left"></i> Volver a embarques
+</a>
+
+<div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden mb-6">
+  <div class="bg-gradient-to-br from-ink via-patagonia-dark to-patagonia px-6 py-8 text-white">
+    <div class="flex flex-wrap items-start justify-between gap-4">
+      <div>
+        <p class="text-[10px] font-bold uppercase tracking-widest text-white/60 mb-2">Seguimiento de envío</p>
+        <h1 class="text-2xl sm:text-3xl font-black">{{ embarque.numero }}</h1>
+        {% if embarque.pedido %}
+        <p class="text-white/70 text-sm mt-2">Pedido asociado: <strong>{{ embarque.pedido.numero }}</strong></p>
+        {% endif %}
+      </div>
+      {{ status_badge(embarque.estado, embarque_estados, embarque_estado_colores, embarque_estado_iconos) }}
+    </div>
+  </div>
+
+  <div class="p-6">
+    {{ route_visual(embarque.puerto_origen, embarque.puerto_destino) }}
+
+    {% if embarque.ultima_ubicacion or embarque.tracking_notas %}
+    <div class="rounded-2xl bg-blue-50 border border-blue-100 p-4 mb-6">
+      {% if embarque.ultima_ubicacion %}
+      <div class="flex items-start gap-3 mb-2">
+        <i class="fas fa-location-dot text-blue-500 mt-1"></i>
+        <div>
+          <div class="text-xs font-bold uppercase text-blue-800 mb-0.5">Ubicación actual</div>
+          <div class="text-sm font-semibold text-blue-900">{{ embarque.ultima_ubicacion }}</div>
+        </div>
+      </div>
+      {% endif %}
+      {% if embarque.tracking_notas %}
+      <p class="text-sm text-blue-800/80 leading-relaxed {% if embarque.ultima_ubicacion %}mt-3 pt-3 border-t border-blue-200{% endif %}">
+        <i class="fas fa-circle-info text-blue-500 mr-1"></i> {{ embarque.tracking_notas }}
+      </p>
+      {% endif %}
+    </div>
+    {% endif %}
+
+    <h2 class="text-sm font-bold uppercase tracking-wider text-ink-muted mb-4">Datos del contenedor</h2>
+    <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
+      <div class="rounded-xl border border-gray-100 p-4">
+        <div class="text-[10px] font-bold uppercase text-ink-muted mb-2">Nº contenedor</div>
+        <div class="text-lg font-black font-mono text-patagonia">{{ embarque.numero_contenedor or 'Por asignar' }}</div>
+        <div class="text-xs text-ink-muted mt-1">{{ embarque.tipo_contenedor or '40' }}' · {{ embarque.tipo_carga or 'refrigerado' }}</div>
+      </div>
+      <div class="rounded-xl border border-gray-100 p-4">
+        <div class="text-[10px] font-bold uppercase text-ink-muted mb-2">Bill of Lading (BL)</div>
+        <div class="text-sm font-bold font-mono">{{ embarque.numero_bl or '—' }}</div>
+        <div class="text-xs text-ink-muted mt-1">Booking: {{ embarque.numero_booking or '—' }}</div>
+      </div>
+      <div class="rounded-xl border border-gray-100 p-4">
+        <div class="text-[10px] font-bold uppercase text-ink-muted mb-2">Naviera / temperatura</div>
+        <div class="text-sm font-bold">{{ embarque.naviera or '—' }}</div>
+        <div class="text-xs text-ink-muted mt-1"><i class="fas fa-temperature-low text-patagonia"></i> {{ embarque.temperatura or '—' }}</div>
+      </div>
+      <div class="rounded-xl border border-gray-100 p-4">
+        <div class="text-[10px] font-bold uppercase text-ink-muted mb-2">Zarpe (ETD)</div>
+        <div class="text-sm font-bold">{{ embarque.etd.strftime('%d/%m/%Y %H:%M') if embarque.etd else '—' }}</div>
+        {% if embarque.fecha_zarpe %}
+        <div class="text-xs text-green-600 mt-1"><i class="fas fa-check"></i> Zarpó {{ embarque.fecha_zarpe.strftime('%d/%m/%Y') }}</div>
+        {% endif %}
+      </div>
+      <div class="rounded-xl border border-gray-100 p-4">
+        <div class="text-[10px] font-bold uppercase text-ink-muted mb-2">Llegada estimada (ETA)</div>
+        <div class="text-sm font-bold {% if embarque.tiene_retraso %}text-red-600{% endif %}">
+          {{ embarque.eta.strftime('%d/%m/%Y') if embarque.eta else 'Por confirmar' }}
+        </div>
+        {% if embarque.tiene_retraso %}
+        <div class="text-xs text-red-500 mt-1"><i class="fas fa-triangle-exclamation"></i> ETA superada</div>
+        {% endif %}
+      </div>
+      <div class="rounded-xl border border-gray-100 p-4">
+        <div class="text-[10px] font-bold uppercase text-ink-muted mb-2">Progreso</div>
+        <div class="text-2xl font-black text-patagonia">{{ progress_pct(embarque) }}%</div>
+        <div class="h-2 rounded-full bg-gray-100 mt-2 overflow-hidden">
+          <div class="h-full bg-gradient-to-r from-patagonia to-sunset rounded-full" style="width:{{ progress_pct(embarque) }}%;"></div>
+        </div>
+      </div>
+    </div>
+
+    <h2 class="text-sm font-bold uppercase tracking-wider text-ink-muted mb-4">Línea de tiempo logística</h2>
+    {{ timeline(embarque, logistica_etapas, logistica_etapa_iconos) }}
+  </div>
+</div>
+
+{% if documentos %}
+<div class="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm">
+  <h2 class="text-sm font-bold uppercase tracking-wider text-ink-muted mb-4 flex items-center gap-2">
+    <i class="fas fa-folder-open text-patagonia"></i> Documentos de este embarque
+  </h2>
+  <ul class="divide-y divide-gray-50">
+    {% for d in documentos %}
+    <li class="flex items-center gap-4 py-4 first:pt-0 last:pb-0">
+      <span class="w-10 h-10 rounded-xl bg-cream flex items-center justify-center text-patagonia shrink-0"><i class="fas fa-file-lines"></i></span>
+      <div class="flex-1 min-w-0">
+        <div class="font-semibold text-sm truncate">{{ d.titulo }}</div>
+        <div class="text-xs text-ink-muted">{{ documento_tipos.get(d.tipo, d.tipo) }}</div>
+      </div>
+      {% if d.tiene_archivo %}
+      <a href="{{ url_for('portal.documento_descargar', id=d.id) }}"
+         class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-patagonia text-white text-xs font-bold hover:bg-patagonia-dark transition-colors">
+        <i class="fas fa-download"></i> Descargar
+      </a>
+      {% else %}
+      <span class="text-xs text-ink-muted font-medium">Registro</span>
+      {% endif %}
+    </li>
+    {% endfor %}
+  </ul>
+</div>
+{% endif %}
+{% endblock %}

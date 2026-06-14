@@ -1,15 +1,145 @@
 {% extends "admin_layout.html" %}
 {% block title %}Resumen{% endblock %}
 {% block topbar_title %}Resumen ejecutivo{% endblock %}
-{% block topbar_subtitle %}KPIs de clientes, abonos y operaciones{% endblock %}
+{% block topbar_subtitle %}Vista ejecutiva: exportaciones, documentos y alertas críticas{% endblock %}
 {% block topbar_actions %}
-  <a href="{{ url_for('admin.embarque_nuevo') }}" class="btn-top accent"><i class="fas fa-ship"></i> Nuevo embarque</a>
-  <a href="{{ url_for('admin.pedido_nueva') }}" class="btn-top" style="background:var(--orange);color:#fff;"><i class="fas fa-cart-shopping"></i> Nuevo pedido</a>
-  <a href="{{ url_for('admin.mensajes') }}" class="btn-top ghost"><i class="fas fa-inbox"></i> Mensajes{% if kpis.mensajes_pendientes %} ({{ kpis.mensajes_pendientes }}){% endif %}</a>
+  <a href="{{ url_for('admin.alertas') }}" class="btn-top" style="background:{% if kpis.alertas.criticas %}var(--red){% else %}var(--orange){% endif %};color:#fff;">
+    <i class="fas fa-bell"></i> Alertas ({{ kpis.alertas.total }})
+  </a>
+  <a href="{{ url_for('admin.reportes') }}" class="btn-top ghost"><i class="fas fa-chart-line"></i> Reportes</a>
+  <a href="{{ url_for('admin.documento_nuevo') }}" class="btn-top accent"><i class="fas fa-file-circle-plus"></i> Documento</a>
+  <a href="{{ url_for('admin.embarque_nuevo') }}" class="btn-top ghost"><i class="fas fa-ship"></i> Embarque</a>
 {% endblock %}
 
 {% block content %}
-<div class="pipeline-bar">
+{% if kpis.alertas.criticas %}
+<div class="alert-panel crit" style="margin-bottom:1.25rem;">
+  <i class="fas fa-triangle-exclamation"></i>
+  <span><strong>{{ kpis.alertas.criticas }} alerta(s) crítica(s)</strong> requieren atención inmediata. <a href="{{ url_for('admin.alertas') }}" style="color:inherit;font-weight:700;">Ver todas →</a></span>
+</div>
+{% endif %}
+
+<div class="kpi-grid">
+  <div class="kpi-card green">
+    <div class="kpi-icon"><i class="fas fa-ship"></i></div>
+    <div class="kpi-label">Exportaciones activas</div>
+    <div class="kpi-value">{{ kpis.embarques_activos }}</div>
+    <div class="kpi-sub">{{ kpis.embarques_en_transito }} en tránsito</div>
+  </div>
+  <div class="kpi-card blue">
+    <div class="kpi-icon"><i class="fas fa-globe-americas"></i></div>
+    <div class="kpi-label">Países destino</div>
+    <div class="kpi-value">{{ kpis.paises_atendidos }}</div>
+    <div class="kpi-sub">{{ kpis.paises_con_clientes|length }} con clientes</div>
+  </div>
+  <div class="kpi-card orange">
+    <div class="kpi-icon"><i class="fas fa-folder-open"></i></div>
+    <div class="kpi-label">Documentos pendientes</div>
+    <div class="kpi-value">{{ kpis.documentos_pendientes }}</div>
+    <div class="kpi-sub">{{ kpis.documentos_vencidos }} vencidos · {{ kpis.documentos_total }} total</div>
+  </div>
+  <div class="kpi-card dark">
+    <div class="kpi-icon"><i class="fas fa-bell"></i></div>
+    <div class="kpi-label">Alertas activas</div>
+    <div class="kpi-value">{{ kpis.alertas.total }}</div>
+    <div class="kpi-sub">{{ kpis.alertas.criticas }} críticas · {{ kpis.alertas.advertencias }} advertencias</div>
+  </div>
+</div>
+
+<div class="grid-2">
+  <div class="panel">
+    <div class="panel-header">
+      <h3><i class="fas fa-route" style="color:var(--accent);margin-right:.4rem;"></i>Operaciones activas</h3>
+      <a href="{{ url_for('admin.embarques') }}" class="btn btn-ghost" style="padding:.45rem .9rem;font-size:.75rem;">Ver embarques</a>
+    </div>
+    {% if kpis.operaciones_activas %}
+      {% for op in kpis.operaciones_activas %}
+      {% set e = op.embarque %}
+      <div class="ops-card">
+        <div>
+          <div class="ops-route">
+            <a href="{{ url_for('admin.embarque_detalle', id=e.id) }}" class="link-row">{{ e.numero }}</a>
+            · {{ op.ruta }}
+          </div>
+          <div class="ops-meta">
+            {{ e.cliente_nombre }}
+            {% if op.contenedores %} · {{ op.contenedores }} contenedor{% if op.contenedores > 1 %}es{% endif %}{% endif %}
+            · {{ embarque_estados.get(e.estado, e.estado) }}
+            {% if op.eta_dias is not none %} · ETA: {{ op.eta_dias }} días{% endif %}
+          </div>
+        </div>
+        <span class="ops-badge {{ op.doc_status }}">{{ op.doc_texto }}</span>
+      </div>
+      {% endfor %}
+    {% else %}
+    <div class="empty-state" style="padding:2rem;"><p>Sin operaciones activas. <a href="{{ url_for('admin.embarque_nuevo') }}">Crear embarque</a></p></div>
+    {% endif %}
+  </div>
+
+  <div class="panel">
+    <div class="panel-header">
+      <h3><i class="fas fa-bell" style="color:var(--orange);margin-right:.4rem;"></i>Alertas críticas</h3>
+      <a href="{{ url_for('admin.alertas') }}" class="btn btn-ghost" style="padding:.45rem .9rem;font-size:.75rem;">Ver todas</a>
+    </div>
+    {% if kpis.alertas.lista %}
+    <ul class="alert-list">
+      {% for a in kpis.alertas.lista[:6] %}
+      <li class="alert-item {{ a.nivel }}">
+        <i class="fas {{ a.icono }}" style="margin-top:.15rem;color:{% if a.nivel == 'critica' %}var(--red){% elif a.nivel == 'advertencia' %}var(--orange){% else %}#2563eb{% endif %};"></i>
+        <div>
+          {% if a.endpoint %}
+          <a href="{% if a.entity_id %}{{ url_for(a.endpoint, id=a.entity_id) }}{% else %}{{ url_for(a.endpoint) }}{% endif %}">{{ a.titulo }}</a>
+          {% else %}{{ a.titulo }}{% endif %}
+          <div style="color:var(--gray);font-size:.75rem;margin-top:.2rem;">{{ a.mensaje }}</div>
+        </div>
+      </li>
+      {% endfor %}
+    </ul>
+    {% else %}
+    <div class="empty-state" style="padding:2rem;"><p><i class="fas fa-circle-check" style="color:var(--green-ok);"></i> Sin alertas pendientes.</p></div>
+    {% endif %}
+  </div>
+</div>
+
+<div class="grid-2" style="margin-top:1.25rem;">
+  <div class="panel">
+    <div class="panel-header"><h3><i class="fas fa-chart-bar" style="color:var(--accent);margin-right:.4rem;"></i>Ventas por país</h3></div>
+    <div class="chart-bars">
+      {% if kpis.ventas_por_pais %}
+        {% set max_v = kpis.ventas_por_pais|map(attribute='2')|max %}
+        {% for pais, count, total in kpis.ventas_por_pais %}
+        <div class="bar-row">
+          <span class="bar-label">{{ pais or 'Sin país' }}</span>
+          <div class="bar-track"><div class="bar-fill" style="width:{{ ((total or 0) / max_v * 100)|int if max_v else 0 }}%;background:var(--orange);"></div></div>
+          <span class="bar-num">${{ "{:,.0f}".format(total or 0) }}</span>
+        </div>
+        {% endfor %}
+      {% else %}
+        <p style="padding:1rem;color:var(--gray);font-size:.85rem;">Aún no hay pedidos por país.</p>
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-header"><h3><i class="fas fa-users" style="color:var(--accent);margin-right:.4rem;"></i>Clientes por país</h3></div>
+    <div class="chart-bars">
+      {% if kpis.paises_con_clientes %}
+        {% set max_c = kpis.paises_con_clientes|map(attribute='1')|max %}
+        {% for pais, count in kpis.paises_con_clientes %}
+        <div class="bar-row">
+          <span class="bar-label">{{ pais }}</span>
+          <div class="bar-track"><div class="bar-fill" style="width:{{ (count / max_c * 100)|int }}%;"></div></div>
+          <span class="bar-num">{{ count }}</span>
+        </div>
+        {% endfor %}
+      {% else %}
+        <p style="padding:1rem;color:var(--gray);font-size:.85rem;">Sin clientes con país asignado.</p>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<div class="pipeline-bar" style="margin-top:1.25rem;">
   <div class="pipeline-step"><i class="fas fa-inbox"></i><span>Mensaje</span></div>
   <i class="fas fa-chevron-right pipeline-arrow"></i>
   <div class="pipeline-step"><i class="fas fa-users"></i><span>Cliente</span></div>
@@ -24,15 +154,15 @@
 <div class="kpi-grid">
   <div class="kpi-card green">
     <div class="kpi-icon"><i class="fas fa-users"></i></div>
-    <div class="kpi-label">Clientes registrados</div>
+    <div class="kpi-label">Clientes internacionales</div>
     <div class="kpi-value">{{ kpis.total_clientes }}</div>
     <div class="kpi-sub">{{ kpis.clientes_con_abono }} con abono</div>
   </div>
   <div class="kpi-card blue">
     <div class="kpi-icon"><i class="fas fa-hand-holding-dollar"></i></div>
-    <div class="kpi-label">Abonos acumulados (USD)</div>
-    <div class="kpi-value">${{ "{:,.0f}".format(kpis.total_abonos_usd) }}</div>
-    <div class="kpi-sub">{{ kpis.abonos_mes }} abonos este mes · ${{ "{:,.0f}".format(kpis.monto_mes_usd) }}</div>
+    <div class="kpi-label">Pedidos del mes</div>
+    <div class="kpi-value">${{ "{:,.0f}".format(kpis.monto_pedidos_mes) }}</div>
+    <div class="kpi-sub">{{ kpis.pedidos_mes }} pedidos · {{ kpis.pedidos_activos }} activos</div>
   </div>
   <div class="kpi-card orange">
     <div class="kpi-icon"><i class="fas fa-envelope"></i></div>
@@ -41,10 +171,10 @@
     <div class="kpi-sub">pendientes · {{ kpis.mensajes_mes }} este mes</div>
   </div>
   <div class="kpi-card dark">
-    <div class="kpi-icon"><i class="fas fa-ship"></i></div>
-    <div class="kpi-label">Embarques activos</div>
-    <div class="kpi-value">{{ kpis.embarques_activos }}</div>
-    <div class="kpi-sub">{{ kpis.embarques_en_transito }} en tránsito · {{ kpis.pedidos_activos }} pedidos</div>
+    <div class="kpi-icon"><i class="fas fa-file-invoice-dollar"></i></div>
+    <div class="kpi-label">Cotizaciones pendientes</div>
+    <div class="kpi-value">{{ kpis.cotizaciones_pendientes }}</div>
+    <div class="kpi-sub">{{ kpis.cotizaciones_total }} total</div>
   </div>
 </div>
 

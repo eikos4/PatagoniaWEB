@@ -1,0 +1,53 @@
+{% extends "admin_layout.html" %}
+{% block title %}Plantillas{% endblock %}
+{% block topbar_title %}Biblioteca de plantillas{% endblock %}
+{% block topbar_subtitle %}Formatos internos: facturas, packing, contratos, procedimientos{% endblock %}
+{% block topbar_actions %}
+  {% if puede_editar %}
+  <a href="{{ url_for('admin.plantilla_nueva') }}" class="btn-top accent"><i class="fas fa-plus"></i> Nueva plantilla</a>
+  {% endif %}
+{% endblock %}
+
+{% block content %}
+<div class="panel">
+  <div class="panel-header">
+    <h3><i class="fas fa-book" style="color:var(--accent);margin-right:.5rem;"></i>{{ plantillas|length }} plantilla{% if plantillas|length != 1 %}s{% endif %}</h3>
+  </div>
+  <div class="filter-bar">
+    <a href="{{ url_for('admin.plantillas') }}" class="filter-chip {% if not filtro_tipo %}active{% endif %}">Todas</a>
+    {% for key, label in plantilla_tipos.items() %}
+    <a href="{{ url_for('admin.plantillas', tipo=key) }}" class="filter-chip {% if filtro_tipo == key %}active{% endif %}">{{ label }}</a>
+    {% endfor %}
+  </div>
+  {% if plantillas %}
+  <table class="data-table">
+    <thead><tr><th>Título</th><th>Tipo</th><th>Archivo</th><th>Estado</th><th></th></tr></thead>
+    <tbody>
+      {% for p in plantillas %}
+      <tr>
+        <td>
+          <strong>{{ p.titulo }}</strong>
+          {% if p.descripcion %}<div style="font-size:.75rem;color:var(--gray);">{{ p.descripcion[:60] }}{% if p.descripcion|length > 60 %}…{% endif %}</div>{% endif %}
+        </td>
+        <td style="font-size:.8rem;">{{ plantilla_tipos.get(p.tipo) }}</td>
+        <td style="font-size:.8rem;">{{ p.original_filename or '—' }}</td>
+        <td>
+          {% if p.activo %}
+          <span class="estado-badge" style="background:#ecfdf5;color:var(--green-ok);">Activa</span>
+          {% else %}
+          <span class="estado-badge" style="background:#f3f4f6;color:var(--gray);">Inactiva</span>
+          {% endif %}
+        </td>
+        <td>
+          {% if p.tiene_archivo %}<a href="{{ url_for('admin.plantilla_descargar', id=p.id) }}" class="btn-icon dl"><i class="fas fa-download"></i></a>{% endif %}
+          {% if puede_editar %}<a href="{{ url_for('admin.plantilla_editar', id=p.id) }}" class="btn-icon"><i class="fas fa-pen"></i></a>{% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <div class="empty-state"><i class="fas fa-book"></i><p>Sin plantillas{% if filtro_tipo %} de este tipo{% endif %}.</p></div>
+  {% endif %}
+</div>
+{% endblock %}

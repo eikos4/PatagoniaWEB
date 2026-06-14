@@ -1,0 +1,85 @@
+{% extends "admin_layout.html" %}
+{% block title %}{{ doc.titulo }}{% endblock %}
+{% block topbar_title %}{{ doc.titulo }}{% endblock %}
+{% block topbar_subtitle %}{{ documento_tipos.get(doc.tipo, doc.tipo) }} · {{ documento_estados.get(doc.estado, doc.estado) }}{% endblock %}
+{% block topbar_actions %}
+  {% if doc.tiene_archivo %}
+  <a href="{{ url_for('admin.documento_descargar', id=doc.id) }}" class="btn-top accent"><i class="fas fa-download"></i> Descargar</a>
+  {% endif %}
+  <a href="{{ url_for('admin.documento_editar', id=doc.id) }}" class="btn-top ghost"><i class="fas fa-pen"></i> Editar</a>
+  <a href="{{ url_for('admin.documentos') }}" class="btn-top ghost"><i class="fas fa-arrow-left"></i> Lista</a>
+{% endblock %}
+
+{% block content %}
+<div class="kpi-grid" style="grid-template-columns:repeat(4,1fr);margin-bottom:1.25rem;">
+  <div class="kpi-card green">
+    <div class="kpi-icon"><i class="fas {{ documento_estado_icons.get(doc.estado, 'fa-file') }}"></i></div>
+    <div class="kpi-label">Estado</div>
+    <div class="kpi-value" style="font-size:.95rem;">
+      <span class="estado-badge" style="background:{{ documento_estado_colors.get(doc.estado) }}18;color:{{ documento_estado_colors.get(doc.estado) }};">
+        {{ documento_estados.get(doc.estado, doc.estado) }}
+      </span>
+    </div>
+  </div>
+  <div class="kpi-card blue">
+    <div class="kpi-icon"><i class="fas fa-tag"></i></div>
+    <div class="kpi-label">Tipo</div>
+    <div class="kpi-value" style="font-size:.9rem;">{{ documento_tipos.get(doc.tipo, doc.tipo) }}</div>
+  </div>
+  <div class="kpi-card orange">
+    <div class="kpi-icon"><i class="fas fa-calendar"></i></div>
+    <div class="kpi-label">Vencimiento</div>
+    <div class="kpi-value" style="font-size:.9rem;">
+      {% if doc.fecha_vencimiento %}{{ doc.fecha_vencimiento.strftime('%d/%m/%Y') }}{% else %}Sin fecha{% endif %}
+    </div>
+    {% if doc.esta_vencido %}<div class="kpi-sub" style="color:var(--red);">Vencido</div>{% elif doc.dias_para_vencer is not none and doc.dias_para_vencer <= 30 %}<div class="kpi-sub">En {{ doc.dias_para_vencer }} días</div>{% endif %}
+  </div>
+  <div class="kpi-card dark">
+    <div class="kpi-icon"><i class="fas fa-paperclip"></i></div>
+    <div class="kpi-label">Archivo</div>
+    <div class="kpi-value" style="font-size:.85rem;">{% if doc.tiene_archivo %}Adjunto{% else %}Sin archivo{% endif %}</div>
+  </div>
+</div>
+
+<div class="grid-2">
+  <div class="panel">
+    <div class="panel-header"><h3>Vínculos</h3></div>
+    <div class="info-grid" style="background:var(--white);">
+      <div class="info-item"><label>Cliente</label><span>{% if doc.cliente %}<a href="{{ url_for('admin.cartera_detalle', id=doc.cliente.id) }}" class="link-row">{{ doc.cliente.nombre }}</a>{% else %}—{% endif %}</span></div>
+      <div class="info-item"><label>Embarque</label><span>{% if doc.embarque %}<a href="{{ url_for('admin.embarque_detalle', id=doc.embarque.id) }}" class="link-row">{{ doc.embarque.numero }}</a>{% else %}—{% endif %}</span></div>
+      <div class="info-item"><label>País</label><span>{% if doc.pais %}<a href="{{ url_for('admin.pais_detalle', id=doc.pais.id) }}" class="link-row">{{ doc.pais.nombre }}</a>{% else %}—{% endif %}</span></div>
+      <div class="info-item"><label>Producto</label><span>{{ doc.producto.nombre if doc.producto else '—' }}</span></div>
+      <div class="info-item"><label>Subido</label><span>{{ doc.uploaded_at.strftime('%d/%m/%Y %H:%M') if doc.uploaded_at else '—' }}</span></div>
+      <div class="info-item"><label>Archivo</label><span>{{ doc.original_filename or '—' }}</span></div>
+    </div>
+    {% if doc.comentarios %}
+    <div style="padding:1.25rem 1.5rem;border-top:1px solid var(--gray-mid);">
+      <label style="font-size:.65rem;font-weight:700;text-transform:uppercase;color:var(--gray);">Comentarios</label>
+      <p style="margin-top:.5rem;font-size:.9rem;line-height:1.6;">{{ doc.comentarios }}</p>
+    </div>
+    {% endif %}
+  </div>
+
+  <div class="panel">
+    <div class="panel-header"><h3>Cambiar estado</h3></div>
+    <div style="padding:1.5rem;display:flex;flex-wrap:wrap;gap:.5rem;">
+      {% for k, label in documento_estados.items() %}
+      {% if k != doc.estado %}
+      <form method="POST" action="{{ url_for('admin.documento_cambiar_estado', id=doc.id, estado=k) }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button type="submit" class="btn btn-ghost" style="font-size:.75rem;">
+          <i class="fas {{ documento_estado_icons.get(k) }}"></i> {{ label }}
+        </button>
+      </form>
+      {% endif %}
+      {% endfor %}
+    </div>
+    <div style="padding:0 1.5rem 1.5rem;border-top:1px solid var(--gray-light);margin-top:.5rem;padding-top:1.25rem;">
+      <form method="POST" action="{{ url_for('admin.documento_eliminar', id=doc.id) }}" onsubmit="return confirm('¿Eliminar documento permanentemente?');">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button type="submit" class="btn btn-danger"><i class="fas fa-trash"></i> Eliminar documento</button>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

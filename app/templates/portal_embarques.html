@@ -1,0 +1,95 @@
+{% extends "portal_layout.html" %}
+{% from "portal_macros.html" import status_badge, timeline, route_visual, progress_pct %}
+{% set active_nav = 'embarques' %}
+{% block title %}Mis embarques{% endblock %}
+{% block content %}
+
+<div class="mb-8">
+  <h1 class="text-2xl sm:text-3xl font-black text-ink">Mis embarques</h1>
+  <p class="text-ink-muted mt-1">Seguimiento de contenedores, rutas y estado logístico de tus envíos.</p>
+</div>
+
+<!-- Filtros visuales -->
+<div class="flex flex-wrap gap-2 mb-6">
+  <span class="px-4 py-2 rounded-full bg-patagonia text-white text-xs font-bold">{{ embarques|length }} total</span>
+  <span class="px-4 py-2 rounded-full bg-white border border-gray-200 text-xs font-bold text-ink-muted">
+    <i class="fas fa-ship text-patagonia mr-1"></i> {{ embarques_activos|length }} activos
+  </span>
+  <span class="px-4 py-2 rounded-full bg-white border border-gray-200 text-xs font-bold text-ink-muted">
+    <i class="fas fa-circle-check text-green-600 mr-1"></i> {{ embarques_entregados|length }} entregados
+  </span>
+</div>
+
+{% if embarques %}
+<div class="space-y-5">
+  {% for e in embarques %}
+  <article class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden hover:shadow-md transition-shadow">
+    <div class="p-5 sm:p-6">
+      <div class="flex flex-wrap items-start justify-between gap-3 mb-4">
+        <div>
+          <a href="{{ url_for('portal.embarque_detalle', id=e.id) }}" class="text-lg font-black hover:text-patagonia transition-colors">{{ e.numero }}</a>
+          {% if e.pedido %}
+          <div class="text-xs text-ink-muted mt-0.5">Pedido {{ e.pedido.numero }}</div>
+          {% endif %}
+        </div>
+        {{ status_badge(e.estado, embarque_estados, embarque_estado_colores, embarque_estado_iconos) }}
+      </div>
+
+      {{ route_visual(e.puerto_origen, e.puerto_destino) }}
+
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-5">
+        <div class="rounded-xl bg-cream p-3">
+          <div class="text-[10px] font-bold uppercase text-ink-muted mb-1"><i class="fas fa-container-storage mr-1"></i>Contenedor</div>
+          <div class="text-sm font-bold font-mono">{{ e.numero_contenedor or '—' }}</div>
+          <div class="text-[10px] text-ink-muted mt-0.5">{{ e.tipo_contenedor or '40' }}' {{ e.tipo_carga or '' }}</div>
+        </div>
+        <div class="rounded-xl bg-cream p-3">
+          <div class="text-[10px] font-bold uppercase text-ink-muted mb-1"><i class="fas fa-file-contract mr-1"></i>BL / Booking</div>
+          <div class="text-xs font-bold font-mono truncate">{{ e.numero_bl or '—' }}</div>
+          <div class="text-[10px] text-ink-muted truncate">{{ e.numero_booking or '' }}</div>
+        </div>
+        <div class="rounded-xl bg-cream p-3">
+          <div class="text-[10px] font-bold uppercase text-ink-muted mb-1"><i class="fas fa-calendar mr-1"></i>ETD / ETA</div>
+          <div class="text-xs font-semibold">{{ e.etd.strftime('%d/%m/%y') if e.etd else '—' }} → {{ e.eta.strftime('%d/%m/%y') if e.eta else '—' }}</div>
+          {% if e.dias_transito is not none and e.estado in ('en_transito','en_puerto','en_destino') %}
+          <div class="text-[10px] text-patagonia font-bold mt-0.5">{{ e.dias_transito }} días en tránsito</div>
+          {% endif %}
+        </div>
+        <div class="rounded-xl bg-cream p-3">
+          <div class="text-[10px] font-bold uppercase text-ink-muted mb-1"><i class="fas fa-temperature-low mr-1"></i>Condiciones</div>
+          <div class="text-xs font-semibold">{{ e.temperatura or '—' }}</div>
+          <div class="text-[10px] text-ink-muted">{{ e.naviera or '' }}</div>
+        </div>
+      </div>
+
+      {% if e.ultima_ubicacion %}
+      <div class="flex items-center gap-2 text-sm text-ink-muted mb-4 px-3 py-2 rounded-xl bg-gray-50">
+        <i class="fas fa-location-dot text-sunset"></i>
+        <span>{{ e.ultima_ubicacion }}</span>
+      </div>
+      {% endif %}
+
+      <div class="mb-2 flex items-center justify-between text-xs font-semibold">
+        <span class="text-ink-muted">Progreso del envío</span>
+        <span class="text-patagonia">{{ progress_pct(e) }}%</span>
+      </div>
+      {{ timeline(e, logistica_etapas, logistica_etapa_iconos) }}
+    </div>
+
+    <div class="px-5 sm:px-6 py-3 bg-cream border-t border-gray-100 flex justify-end">
+      <a href="{{ url_for('portal.embarque_detalle', id=e.id) }}"
+         class="inline-flex items-center gap-2 text-sm font-bold text-patagonia hover:underline">
+        Detalle y documentos <i class="fas fa-arrow-right text-xs"></i>
+      </a>
+    </div>
+  </article>
+  {% endfor %}
+</div>
+{% else %}
+<div class="bg-white rounded-2xl border border-dashed border-gray-200 p-16 text-center">
+  <i class="fas fa-ship text-5xl text-gray-200 mb-4"></i>
+  <h3 class="font-bold text-lg mb-2">Sin embarques registrados</h3>
+  <p class="text-ink-muted text-sm">Cuando confirmes un pedido, tus envíos aparecerán aquí con seguimiento en tiempo real.</p>
+</div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,50 @@
+{% extends "admin_layout.html" %}
+{% block title %}{{ producto.nombre }}{% endblock %}
+{% block topbar_title %}{{ producto.nombre }}{% endblock %}
+{% block topbar_subtitle %}{{ producto_categorias.get(producto.categoria) }} · {{ producto_formatos.get(producto.formato_venta, producto.formato_venta) }}{% endblock %}
+{% block topbar_actions %}
+  <a href="{{ url_for('admin.producto_editar', id=producto.id) }}" class="btn-top accent"><i class="fas fa-pen"></i> Editar</a>
+  <a href="{{ url_for('admin.productos') }}" class="btn-top ghost"><i class="fas fa-arrow-left"></i> Productos</a>
+{% endblock %}
+
+{% block content %}
+<div class="grid-2">
+  <div class="panel">
+    {% if producto.tiene_imagen %}
+    <div style="padding:1.5rem;text-align:center;background:var(--cream);">
+      <img src="{{ url_for('admin.producto_imagen', id=producto.id) }}" alt="{{ producto.nombre }}" style="max-height:200px;border-radius:12px;">
+    </div>
+    {% endif %}
+    <div class="info-grid" style="background:var(--white);border:none;">
+      <div class="info-item"><label>Categoría</label><span>{{ producto_categorias.get(producto.categoria) }}</span></div>
+      <div class="info-item"><label>Formato</label><span>{{ producto_formatos.get(producto.formato_venta) }}</span></div>
+      <div class="info-item"><label>Temperatura</label><span>{{ producto.temperatura or '—' }}</span></div>
+      <div class="info-item"><label>Vida útil</label><span>{% if producto.vida_util_dias %}{{ producto.vida_util_dias }} días{% else %}—{% endif %}</span></div>
+      <div class="info-item"><label>Peso caja</label><span>{% if producto.peso_caja_kg %}{{ producto.peso_caja_kg }} kg{% else %}—{% endif %}</span></div>
+      <div class="info-item"><label>Dimensiones caja</label><span>{% if producto.caja_largo_cm %}{{ producto.caja_largo_cm }}×{{ producto.caja_ancho_cm }}×{{ producto.caja_alto_cm }} cm{% else %}—{% endif %}</span></div>
+      <div class="info-item full"><label>Países permitidos</label><span>{{ producto.paises_permitidos or '—' }}</span></div>
+    </div>
+    {% if producto.descripcion %}
+    <div style="padding:1rem 1.5rem;border-top:1px solid var(--gray-mid);"><label style="font-size:.65rem;font-weight:700;text-transform:uppercase;color:var(--gray);">Descripción</label><p style="margin-top:.5rem;font-size:.9rem;white-space:pre-wrap;">{{ producto.descripcion }}</p></div>
+    {% endif %}
+    {% if producto.certificaciones %}
+    <div style="padding:1rem 1.5rem;border-top:1px solid var(--gray-mid);"><label style="font-size:.65rem;font-weight:700;text-transform:uppercase;color:var(--gray);">Certificaciones</label><p style="margin-top:.5rem;font-size:.9rem;white-space:pre-wrap;">{{ producto.certificaciones }}</p></div>
+    {% endif %}
+  </div>
+  <div class="panel">
+    <div class="panel-header"><h3>Ficha técnica</h3></div>
+    <div style="padding:2rem;text-align:center;">
+      {% if producto.tiene_ficha %}
+      <i class="fas fa-file-pdf" style="font-size:2.5rem;color:var(--red);"></i>
+      <p style="margin:1rem 0;font-weight:600;">{{ producto.ficha_original }}</p>
+      <a href="{{ url_for('admin.producto_ficha', id=producto.id) }}" class="btn btn-green"><i class="fas fa-download"></i> Descargar ficha</a>
+      {% else %}
+      <p style="color:var(--orange);"><i class="fas fa-triangle-exclamation"></i> Sin ficha técnica — sube el PDF al editar.</p>
+      {% endif %}
+    </div>
+    <div style="padding:1rem 1.5rem;border-top:1px solid var(--gray-mid);font-size:.85rem;color:var(--gray);">
+      <i class="fas fa-calculator"></i> Usa la <a href="{{ url_for('admin.calculadora_contenedores') }}" class="link-row">calculadora de contenedores</a> con las dimensiones de este producto.
+    </div>
+  </div>
+</div>
+{% endblock %}

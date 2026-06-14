@@ -1,14 +1,14 @@
 {% extends "admin_layout.html" %}
 {% block title %}{% if editing %}Editar producto{% else %}Nuevo producto{% endif %}{% endblock %}
 {% block topbar_title %}{% if editing %}Editar producto{% else %}Nuevo producto{% endif %}{% endblock %}
-{% block topbar_subtitle %}Línea de exportación{% endblock %}
+{% block topbar_subtitle %}Catálogo de exportación — ficha técnica y logística{% endblock %}
 {% block topbar_actions %}
   <a href="{{ url_for('admin.productos') }}" class="btn-top ghost"><i class="fas fa-arrow-left"></i> Volver</a>
 {% endblock %}
 
 {% block content %}
 <div class="panel">
-  <form method="POST">
+  <form method="POST" enctype="multipart/form-data">
     {{ form.hidden_tag() }}
     <div class="form-grid">
       <div class="form-group full">
@@ -20,17 +20,62 @@
         {{ form.categoria(class="form-control") }}
       </div>
       <div class="form-group">
+        <label>{{ form.formato_venta.label.text }}</label>
+        {{ form.formato_venta(class="form-control") }}
+      </div>
+      <div class="form-group">
+        <label>{{ form.peso_caja_kg.label.text }}</label>
+        {{ form.peso_caja_kg(class="form-control") }}
+      </div>
+      <div class="form-group">
+        <label>{{ form.caja_largo_cm.label.text }}</label>
+        {{ form.caja_largo_cm(class="form-control") }}
+      </div>
+      <div class="form-group">
+        <label>{{ form.caja_ancho_cm.label.text }}</label>
+        {{ form.caja_ancho_cm(class="form-control") }}
+      </div>
+      <div class="form-group">
+        <label>{{ form.caja_alto_cm.label.text }}</label>
+        {{ form.caja_alto_cm(class="form-control") }}
+      </div>
+      <div class="form-group">
+        <label>{{ form.temperatura.label.text }}</label>
+        {{ form.temperatura(class="form-control", placeholder="Ej: -1°C a +4°C") }}
+      </div>
+      <div class="form-group">
+        <label>{{ form.vida_util_dias.label.text }}</label>
+        {{ form.vida_util_dias(class="form-control") }}
+      </div>
+      <div class="form-group">
         <label>{{ form.orden.label.text }}</label>
         {{ form.orden(class="form-control") }}
       </div>
       <div class="form-group full">
+        <label>{{ form.paises_permitidos.label.text }}</label>
+        {{ form.paises_permitidos(class="form-control", placeholder="México, Colombia, España") }}
+      </div>
+      <div class="form-group full">
         <label>{{ form.descripcion.label.text }}</label>
-        {{ form.descripcion(class="form-control", placeholder="Descripción para uso interno...") }}
+        {{ form.descripcion(class="form-control", rows=3) }}
+      </div>
+      <div class="form-group full">
+        <label>{{ form.certificaciones.label.text }}</label>
+        {{ form.certificaciones(class="form-control", rows=2) }}
+      </div>
+      <div class="form-group">
+        <label>{{ form.imagen.label.text }}</label>
+        {{ form.imagen(class="form-control") }}
+      </div>
+      <div class="form-group">
+        <label>{{ form.ficha.label.text }}</label>
+        {{ form.ficha(class="form-control") }}
+        {% if editing and producto.tiene_ficha %}<p style="font-size:.75rem;color:var(--gray);margin-top:.35rem;">Actual: {{ producto.ficha_original }}</p>{% endif %}
       </div>
     </div>
     <div class="form-actions">
       <button type="submit" class="btn btn-green"><i class="fas fa-save"></i> Guardar</button>
-      <a href="{{ url_for('admin.productos') }}" class="btn btn-ghost">Cancelar</a>
+      <a href="{% if editing %}{{ url_for('admin.producto_detalle', id=producto.id) }}{% else %}{{ url_for('admin.productos') }}{% endif %}" class="btn btn-ghost">Cancelar</a>
     </div>
   </form>
 </div>

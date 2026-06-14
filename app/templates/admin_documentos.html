@@ -1,0 +1,64 @@
+{% extends "admin_layout.html" %}
+{% block title %}Documentación{% endblock %}
+{% block topbar_title %}Gestión documental{% endblock %}
+{% block topbar_subtitle %}Certificados, BL, facturas, packing list y documentos de exportación{% endblock %}
+{% block topbar_actions %}
+  <a href="{{ url_for('admin.documento_nuevo') }}" class="btn-top accent"><i class="fas fa-file-circle-plus"></i> Nuevo documento</a>
+{% endblock %}
+
+{% block content %}
+<div class="panel">
+  <div class="filter-bar">
+    <a href="{{ url_for('admin.documentos') }}" class="filter-chip {% if not filtro_estado and not filtro_tipo %}active{% endif %}">Todos</a>
+    {% for k, label in documento_estados.items() %}
+    <a href="{{ url_for('admin.documentos', estado=k) }}" class="filter-chip {% if filtro_estado == k %}active{% endif %}">
+      <i class="fas {{ documento_estado_icons.get(k, 'fa-file') }}"></i> {{ label }}
+    </a>
+    {% endfor %}
+  </div>
+  {% if documentos %}
+  <table class="data-table">
+    <thead>
+      <tr><th>Documento</th><th>Tipo</th><th>Vínculos</th><th>Estado</th><th>Vencimiento</th><th></th></tr>
+    </thead>
+    <tbody>
+      {% for d in documentos %}
+      <tr>
+        <td>
+          <a href="{{ url_for('admin.documento_detalle', id=d.id) }}" class="link-row">{{ d.titulo }}</a>
+          {% if d.tiene_archivo %}<div style="font-size:.72rem;color:var(--gray);"><i class="fas fa-paperclip"></i> {{ d.original_filename }}</div>{% endif %}
+        </td>
+        <td style="font-size:.8rem;">{{ documento_tipos.get(d.tipo, d.tipo) }}</td>
+        <td style="font-size:.75rem;color:var(--gray);">
+          {% if d.cliente %}{{ d.cliente.nombre }}{% endif %}
+          {% if d.embarque %} · {{ d.embarque.numero }}{% endif %}
+          {% if d.pais %} · {{ d.pais.nombre }}{% endif %}
+          {% if not d.cliente and not d.embarque and not d.pais %}—{% endif %}
+        </td>
+        <td>
+          <span class="estado-badge" style="background:{{ documento_estado_colors.get(d.estado, '#eee') }}18;color:{{ documento_estado_colors.get(d.estado, '#666') }};">
+            <i class="fas {{ documento_estado_icons.get(d.estado, 'fa-file') }}"></i>
+            {{ documento_estados.get(d.estado, d.estado) }}
+          </span>
+        </td>
+        <td style="font-size:.8rem;">
+          {% if d.fecha_vencimiento %}
+            {{ d.fecha_vencimiento.strftime('%d/%m/%Y') }}
+            {% if d.esta_vencido %}<span style="color:var(--red);font-weight:700;"> Vencido</span>{% endif %}
+          {% else %}—{% endif %}
+        </td>
+        <td>
+          <a href="{{ url_for('admin.documento_editar', id=d.id) }}" class="btn-icon" title="Editar"><i class="fas fa-pen"></i></a>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <div class="empty-state">
+    <i class="fas fa-folder-open"></i>
+    <p>No hay documentos{% if filtro_estado %} con este filtro{% endif %}. <a href="{{ url_for('admin.documento_nuevo') }}">Subir el primero</a></p>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

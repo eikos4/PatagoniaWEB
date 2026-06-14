@@ -19,7 +19,9 @@
     <tbody>
       {% for p in productos %}
       <tr>
-        <td><strong>{{ p.nombre }}</strong>{% if p.descripcion %}<div style="font-size:.75rem;color:var(--gray);max-width:280px;">{{ p.descripcion[:80] }}{% if p.descripcion|length > 80 %}…{% endif %}</div>{% endif %}</td>
+        <td><a href="{{ url_for('admin.producto_detalle', id=p.id) }}" class="link-row">{{ p.nombre }}</a>
+          {% if not p.tiene_ficha %}<span style="font-size:.65rem;color:var(--orange);"><i class="fas fa-exclamation-triangle"></i> Sin ficha</span>{% endif %}
+        </td>
         <td><span class="badge" style="background:var(--accent-light);color:var(--accent-dark);">{{ producto_categorias.get(p.categoria, p.categoria) }}</span></td>
         <td>{{ p.clientes|length }}</td>
         <td>{{ p.abonos|length }}</td>
@@ -27,6 +29,7 @@
         <td>{{ p.orden }}</td>
         <td>
           <div style="display:flex;gap:.4rem;">
+            <a href="{{ url_for('admin.producto_detalle', id=p.id) }}" class="btn-icon" title="Ver ficha"><i class="fas fa-eye"></i></a>
             <a href="{{ url_for('admin.producto_editar', id=p.id) }}" class="btn-icon" title="Editar"><i class="fas fa-pen"></i></a>
             <form method="POST" action="{{ url_for('admin.producto_toggle', id=p.id) }}">
               <button type="submit" class="btn-icon" title="Activar/Desactivar"><i class="fas fa-power-off"></i></button>

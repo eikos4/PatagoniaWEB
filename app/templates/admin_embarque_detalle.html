@@ -3,15 +3,31 @@
 {% block topbar_title %}{{ emb.numero }}{% endblock %}
 {% block topbar_subtitle %}{{ emb.cliente_nombre }} · {{ embarque_estados.get(emb.estado, emb.estado) }}{% endblock %}
 {% block topbar_actions %}
+  {% if puede_editar %}
   <a href="{{ url_for('admin.embarque_editar', id=emb.id) }}" class="btn-top accent"><i class="fas fa-pen"></i> Editar</a>
+  <a href="{{ url_for('admin.tarea_nueva', embarque_id=emb.id) }}" class="btn-top ghost"><i class="fas fa-list-check"></i> Nueva tarea</a>
+  {% endif %}
   <a href="{{ url_for('admin.embarques') }}" class="btn-top ghost"><i class="fas fa-arrow-left"></i> Lista</a>
 {% endblock %}
 
+{% block extra_css %}
+.milestone-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: .75rem; padding: 1.25rem 1.5rem; }
+.milestone-card { border: 1px solid var(--gray-mid); border-radius: var(--radius-sm); padding: .85rem; text-align: center; background: #fafbfc; transition: all .2s; }
+.milestone-card.done { background: #ecfdf5; border-color: #a7f3d0; }
+.milestone-card .m-icon { width: 36px; height: 36px; border-radius: 50%; background: var(--gray-light); display: flex; align-items: center; justify-content: center; margin: 0 auto .5rem; font-size: .85rem; color: var(--gray); }
+.milestone-card.done .m-icon { background: var(--accent); color: #fff; }
+.milestone-card .m-label { font-size: .68rem; font-weight: 700; color: var(--gray); }
+.milestone-card.done .m-label { color: var(--green-ok); }
+.milestone-card .m-date { font-size: .6rem; color: #9ca3af; margin-top: .25rem; }
+.tracking-box { padding: 1.25rem 1.5rem; background: var(--cream); border-top: 1px solid var(--gray-mid); }
+{% endblock %}
+
 {% block content %}
+{% set orden_estados = ['en_preparacion', 'documentacion_pendiente', 'listo_despacho', 'programado', 'en_transito', 'en_puerto', 'en_destino', 'entregado'] %}
+{% set idx_actual = orden_estados.index(emb.estado) if emb.estado in orden_estados else -1 %}
+
 <div class="status-timeline">
-  {% set orden = ['programado', 'en_transito', 'en_puerto', 'entregado'] %}
-  {% set idx_actual = orden.index(emb.estado) if emb.estado in orden else -1 %}
-  {% for key in orden %}
+  {% for key in orden_estados %}
   {% set label = embarque_estados.get(key, key) %}
   <div class="timeline-step {% if emb.estado == key %}current{% elif idx_actual > loop.index0 %}done{% endif %}">
     <div class="timeline-icon" style="{% if emb.estado == key %}background:{{ embarque_estado_colors.get(key) }};color:#fff;{% elif idx_actual > loop.index0 %}background:{{ embarque_estado_colors.get(key) }}33;color:{{ embarque_estado_colors.get(key) }};{% endif %}">
@@ -23,11 +39,20 @@
   {% endfor %}
 </div>
 
-<div class="kpi-grid" style="grid-template-columns:repeat(4,1fr);margin-bottom:1.25rem;">
+{% if emb.estado in ['incidencia', 'cancelado', 'cerrado'] %}
+<div class="alert-panel {% if emb.estado == 'incidencia' %}crit{% elif emb.estado == 'cancelado' %}warn{% else %}info{% endif %}">
+  <i class="fas {{ embarque_estado_icons.get(emb.estado) }}"></i>
+  <span>Estado especial: <strong>{{ embarque_estados.get(emb.estado) }}</strong>
+    {% if emb.tracking_notas %} — {{ emb.tracking_notas }}{% endif %}
+  </span>
+</div>
+{% endif %}
+
+<div class="kpi-grid" style="grid-template-columns:repeat(5,1fr);margin-bottom:1.25rem;">
   <div class="kpi-card blue">
     <div class="kpi-icon"><i class="fas {{ embarque_estado_icons.get(emb.estado, 'fa-ship') }}"></i></div>
     <div class="kpi-label">Estado</div>
-    <div class="kpi-value" style="font-size:.95rem;">
+    <div class="kpi-value" style="font-size:.85rem;">
       <span class="estado-badge" style="background:{{ embarque_estado_colors.get(emb.estado, '#eee') }}18;color:{{ embarque_estado_colors.get(emb.estado, '#666') }};">
         <i class="fas {{ embarque_estado_icons.get(emb.estado) }}"></i>
         {{ embarque_estados.get(emb.estado, emb.estado) }}
@@ -36,27 +61,33 @@
   </div>
   <div class="kpi-card green">
     <div class="kpi-icon"><i class="fas fa-location-dot"></i></div>
-    <div class="kpi-label">Origen</div>
-    <div class="kpi-value" style="font-size:1rem;">{{ emb.puerto_origen or '—' }}</div>
-    <div class="kpi-sub">Chile</div>
+    <div class="kpi-label">Última ubicación</div>
+    <div class="kpi-value" style="font-size:.9rem;">{{ emb.ultima_ubicacion or '—' }}</div>
+    <div class="kpi-sub">{{ emb.etapas_completadas }}/{{ emb.hitos|length }} hitos</div>
   </div>
   <div class="kpi-card orange">
     <div class="kpi-icon"><i class="fas fa-anchor"></i></div>
-    <div class="kpi-label">Destino</div>
-    <div class="kpi-value" style="font-size:1rem;">{{ emb.puerto_destino or '—' }}</div>
-    <div class="kpi-sub">México</div>
+    <div class="kpi-label">Ruta</div>
+    <div class="kpi-value" style="font-size:.85rem;">{{ emb.puerto_origen or '—' }} → {{ emb.puerto_destino or '—' }}</div>
+    <div class="kpi-sub">{{ contenedor_tipos.get(emb.tipo_contenedor, emb.tipo_contenedor or '—') }}</div>
   </div>
   <div class="kpi-card dark">
-    <div class="kpi-icon"><i class="fas fa-snowflake"></i></div>
-    <div class="kpi-label">Carga</div>
-    <div class="kpi-value" style="font-size:.9rem;">{{ carga_tipos.get(emb.tipo_carga, emb.tipo_carga) }}</div>
-    <div class="kpi-sub">{{ emb.temperatura or '—' }}</div>
+    <div class="kpi-icon"><i class="fas fa-calendar"></i></div>
+    <div class="kpi-label">ETD / ETA</div>
+    <div class="kpi-value" style="font-size:.85rem;">{{ emb.etd.strftime("%d/%m") if emb.etd else '—' }} / {{ emb.eta.strftime("%d/%m") if emb.eta else '—' }}</div>
+    <div class="kpi-sub">{% if emb.tiene_retraso %}<span style="color:var(--red);">Retraso</span>{% else %}En plazo{% endif %}</div>
+  </div>
+  <div class="kpi-card green">
+    <div class="kpi-icon"><i class="fas fa-user-tie"></i></div>
+    <div class="kpi-label">Responsable</div>
+    <div class="kpi-value" style="font-size:.9rem;">{{ emb.responsable.nombre or emb.responsable.username if emb.responsable else '—' }}</div>
+    <div class="kpi-sub">{{ emb.dias_transito or 0 }} días tránsito</div>
   </div>
 </div>
 
 <div class="grid-2">
   <div class="panel">
-    <div class="panel-header"><h3><i class="fas fa-user" style="color:var(--accent);margin-right:.4rem;"></i>Cliente</h3></div>
+    <div class="panel-header"><h3><i class="fas fa-user" style="color:var(--accent);margin-right:.4rem;"></i>Cliente y pedido</h3></div>
     <div class="info-grid" style="background:var(--white);border:none;">
       <div class="info-item"><label>Nombre</label><span>{{ emb.cliente_nombre }}</span></div>
       {% if emb.cliente_empresa %}<div class="info-item"><label>Empresa</label><span>{{ emb.cliente_empresa }}</span></div>{% endif %}
@@ -77,16 +108,174 @@
     </div>
   </div>
   <div class="panel">
-    <div class="panel-header"><h3><i class="fas fa-container-storage" style="color:var(--accent);margin-right:.4rem;"></i>Logística</h3></div>
-    <div style="padding:1.25rem 1.5rem;font-size:.9rem;line-height:2;">
+    <div class="panel-header"><h3><i class="fas fa-container-storage" style="color:var(--accent);margin-right:.4rem;"></i>Datos logísticos</h3></div>
+    <div style="padding:1.25rem 1.5rem;font-size:.85rem;line-height:2;">
       <div><i class="fas fa-building" style="width:18px;color:var(--gray);"></i> Naviera: <strong>{{ emb.naviera or '—' }}</strong></div>
-      <div><i class="fas fa-box" style="width:18px;color:var(--gray);"></i> Contenedor: <strong>{{ emb.numero_contenedor or '—' }}</strong></div>
+      <div><i class="fas fa-ticket" style="width:18px;color:var(--gray);"></i> Booking: <strong>{{ emb.numero_booking or '—' }}</strong></div>
+      <div><i class="fas fa-box" style="width:18px;color:var(--gray);"></i> Contenedor: <strong>{{ emb.numero_contenedor or '—' }}</strong> ({{ contenedor_tipos.get(emb.tipo_contenedor, '—') }})</div>
       <div><i class="fas fa-file-lines" style="width:18px;color:var(--gray);"></i> BL: <strong>{{ emb.numero_bl or '—' }}</strong></div>
-      <div><i class="fas fa-plane-departure" style="width:18px;color:var(--gray);"></i> ETD: <strong>{{ emb.etd.strftime("%d/%m/%Y") if emb.etd else '—' }}</strong></div>
-      <div><i class="fas fa-plane-arrival" style="width:18px;color:var(--gray);"></i> ETA: <strong>{{ emb.eta.strftime("%d/%m/%Y") if emb.eta else '—' }}</strong></div>
-      <div><i class="fas fa-calendar" style="width:18px;color:var(--gray);"></i> Registro: <strong>{{ emb.fecha_embarque.strftime("%d/%m/%Y") }}</strong></div>
+      <div><i class="fas fa-truck" style="width:18px;color:var(--gray);"></i> Terrestre: <strong>{{ emb.transporte_terrestre or '—' }}</strong></div>
+      <div><i class="fas fa-passport" style="width:18px;color:var(--gray);"></i> Agente aduana: <strong>{{ emb.agente_aduana or '—' }}</strong></div>
+      <div><i class="fas fa-snowflake" style="width:18px;color:var(--gray);"></i> Carga: <strong>{{ carga_tipos.get(emb.tipo_carga, emb.tipo_carga) }}</strong> · {{ emb.temperatura or '—' }}</div>
+      <div><i class="fas fa-ship" style="width:18px;color:var(--gray);"></i> Zarpe: <strong>{{ emb.fecha_zarpe.strftime("%d/%m/%Y") if emb.fecha_zarpe else '—' }}</strong></div>
     </div>
   </div>
+</div>
+
+<div class="panel" style="margin-top:1.25rem;">
+  <div class="panel-header">
+    <h3><i class="fas fa-coins" style="color:var(--accent);margin-right:.4rem;"></i>Costos y rentabilidad</h3>
+    <a href="{{ url_for('admin.reportes') }}" class="btn btn-ghost" style="padding:.45rem .9rem;font-size:.75rem;"><i class="fas fa-chart-line"></i> Reportes</a>
+  </div>
+  <div class="kpi-grid" style="grid-template-columns:repeat(4,1fr);padding:1.25rem 1.5rem;margin:0;">
+    <div class="kpi-card green" style="box-shadow:none;border:1px solid var(--gray-mid);">
+      <div class="kpi-label">Precio venta</div>
+      <div class="kpi-value" style="font-size:1.1rem;">${{ "{:,.0f}".format(emb.precio_venta) }}</div>
+    </div>
+    <div class="kpi-card orange" style="box-shadow:none;border:1px solid var(--gray-mid);">
+      <div class="kpi-label">Costo total</div>
+      <div class="kpi-value" style="font-size:1.1rem;">${{ "{:,.0f}".format(emb.costo_total) }}</div>
+    </div>
+    <div class="kpi-card {% if emb.margen_bruto >= 0 %}green{% else %}dark{% endif %}" style="box-shadow:none;border:1px solid var(--gray-mid);">
+      <div class="kpi-label">Margen bruto</div>
+      <div class="kpi-value" style="font-size:1.1rem;color:{% if emb.margen_bruto < 0 %}var(--red){% else %}inherit{% endif %};">${{ "{:,.0f}".format(emb.margen_bruto) }}</div>
+    </div>
+    <div class="kpi-card blue" style="box-shadow:none;border:1px solid var(--gray-mid);">
+      <div class="kpi-label">Rentabilidad</div>
+      <div class="kpi-value" style="font-size:1.1rem;">{% if emb.rentabilidad_pct is not none %}{{ emb.rentabilidad_pct }}%{% else %}—{% endif %}</div>
+    </div>
+  </div>
+  {% if emb.costos %}
+  <table class="data-table">
+    <thead><tr><th>Concepto</th><th>Tipo</th><th>Monto</th><th></th></tr></thead>
+    <tbody>
+      {% for c in emb.costos %}
+      <tr>
+        <td>{{ c.concepto }}{% if c.notas %}<div style="font-size:.75rem;color:var(--gray);">{{ c.notas }}</div>{% endif %}</td>
+        <td style="font-size:.8rem;"><i class="fas {{ costo_tipo_icons.get(c.tipo, 'fa-circle') }}" style="color:var(--accent);margin-right:.3rem;"></i>{{ costo_tipos.get(c.tipo) }}</td>
+        <td><strong>{{ c.moneda }} ${{ "{:,.2f}".format(c.monto) }}</strong></td>
+        <td>
+          {% if puede_editar %}
+          <form method="POST" action="{{ url_for('admin.embarque_costo_eliminar', id=emb.id, costo_id=c.id) }}" onsubmit="return confirm('¿Eliminar costo?');" style="display:inline;">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button type="submit" class="btn-icon del"><i class="fas fa-trash"></i></button>
+          </form>
+          {% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <div class="empty-state" style="padding:1.5rem;"><p>Sin costos registrados. Agrega gastos para calcular rentabilidad.</p></div>
+  {% endif %}
+  {% if puede_editar %}
+  <form method="POST" action="{{ url_for('admin.embarque_costo_nuevo', id=emb.id) }}" style="padding:1.25rem 1.5rem;border-top:1px solid var(--gray-mid);background:#fafbfc;">
+    {{ costo_form.hidden_tag() }}
+    <div class="form-grid" style="padding:0;grid-template-columns:repeat(4,1fr);">
+      <div class="form-group">
+        <label>{{ costo_form.tipo.label.text }}</label>
+        {{ costo_form.tipo(class="form-control") }}
+      </div>
+      <div class="form-group">
+        <label>{{ costo_form.concepto.label.text }}</label>
+        {{ costo_form.concepto(class="form-control", placeholder="Ej: Flete marítimo") }}
+      </div>
+      <div class="form-group">
+        <label>{{ costo_form.monto.label.text }}</label>
+        {{ costo_form.monto(class="form-control", placeholder="0") }}
+      </div>
+      <div class="form-group">
+        <label>{{ costo_form.moneda.label.text }}</label>
+        {{ costo_form.moneda(class="form-control") }}
+      </div>
+    </div>
+    <button type="submit" class="btn btn-green" style="margin-top:.75rem;"><i class="fas fa-plus"></i> Agregar costo</button>
+  </form>
+  {% endif %}
+</div>
+
+<div class="panel" style="margin-top:1.25rem;">
+  <div class="panel-header">
+    <h3><i class="fas fa-route" style="color:var(--accent);margin-right:.4rem;"></i>Hitos logísticos ({{ emb.etapas_completadas }}/{{ emb.hitos|length }})</h3>
+  </div>
+  <div class="milestone-grid">
+    {% for hito in emb.hitos %}
+    <div class="milestone-card {% if hito.completado %}done{% endif %}">
+      <div class="m-icon"><i class="fas {{ logistica_etapa_icons.get(hito.etapa, 'fa-circle') }}"></i></div>
+      <div class="m-label">{{ logistica_etapas.get(hito.etapa, hito.etapa) }}</div>
+      {% if hito.fecha %}<div class="m-date">{{ hito.fecha.strftime('%d/%m/%Y') }}</div>{% endif %}
+      {% if puede_editar %}
+      <form method="POST" action="{{ url_for('admin.embarque_hito_toggle', id=emb.id, hito_id=hito.id) }}" style="margin-top:.5rem;">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button type="submit" class="btn btn-ghost" style="font-size:.65rem;padding:.3rem .6rem;">
+          {% if hito.completado %}<i class="fas fa-undo"></i> Desmarcar{% else %}<i class="fas fa-check"></i> Completar{% endif %}
+        </button>
+      </form>
+      {% endif %}
+    </div>
+    {% endfor %}
+  </div>
+</div>
+
+{% if puede_editar %}
+<div class="panel" style="margin-top:1.25rem;">
+  <div class="panel-header">
+    <h3><i class="fas fa-location-crosshairs" style="color:var(--accent);margin-right:.4rem;"></i>Actualizar seguimiento</h3>
+  </div>
+  <form method="POST" action="{{ url_for('admin.embarque_tracking', id=emb.id) }}" class="tracking-box">
+    {{ tracking_form.hidden_tag() }}
+    <div class="form-grid" style="padding:0;">
+      <div class="form-group">
+        <label>{{ tracking_form.ultima_ubicacion.label.text }}</label>
+        {{ tracking_form.ultima_ubicacion(class="form-control", placeholder="Ej: Puerto San Antonio, en tránsito Pacífico...") }}
+      </div>
+      <div class="form-group">
+        <label>{{ tracking_form.estado.label.text }}</label>
+        {{ tracking_form.estado(class="form-control") }}
+      </div>
+      <div class="form-group full">
+        <label>{{ tracking_form.tracking_notas.label.text }}</label>
+        {{ tracking_form.tracking_notas(class="form-control", rows=2) }}
+      </div>
+    </div>
+    <div style="margin-top:1rem;">
+      <button type="submit" class="btn btn-green"><i class="fas fa-satellite-dish"></i> Guardar seguimiento</button>
+    </div>
+  </form>
+</div>
+{% elif emb.tracking_notas %}
+<div class="panel" style="margin-top:1.25rem;">
+  <div class="panel-header"><h3><i class="fas fa-satellite-dish" style="color:var(--accent);margin-right:.4rem;"></i>Notas de seguimiento</h3></div>
+  <div style="padding:1.25rem 1.5rem;font-size:.9rem;white-space:pre-wrap;">{{ emb.tracking_notas }}</div>
+</div>
+{% endif %}
+
+<div class="panel" style="margin-top:1.25rem;">
+  <div class="panel-header">
+    <h3><i class="fas fa-list-check" style="color:var(--accent);margin-right:.4rem;"></i>Tareas vinculadas ({{ tareas_emb|length }})</h3>
+    {% if puede_editar %}
+    <a href="{{ url_for('admin.tarea_nueva', embarque_id=emb.id) }}" class="btn btn-green" style="padding:.45rem .9rem;font-size:.75rem;"><i class="fas fa-plus"></i> Nueva</a>
+    {% endif %}
+  </div>
+  {% if tareas_emb %}
+  <table class="data-table">
+    <thead><tr><th>Tarea</th><th>Prioridad</th><th>Estado</th><th>Responsable</th><th>Límite</th></tr></thead>
+    <tbody>
+      {% for t in tareas_emb %}
+      <tr>
+        <td><a href="{{ url_for('admin.tarea_editar', id=t.id) }}" class="link-row">{{ t.titulo }}</a></td>
+        <td><span class="estado-badge" style="background:{{ tarea_prioridad_colors.get(t.prioridad) }}18;color:{{ tarea_prioridad_colors.get(t.prioridad) }};">{{ tarea_prioridades.get(t.prioridad) }}</span></td>
+        <td><span class="estado-badge" style="background:{{ tarea_estado_colors.get(t.estado) }}18;color:{{ tarea_estado_colors.get(t.estado) }};">{{ tarea_estados.get(t.estado) }}</span></td>
+        <td style="font-size:.8rem;">{{ t.responsable.nombre or t.responsable.username if t.responsable else '—' }}</td>
+        <td style="font-size:.8rem;">{{ t.fecha_limite.strftime('%d/%m/%Y') if t.fecha_limite else '—' }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <div class="empty-state" style="padding:2rem;"><p>Sin tareas asignadas a este embarque.</p></div>
+  {% endif %}
 </div>
 
 {% if emb.notas %}
@@ -96,9 +285,42 @@
 </div>
 {% endif %}
 
+<div class="panel" style="margin-top:1.25rem;">
+  <div class="panel-header">
+    <h3><i class="fas fa-folder-open" style="color:var(--accent);margin-right:.4rem;"></i>Documentos del embarque ({{ emb.documentos|length }})</h3>
+    {% if puede_editar %}
+    <a href="{{ url_for('admin.documento_nuevo', embarque_id=emb.id, cliente_id=emb.folder_id) }}" class="btn btn-green" style="padding:.45rem .9rem;font-size:.75rem;"><i class="fas fa-plus"></i> Agregar</a>
+    {% endif %}
+  </div>
+  {% if emb.documentos %}
+  <table class="data-table">
+    <thead><tr><th>Documento</th><th>Tipo</th><th>Estado</th><th>Vence</th></tr></thead>
+    <tbody>
+      {% for d in emb.documentos %}
+      <tr>
+        <td><a href="{{ url_for('admin.documento_detalle', id=d.id) }}" class="link-row">{{ d.titulo }}</a></td>
+        <td style="font-size:.8rem;">{{ documento_tipos.get(d.tipo, d.tipo) }}</td>
+        <td>
+          <span class="estado-badge" style="background:{{ documento_estado_colors.get(d.estado, '#eee') }}18;color:{{ documento_estado_colors.get(d.estado, '#666') }};">
+            {{ documento_estados.get(d.estado, d.estado) }}
+          </span>
+        </td>
+        <td style="font-size:.8rem;">{{ d.fecha_vencimiento.strftime('%d/%m/%Y') if d.fecha_vencimiento else '—' }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <div class="empty-state" style="padding:2rem;"><p>Sin documentos vinculados a este embarque.</p></div>
+  {% endif %}
+</div>
+
+{% if puede_editar %}
 <div style="margin-top:1.25rem;display:flex;gap:.75rem;">
   <form method="POST" action="{{ url_for('admin.embarque_eliminar', id=emb.id) }}" onsubmit="return confirm('¿Eliminar este embarque?');">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
     <button type="submit" class="btn btn-danger"><i class="fas fa-trash"></i> Eliminar</button>
   </form>
 </div>
+{% endif %}
 {% endblock %}

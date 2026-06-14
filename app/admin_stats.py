@@ -2,8 +2,30 @@ from datetime import datetime, timedelta
 
 from sqlalchemy import func
 
-from app.models import ContactMessage, ClientFolder, ClientAbono, ClientFile, Product, Quotation, Order, Shipment
+from app.models import (
+    ContactMessage, ClientFolder, ClientAbono, ClientFile, Product,
+    Quotation, Order, Shipment, ExportDocument, Country,
+)
 from app.constants import CLIENTE_ESTADOS, PRODUCTO_CATEGORIAS, PEDIDO_ESTADOS, EMBARQUE_ESTADOS
+from app.embarque_utils import embarques_activos_filter
+from app.alertas import get_alertas_resumen
+
+
+def _doc_estado_efectivo(doc):
+    if doc.esta_vencido and doc.estado != "aprobado":
+        return "vencido"
+    return doc.estado
+
+
+def _embarque_doc_resumen(emb):
+    docs = emb.documentos
+    if not docs:
+        return "Sin documentos", "warn"
+    aprobados = sum(1 for d in docs if _doc_estado_efectivo(d) == "aprobado")
+    pendientes = sum(1 for d in docs if _doc_estado_efectivo(d) in ("pendiente", "vencido"))
+    if pendientes:
+        return f"{aprobados}/{len(docs)} aprobados", "warn"
+    return "Documentos completos", "ok"
 
 
 def get_dashboard_kpis():
@@ -56,18 +78,57 @@ def get_dashboard_kpis():
         .with_entities(func.coalesce(func.sum(Order.total), 0))
         .scalar()
     )
-    pedidos_recientes = (
-        Order.query.order_by(Order.created_at.desc()).limit(5).all()
-    )
+    pedidos_recientes = Order.query.order_by(Order.created_at.desc()).limit(5).all()
 
     embarques_total = Shipment.query.count()
-    embarques_activos = Shipment.query.filter(
-        Shipment.estado.notin_(["entregado", "cancelado"])
-    ).count()
+    embarques_activos = Shipment.query.filter(embarques_activos_filter()).count()
     embarques_en_transito = Shipment.query.filter_by(estado="en_transito").count()
-    embarques_recientes = (
-        Shipment.query.order_by(Shipment.created_at.desc()).limit(5).all()
+    embarques_recientes = Shipment.query.order_by(Shipment.created_at.desc()).limit(5).all()
+
+    paises_atendidos = Country.query.filter_by(activo=True).count()
+    paises_con_clientes = (
+        ClientFolder.query.filter(ClientFolder.pais.isnot(None), ClientFolder.pais != "")
+        .with_entities(ClientFolder.pais, func.count(ClientFolder.id))
+        .group_by(ClientFolder.pais)
+        .order_by(func.count(ClientFolder.id).desc())
+        .all()
     )
+
+    documentos_total = ExportDocument.query.count()
+    documentos_pendientes = ExportDocument.query.filter_by(estado="pendiente").count()
+    documentos_vencidos = sum(
+        1 for d in ExportDocument.query.filter(ExportDocument.fecha_vencimiento.isnot(None)).all()
+        if d.esta_vencido and d.estado != "aprobado"
+    )
+
+    ventas_por_pais = (
+        Order.query.filter(Order.estado != "cancelado", Order.cliente_pais.isnot(None))
+        .with_entities(Order.cliente_pais, func.count(Order.id), func.coalesce(func.sum(Order.total), 0))
+        .group_by(Order.cliente_pais)
+        .order_by(func.coalesce(func.sum(Order.total), 0).desc())
+        .limit(8)
+        .all()
+    )
+
+    operaciones_activas = []
+    for emb in Shipment.query.filter(
+        Shipment.estado.notin_(["entregado", "cancelado"])
+    ).order_by(Shipment.created_at.desc()).limit(8).all():
+        eta_dias = None
+        if emb.eta:
+            eta_dias = max((emb.eta - now).days, 0)
+        doc_txt, doc_status = _embarque_doc_resumen(emb)
+        operaciones_activas.append({
+            "embarque": emb,
+            "ruta": f"Chile → {emb.puerto_destino or 'Destino'}",
+            "contenedores": 1 if emb.numero_contenedor else 0,
+            "doc_texto": doc_txt,
+            "doc_status": doc_status,
+            "eta_dias": eta_dias,
+            "cliente_pais": emb.cliente.pais if emb.cliente else None,
+        })
+
+    alertas = get_alertas_resumen()
 
     por_estado = {
         estado: ClientFolder.query.filter_by(estado=estado).count()
@@ -90,12 +151,8 @@ def get_dashboard_kpis():
         .all()
     )
 
-    clientes_recientes = (
-        ClientFolder.query.order_by(ClientFolder.updated_at.desc()).limit(5).all()
-    )
-    abonos_recientes = (
-        ClientAbono.query.order_by(ClientAbono.fecha.desc()).limit(5).all()
-    )
+    clientes_recientes = ClientFolder.query.order_by(ClientFolder.updated_at.desc()).limit(5).all()
+    abonos_recientes = ClientAbono.query.order_by(ClientAbono.fecha.desc()).limit(5).all()
 
     return {
         "total_clientes": total_clientes,
@@ -122,6 +179,14 @@ def get_dashboard_kpis():
         "embarques_en_transito": embarques_en_transito,
         "embarques_recientes": embarques_recientes,
         "embarque_estados_labels": EMBARQUE_ESTADOS,
+        "paises_atendidos": paises_atendidos,
+        "paises_con_clientes": paises_con_clientes,
+        "documentos_total": documentos_total,
+        "documentos_pendientes": documentos_pendientes,
+        "documentos_vencidos": documentos_vencidos,
+        "ventas_por_pais": ventas_por_pais,
+        "operaciones_activas": operaciones_activas,
+        "alertas": alertas,
         "por_estado": por_estado,
         "por_producto": por_producto,
         "abonos_por_producto": abonos_por_producto,

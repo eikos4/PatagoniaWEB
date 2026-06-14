@@ -1,0 +1,51 @@
+{% extends "admin_layout.html" %}
+{% block title %}Notificaciones{% endblock %}
+{% block topbar_title %}Notificaciones{% endblock %}
+{% block topbar_subtitle %}Alertas por email y registro de envíos{% endblock %}
+{% block topbar_actions %}
+  <form method="POST" action="{{ url_for('admin.notificaciones_enviar_resumen') }}" style="display:inline;">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <button type="submit" class="btn-top accent"><i class="fas fa-paper-plane"></i> Enviar resumen alertas</button>
+  </form>
+{% endblock %}
+
+{% block content %}
+{% if not smtp_configurado %}
+<div class="alert-panel warn" style="margin-bottom:1.25rem;">
+  <i class="fas fa-envelope"></i>
+  <span>SMTP no configurado. Define <strong>SMTP_HOST</strong>, <strong>SMTP_FROM</strong> y credenciales en variables de entorno para enviar emails. Destino por defecto: {{ notify_email }}</span>
+</div>
+{% else %}
+<div class="alert-panel info" style="margin-bottom:1.25rem;">
+  <i class="fas fa-circle-check"></i>
+  <span>Email configurado. Resúmenes se envían a <strong>{{ notify_email }}</strong></span>
+</div>
+{% endif %}
+
+<div class="panel">
+  <div class="panel-header"><h3><i class="fas fa-list" style="color:var(--accent);margin-right:.4rem;"></i>Historial de notificaciones</h3></div>
+  {% if logs %}
+  <table class="data-table">
+    <thead><tr><th>Fecha</th><th>Tipo</th><th>Destinatario</th><th>Título</th><th>Estado</th></tr></thead>
+    <tbody>
+      {% for l in logs %}
+      <tr>
+        <td style="font-size:.78rem;">{{ l.created_at.strftime('%d/%m/%Y %H:%M') }}</td>
+        <td style="font-size:.8rem;">{{ l.tipo }}</td>
+        <td>{{ l.destinatario }}</td>
+        <td style="font-size:.85rem;">{{ l.titulo }}</td>
+        <td>
+          <span class="estado-badge" style="background:{% if l.estado == 'enviado' %}#ecfdf5;color:#15803d{% else %}#fff1f2;color:#be123c{% endif %};">
+            {{ l.estado }}
+          </span>
+          {% if l.error_detalle %}<div style="font-size:.7rem;color:var(--gray);">{{ l.error_detalle[:80] }}</div>{% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <div class="empty-state" style="padding:2rem;"><p>Sin notificaciones enviadas aún.</p></div>
+  {% endif %}
+</div>
+{% endblock %}

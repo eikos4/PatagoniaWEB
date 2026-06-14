@@ -1,0 +1,78 @@
+{% extends "admin_layout.html" %}
+{% block title %}Tareas internas{% endblock %}
+{% block topbar_title %}Tareas internas{% endblock %}
+{% block topbar_subtitle %}Seguimiento operativo del equipo{% endblock %}
+{% block topbar_actions %}
+  {% if puede_editar %}
+  <a href="{{ url_for('admin.tarea_nueva') }}" class="btn-top accent"><i class="fas fa-plus"></i> Nueva tarea</a>
+  {% endif %}
+{% endblock %}
+
+{% block content %}
+<div class="panel">
+  <div class="panel-header">
+    <h3><i class="fas fa-list-check" style="color:var(--accent);margin-right:.5rem;"></i>{{ tareas|length }} tarea{% if tareas|length != 1 %}s{% endif %}</h3>
+  </div>
+  <div class="filter-bar">
+    <a href="{{ url_for('admin.tareas') }}" class="filter-chip {% if not filtro_estado %}active{% endif %}">Todas</a>
+    {% for key, label in tarea_estados.items() %}
+    <a href="{{ url_for('admin.tareas', estado=key) }}" class="filter-chip {% if filtro_estado == key %}active{% endif %}">{{ label }}</a>
+    {% endfor %}
+  </div>
+
+  {% if tareas %}
+  <table class="data-table">
+    <thead>
+      <tr>
+        <th>Tarea</th>
+        <th>Prioridad</th>
+        <th>Estado</th>
+        <th>Responsable</th>
+        <th>Embarque</th>
+        <th>Límite</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for t in tareas %}
+      <tr>
+        <td>
+          <a href="{{ url_for('admin.tarea_editar', id=t.id) }}" class="link-row">{{ t.titulo }}</a>
+          {% if t.descripcion %}<div style="font-size:.75rem;color:var(--gray);margin-top:.15rem;">{{ t.descripcion[:80] }}{% if t.descripcion|length > 80 %}…{% endif %}</div>{% endif %}
+        </td>
+        <td>
+          <span class="estado-badge" style="background:{{ tarea_prioridad_colors.get(t.prioridad) }}18;color:{{ tarea_prioridad_colors.get(t.prioridad) }};">
+            {{ tarea_prioridades.get(t.prioridad) }}
+          </span>
+        </td>
+        <td>
+          <span class="estado-badge" style="background:{{ tarea_estado_colors.get(t.estado) }}18;color:{{ tarea_estado_colors.get(t.estado) }};">
+            {{ tarea_estados.get(t.estado) }}
+          </span>
+        </td>
+        <td style="font-size:.8rem;">{{ t.responsable.nombre or t.responsable.username if t.responsable else '—' }}</td>
+        <td style="font-size:.8rem;">
+          {% if t.embarque %}<a href="{{ url_for('admin.embarque_detalle', id=t.embarque.id) }}" class="link-row">{{ t.embarque.numero }}</a>{% else %}—{% endif %}
+        </td>
+        <td style="font-size:.8rem;">
+          {% if t.fecha_limite %}
+            {% if t.esta_vencida %}<span style="color:var(--red);">{{ t.fecha_limite.strftime('%d/%m/%Y') }}</span>{% else %}{{ t.fecha_limite.strftime('%d/%m/%Y') }}{% endif %}
+          {% else %}—{% endif %}
+        </td>
+        <td>
+          {% if puede_editar and t.estado not in ['completada', 'cancelada'] %}
+          <form method="POST" action="{{ url_for('admin.tarea_cambiar_estado', id=t.id, estado='completada') }}" style="display:inline;">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button type="submit" class="btn-icon" title="Completar"><i class="fas fa-check"></i></button>
+          </form>
+          {% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <div class="empty-state"><i class="fas fa-clipboard-list"></i><p>No hay tareas{% if filtro_estado %} con este estado{% endif %}.</p></div>
+  {% endif %}
+</div>
+{% endblock %}

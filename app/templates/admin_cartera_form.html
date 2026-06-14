@@ -40,12 +40,24 @@
         {{ form.pais(class="form-control", placeholder="México, Chile...") }}
       </div>
       <div class="form-group">
+        <label>{{ form.ciudad.label.text }}</label>
+        {{ form.ciudad(class="form-control") }}
+      </div>
+      <div class="form-group">
+        <label>{{ form.tipo_cliente.label.text }}</label>
+        {{ form.tipo_cliente(class="form-control") }}
+      </div>
+      <div class="form-group">
         <label><i class="fas fa-tag"></i> {{ form.estado.label.text }}</label>
         {{ form.estado(class="form-control") }}
       </div>
       <div class="form-group">
         <label><i class="fas fa-box"></i> {{ form.producto_id.label.text }}</label>
         {{ form.producto_id(class="form-control") }}
+      </div>
+      <div class="form-group">
+        <label><i class="fas fa-user-tie"></i> {{ form.ejecutivo_id.label.text }}</label>
+        {{ form.ejecutivo_id(class="form-control") }}
       </div>
       <div class="form-group">
         <label>{{ form.valor_estimado.label.text }}</label>
@@ -56,8 +68,12 @@
         {{ form.moneda_estimada(class="form-control") }}
       </div>
       <div class="form-group full">
+        <label>{{ form.condiciones_comerciales.label.text }}</label>
+        {{ form.condiciones_comerciales(class="form-control", rows=3, placeholder="Incoterms, plazos de pago, volúmenes mínimos...") }}
+      </div>
+      <div class="form-group full">
         <label>{{ form.notas.label.text }}</label>
-        {{ form.notas(class="form-control", placeholder="Condiciones, volúmenes, observaciones comerciales...") }}
+        {{ form.notas(class="form-control", placeholder="Observaciones internas...") }}
       </div>
     </div>
     <div class="form-actions">

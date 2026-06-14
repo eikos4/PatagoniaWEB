@@ -1,0 +1,114 @@
+{% extends "admin_layout.html" %}
+{% block title %}Calculadora de contenedores{% endblock %}
+{% block topbar_title %}Calculadora de contenedores{% endblock %}
+{% block topbar_subtitle %}Estima volumen y peso según dimensiones de cajas{% endblock %}
+
+{% block extra_css %}
+.calc-result { padding: 1.5rem; }
+.calc-metric { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 1.25rem; }
+.calc-metric .box { background: var(--cream); border-radius: var(--radius-sm); padding: 1rem; text-align: center; }
+.calc-metric .box .val { font-size: 1.5rem; font-weight: 800; }
+.calc-metric .box .lbl { font-size: .65rem; font-weight: 700; text-transform: uppercase; color: var(--gray); margin-top: .25rem; }
+.bar-meter { height: 10px; background: var(--gray-light); border-radius: 99px; overflow: hidden; margin-top: .5rem; }
+.bar-meter .fill { height: 100%; border-radius: 99px; }
+.bar-meter .fill.ok { background: var(--accent); }
+.bar-meter .fill.warn { background: var(--orange); }
+.bar-meter .fill.bad { background: var(--red); }
+@media (max-width: 768px) { .calc-metric { grid-template-columns: 1fr; } }
+{% endblock %}
+
+{% block content %}
+<div class="grid-2">
+  <div class="panel">
+    <div class="panel-header"><h3><i class="fas fa-calculator" style="color:var(--accent);margin-right:.4rem;"></i>Datos de carga</h3></div>
+    <form method="POST">
+      {{ form.hidden_tag() }}
+      <div class="form-grid">
+        <div class="form-group full">
+          <label>{{ form.tipo_contenedor.label.text }}</label>
+          {{ form.tipo_contenedor(class="form-control") }}
+        </div>
+        <div class="form-group">
+          <label>{{ form.cajas_largo.label.text }}</label>
+          {{ form.cajas_largo(class="form-control", placeholder="cm") }}
+          {% for e in form.cajas_largo.errors %}<div class="form-errors">{{ e }}</div>{% endfor %}
+        </div>
+        <div class="form-group">
+          <label>{{ form.cajas_ancho.label.text }}</label>
+          {{ form.cajas_ancho(class="form-control", placeholder="cm") }}
+        </div>
+        <div class="form-group">
+          <label>{{ form.cajas_alto.label.text }}</label>
+          {{ form.cajas_alto(class="form-control", placeholder="cm") }}
+        </div>
+        <div class="form-group">
+          <label>{{ form.peso_caja.label.text }}</label>
+          {{ form.peso_caja(class="form-control", placeholder="kg") }}
+        </div>
+        <div class="form-group">
+          <label>{{ form.cantidad_cajas.label.text }}</label>
+          {{ form.cantidad_cajas(class="form-control") }}
+        </div>
+      </div>
+      <div class="form-actions">
+        <button type="submit" class="btn btn-green"><i class="fas fa-calculator"></i> Calcular</button>
+      </div>
+    </form>
+  </div>
+
+  <div class="panel">
+    <div class="panel-header"><h3><i class="fas fa-chart-bar" style="color:var(--accent);margin-right:.4rem;"></i>Resultado</h3></div>
+    {% if resultado %}
+    <div class="calc-result">
+      {% if resultado.estado == 'invalida' %}
+      <div class="alert-panel crit"><i class="fas fa-circle-exclamation"></i> Carga no válida para este contenedor.</div>
+      {% elif resultado.estado == 'advertencia' %}
+      <div class="alert-panel warn"><i class="fas fa-triangle-exclamation"></i> Cerca del límite — revisa distribución.</div>
+      {% else %}
+      <div class="alert-panel info" style="background:#ecfdf5;border-color:#a7f3d0;color:var(--green-ok);"><i class="fas fa-circle-check"></i> Carga dentro de parámetros.</div>
+      {% endif %}
+
+      <p style="font-size:.85rem;color:var(--gray);margin-bottom:1rem;">
+        Contenedor <strong>{{ contenedor_tipos.get(resultado.tipo) }}</strong> —
+        {{ resultado.dims_contenedor.largo }}×{{ resultado.dims_contenedor.ancho }}×{{ resultado.dims_contenedor.alto }} m
+      </p>
+
+      <div class="calc-metric">
+        <div class="box">
+          <div class="val">{{ resultado.pct_volumen }}%</div>
+          <div class="lbl">Ocupación volumen</div>
+          <div class="bar-meter"><div class="fill {% if resultado.pct_volumen > 100 %}bad{% elif resultado.pct_volumen > 90 %}warn{% else %}ok{% endif %}" style="width:{{ [resultado.pct_volumen, 100]|min }}%;"></div></div>
+          <div style="font-size:.7rem;color:var(--gray);margin-top:.35rem;">{{ resultado.volumen_carga_m3 }} / {{ resultado.volumen_contenedor_m3 }} m³</div>
+        </div>
+        <div class="box">
+          <div class="val">{{ resultado.pct_peso }}%</div>
+          <div class="lbl">Ocupación peso</div>
+          <div class="bar-meter"><div class="fill {% if resultado.pct_peso > 100 %}bad{% elif resultado.pct_peso > 90 %}warn{% else %}ok{% endif %}" style="width:{{ [resultado.pct_peso, 100]|min }}%;"></div></div>
+          <div style="font-size:.7rem;color:var(--gray);margin-top:.35rem;">{{ resultado.peso_total_kg }} / {{ resultado.peso_max_kg }} kg</div>
+        </div>
+        <div class="box">
+          <div class="val">~{{ resultado.cajas_estimadas_max }}</div>
+          <div class="lbl">Cajas máx. estimadas</div>
+          <div style="font-size:.7rem;color:var(--gray);margin-top:.35rem;">Solicitadas: {{ resultado.cajas_solicitadas }}</div>
+        </div>
+      </div>
+
+      {% if resultado.alertas %}
+      <ul style="font-size:.85rem;color:var(--red);padding-left:1.25rem;">
+        {% for a in resultado.alertas %}<li>{{ a }}</li>{% endfor %}
+      </ul>
+      {% endif %}
+
+      <p style="font-size:.75rem;color:var(--gray);margin-top:1rem;">
+        Peso disponible: <strong>{{ resultado.peso_disponible_kg }} kg</strong>. Cálculo orientativo; validar con operador logístico.
+      </p>
+    </div>
+    {% else %}
+    <div class="empty-state" style="padding:3rem;">
+      <i class="fas fa-cube"></i>
+      <p>Ingresa las dimensiones de las cajas y presiona Calcular.</p>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

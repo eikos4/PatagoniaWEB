@@ -1,0 +1,41 @@
+{% extends "admin_layout.html" %}
+{% block title %}Países destino{% endblock %}
+{% block topbar_title %}Países y requisitos{% endblock %}
+{% block topbar_subtitle %}Requisitos fitosanitarios, documentales y normativas por mercado{% endblock %}
+{% block topbar_actions %}
+  <a href="{{ url_for('admin.pais_nuevo') }}" class="btn-top accent"><i class="fas fa-plus"></i> Nuevo país</a>
+{% endblock %}
+
+{% block content %}
+<div class="panel">
+  <div class="panel-header">
+    <h3><i class="fas fa-globe-americas" style="color:var(--accent);margin-right:.5rem;"></i>{{ paises|length }} países destino</h3>
+  </div>
+  {% if paises %}
+  <table class="data-table">
+    <thead>
+      <tr><th>País</th><th>Código</th><th>Requisitos</th><th>Obligatorios</th><th>Estado</th><th></th></tr>
+    </thead>
+    <tbody>
+      {% for p in paises %}
+      <tr>
+        <td><a href="{{ url_for('admin.pais_detalle', id=p.id) }}" class="link-row">{{ p.nombre }}</a></td>
+        <td><span class="badge" style="background:var(--accent-light);color:var(--accent-dark);">{{ p.codigo }}</span></td>
+        <td>{{ p.requisitos|length }}</td>
+        <td>{{ p.requisitos_obligatorios|length }}</td>
+        <td>{% if p.activo %}<span style="color:var(--green-ok);font-weight:600;">Activo</span>{% else %}<span style="color:var(--gray);">Inactivo</span>{% endif %}</td>
+        <td>
+          <a href="{{ url_for('admin.pais_editar', id=p.id) }}" class="btn-icon" title="Editar"><i class="fas fa-pen"></i></a>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <div class="empty-state">
+    <i class="fas fa-globe"></i>
+    <p>No hay países configurados. Se cargarán automáticamente al recargar el panel.</p>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

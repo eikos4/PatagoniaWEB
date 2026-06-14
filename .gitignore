@@ -22,6 +22,9 @@ venv/
 # Subidas de clientes (contenido generado en runtime)
 uploads/*
 !uploads/.gitkeep
+!uploads/documentos/
+uploads/documentos/*
+!uploads/documentos/.gitkeep
 
 # Logs e historial del editor
 *.log
