@@ -19,7 +19,7 @@ def upgrade():
         batch_op.add_column(sa.Column('nombre', sa.String(length=100), nullable=True))
         batch_op.add_column(sa.Column('activo', sa.Boolean(), nullable=True))
 
-    op.execute("UPDATE admin_users SET rol = 'ceo', activo = 1 WHERE rol IS NULL")
+    op.execute("UPDATE admin_users SET rol = 'ceo', activo = TRUE WHERE rol IS NULL")
 
     with op.batch_alter_table('admin_users', schema=None) as batch_op:
         batch_op.alter_column('rol', nullable=False)
