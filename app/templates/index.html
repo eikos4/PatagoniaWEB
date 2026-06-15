@@ -55,6 +55,7 @@
         <a href="#nosotros" class="text-sm font-semibold text-ink hover:text-patagonia transition-colors">Conócenos</a>
         <a href="#productos" class="text-sm font-semibold text-ink hover:text-patagonia transition-colors">Productos</a>
         <a href="#mundo" class="text-sm font-semibold text-ink hover:text-patagonia transition-colors">En el mundo</a>
+        <a href="#simulador" class="text-sm font-semibold text-ink hover:text-patagonia transition-colors">Simulador</a>
         <a href="#certificaciones" class="text-sm font-semibold text-ink hover:text-patagonia transition-colors">Certificaciones</a>
         <a href="#contacto" class="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-sunset text-white text-sm font-bold hover:bg-sunset-dark hover:-translate-y-0.5 transition-all shadow-md shadow-sunset/25">
           <i class="fas fa-paper-plane text-xs"></i> Cotizar
@@ -71,6 +72,7 @@
       <a href="#nosotros" class="block text-base font-semibold py-2 mob-link">Conócenos</a>
       <a href="#productos" class="block text-base font-semibold py-2 mob-link">Productos</a>
       <a href="#mundo" class="block text-base font-semibold py-2 mob-link">En el mundo</a>
+      <a href="#simulador" class="block text-base font-semibold py-2 mob-link">Simulador embarque</a>
       <a href="#certificaciones" class="block text-base font-semibold py-2 mob-link">Certificaciones</a>
       <a href="#contacto" class="block text-center py-3 rounded-xl bg-patagonia text-white font-bold mob-link">Solicitar cotización</a>
     </div>
@@ -211,6 +213,137 @@
           </div>
         </article>
         {% endfor %}
+      </div>
+    </div>
+  </section>
+
+  <!-- SIMULADOR EMBARQUE -->
+  <section id="simulador" class="py-20 lg:py-28 bg-gradient-to-br from-patagonia-50 via-white to-cream border-y border-patagonia/10">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="grid lg:grid-cols-2 gap-12 lg:gap-16 items-start">
+        <div>
+          <p class="inline-flex items-center gap-3 text-xs font-bold tracking-[.2em] uppercase text-patagonia mb-4">
+            <span class="w-8 h-0.5 bg-gradient-to-r from-patagonia to-sunset"></span> Simulador de embarque
+          </p>
+          <h2 class="text-3xl sm:text-4xl font-black text-ink leading-tight mb-6">
+            Estima tu exportación <span class="text-patagonia">Chile → México</span>
+          </h2>
+          <p class="text-ink-muted leading-relaxed mb-6">
+            Calcula de forma orientativa el valor logístico de tu carga en frutas frescas o productos del mar. Tarifa referencial: <strong class="text-ink">USD 2.220 cada 100 kg</strong> (flete y gestión exportación).
+          </p>
+          <div class="space-y-3 text-sm">
+            <div class="flex items-center gap-3 p-3 rounded-xl bg-white border border-gray-100 shadow-soft">
+              <span class="w-10 h-10 rounded-xl bg-green-50 text-patagonia flex items-center justify-center shrink-0"><i class="fas fa-apple-whole"></i></span>
+              <div>
+                <div class="font-bold text-ink">Frutas y berries</div>
+                <div class="text-ink-muted text-xs">Reefer · 0°C a +2°C · certificación fitosanitaria</div>
+              </div>
+            </div>
+            <div class="flex items-center gap-3 p-3 rounded-xl bg-white border border-gray-100 shadow-soft">
+              <span class="w-10 h-10 rounded-xl bg-blue-50 text-patagonia flex items-center justify-center shrink-0"><i class="fas fa-fish"></i></span>
+              <div>
+                <div class="font-bold text-ink">Productos del mar</div>
+                <div class="text-ink-muted text-xs">Reefer · -2°C a 0°C · trazabilidad SERNAPESCA</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="rounded-3xl bg-white border border-gray-100 shadow-card p-6 sm:p-8">
+          <div class="flex items-center gap-3 mb-6">
+            <span class="w-12 h-12 rounded-2xl bg-patagonia text-white flex items-center justify-center text-lg"><i class="fas fa-calculator"></i></span>
+            <div>
+              <h3 class="font-bold text-lg text-ink">Calculadora rápida</h3>
+              <p class="text-xs text-ink-muted">USD 22,20 por kg · referencia comercial</p>
+            </div>
+          </div>
+
+          <div class="space-y-5">
+            <div>
+              <label class="block text-[11px] font-bold uppercase tracking-wider text-ink-muted mb-2">Tipo de producto</label>
+              <div class="grid grid-cols-2 gap-3">
+                <label class="cursor-pointer">
+                  <input type="radio" name="simProducto" value="frutas" class="peer sr-only" checked>
+                  <span class="flex flex-col items-center gap-2 p-4 rounded-2xl border-2 border-gray-200 bg-gray-50 text-center transition-all peer-checked:border-patagonia peer-checked:bg-patagonia-50 peer-checked:ring-2 peer-checked:ring-patagonia/20 hover:border-patagonia/40">
+                    <i class="fas fa-apple-whole text-2xl text-patagonia"></i>
+                    <span class="text-sm font-bold">Frutas</span>
+                  </span>
+                </label>
+                <label class="cursor-pointer">
+                  <input type="radio" name="simProducto" value="mar" class="peer sr-only">
+                  <span class="flex flex-col items-center gap-2 p-4 rounded-2xl border-2 border-gray-200 bg-gray-50 text-center transition-all peer-checked:border-patagonia peer-checked:bg-patagonia-50 peer-checked:ring-2 peer-checked:ring-patagonia/20 hover:border-patagonia/40">
+                    <i class="fas fa-fish text-2xl text-patagonia"></i>
+                    <span class="text-sm font-bold">Mariscos</span>
+                  </span>
+                </label>
+              </div>
+            </div>
+
+            <div>
+              <label for="simKilos" class="block text-[11px] font-bold uppercase tracking-wider text-ink-muted mb-2">Peso total de la carga (kg)</label>
+              <div class="relative">
+                <input type="number" id="simKilos" min="100" step="100" value="1000" placeholder="Ej: 5000"
+                  class="w-full pl-4 pr-16 py-3.5 rounded-xl border border-gray-200 bg-gray-50 focus:bg-white focus:border-patagonia focus:ring-2 focus:ring-patagonia/20 outline-none transition-all text-lg font-semibold">
+                <span class="absolute right-4 top-1/2 -translate-y-1/2 text-sm font-bold text-ink-muted">kg</span>
+              </div>
+              <div class="flex flex-wrap gap-2 mt-3">
+                <button type="button" class="sim-preset px-3 py-1.5 rounded-full text-xs font-bold border border-gray-200 hover:border-patagonia hover:bg-patagonia-50 transition-colors" data-kg="500">500 kg</button>
+                <button type="button" class="sim-preset px-3 py-1.5 rounded-full text-xs font-bold border border-gray-200 hover:border-patagonia hover:bg-patagonia-50 transition-colors" data-kg="1000">1.000 kg</button>
+                <button type="button" class="sim-preset px-3 py-1.5 rounded-full text-xs font-bold border border-gray-200 hover:border-patagonia hover:bg-patagonia-50 transition-colors" data-kg="5000">5.000 kg</button>
+                <button type="button" class="sim-preset px-3 py-1.5 rounded-full text-xs font-bold border border-gray-200 hover:border-patagonia hover:bg-patagonia-50 transition-colors" data-kg="10000">10.000 kg</button>
+                <button type="button" class="sim-preset px-3 py-1.5 rounded-full text-xs font-bold border border-gray-200 hover:border-patagonia hover:bg-patagonia-50 transition-colors" data-kg="20000">20.000 kg</button>
+              </div>
+            </div>
+
+            <button type="button" id="simCalcular" class="w-full inline-flex items-center justify-center gap-2 px-6 py-4 rounded-2xl bg-sunset text-white font-bold hover:bg-sunset-dark transition-all shadow-lg shadow-sunset/25">
+              <i class="fas fa-ship"></i> Simular embarque
+            </button>
+          </div>
+
+          <div id="simResultado" class="mt-6 hidden">
+            <div class="rounded-2xl bg-gradient-to-br from-patagonia to-patagonia-dark text-white p-6">
+              <p class="text-[10px] font-bold uppercase tracking-widest text-white/70 mb-1">Estimación logística</p>
+              <p id="simTotalUsd" class="text-4xl font-black mb-1">USD 0</p>
+              <p id="simDetalle" class="text-sm text-white/80 mb-4">—</p>
+              <div class="grid grid-cols-3 gap-3 pt-4 border-t border-white/20">
+                <div>
+                  <p class="text-[10px] uppercase text-white/60 font-bold">Toneladas</p>
+                  <p id="simToneladas" class="font-bold text-lg">—</p>
+                </div>
+                <div>
+                  <p class="text-[10px] uppercase text-white/60 font-bold">USD / kg</p>
+                  <p id="simUsdKg" class="font-bold text-lg">22,20</p>
+                </div>
+                <div>
+                  <p class="text-[10px] uppercase text-white/60 font-bold">Contenedores</p>
+                  <p id="simContenedores" class="font-bold text-lg">—</p>
+                </div>
+              </div>
+            </div>
+
+            <div id="simRuta" class="mt-4 p-4 rounded-xl bg-cream border border-cream-200 text-sm">
+              <div class="flex items-center gap-2 text-ink-muted mb-2">
+                <i class="fas fa-route text-patagonia"></i>
+                <span id="simRutaTxt">Ruta estimada Chile → México</span>
+              </div>
+              <div class="flex items-center gap-2 text-xs text-ink-muted">
+                <i class="fas fa-clock text-sunset"></i>
+                <span id="simTransito">Tránsito marítimo: 18–25 días</span>
+                <span class="mx-1">·</span>
+                <i class="fas fa-snowflake text-patagonia"></i>
+                <span id="simTemp">Reefer 0°C a +2°C</span>
+              </div>
+            </div>
+
+            <a href="#contacto" id="simCotizar" class="mt-4 w-full inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl border-2 border-patagonia text-patagonia font-bold text-sm hover:bg-patagonia hover:text-white transition-all">
+              <i class="fas fa-file-invoice"></i> Solicitar cotización formal
+            </a>
+            <p class="mt-3 text-[11px] text-ink-muted text-center leading-relaxed">
+              <i class="fas fa-info-circle text-patagonia mr-1"></i>
+              Valor referencial. La cotización final depende de destino, incoterm, temporada y tipo de producto.
+            </p>
+          </div>
+        </div>
       </div>
     </div>
   </section>
@@ -422,6 +555,7 @@
           <ul class="space-y-2 text-sm text-white/60">
             <li><a href="#nosotros" class="hover:text-white transition-colors">Conócenos</a></li>
             <li><a href="#productos" class="hover:text-white transition-colors">Productos</a></li>
+            <li><a href="#simulador" class="hover:text-white transition-colors">Simulador</a></li>
             <li><a href="#mundo" class="hover:text-white transition-colors">En el mundo</a></li>
             <li><a href="#contacto" class="hover:text-white transition-colors">Contacto</a></li>
           </ul>
@@ -512,6 +646,76 @@
         const btn = this.querySelector('button[type="submit"]');
         if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Enviando...'; }
       });
+
+      // Simulador de embarque — USD 2.220 cada 100 kg
+      const USD_POR_100KG = 2220;
+      const USD_POR_KG = USD_POR_100KG / 100;
+      const KG_POR_CONTENEDOR = 22000;
+      const simKilos = document.getElementById('simKilos');
+      const simResultado = document.getElementById('simResultado');
+
+      function fmtUsd(n) {
+        return 'USD ' + n.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+      }
+
+      function productoLabel() {
+        const p = document.querySelector('input[name="simProducto"]:checked');
+        return p?.value === 'mar' ? 'Productos del mar' : 'Frutas y berries';
+      }
+
+      function simularEmbarque() {
+        const kilos = Math.max(parseFloat(simKilos?.value) || 0, 0);
+        if (kilos < 100) {
+          simKilos?.focus();
+          simKilos?.classList.add('ring-2', 'ring-red-400');
+          setTimeout(() => simKilos?.classList.remove('ring-2', 'ring-red-400'), 1500);
+          return;
+        }
+
+        const total = (kilos / 100) * USD_POR_100KG;
+        const toneladas = kilos / 1000;
+        const contenedores = Math.max(1, Math.ceil(kilos / KG_POR_CONTENEDOR));
+        const producto = productoLabel();
+        const esMar = document.querySelector('input[name="simProducto"]:checked')?.value === 'mar';
+
+        document.getElementById('simTotalUsd').textContent = fmtUsd(total);
+        document.getElementById('simDetalle').textContent =
+          producto + ' · ' + kilos.toLocaleString('es-CL') + ' kg · ' + (kilos / 100).toLocaleString('es-CL', { maximumFractionDigits: 1 }) + ' bloques de 100 kg';
+        document.getElementById('simToneladas').textContent = toneladas.toLocaleString('es-CL', { minimumFractionDigits: 1, maximumFractionDigits: 2 }) + ' t';
+        document.getElementById('simUsdKg').textContent = USD_POR_KG.toLocaleString('es-CL', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        document.getElementById('simContenedores').textContent = contenedores + (contenedores === 1 ? " × 40' RF" : " × 40' RF");
+        document.getElementById('simRutaTxt').textContent = 'Valparaíso / San Antonio → Manzanillo · ' + producto;
+        document.getElementById('simTransito').textContent = esMar ? 'Tránsito marítimo: 15–22 días' : 'Tránsito marítimo: 18–25 días';
+        document.getElementById('simTemp').textContent = esMar ? 'Reefer -2°C a 0°C' : 'Reefer 0°C a +2°C';
+
+        simResultado?.classList.remove('hidden');
+        simResultado?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }
+
+      document.getElementById('simCalcular')?.addEventListener('click', simularEmbarque);
+      simKilos?.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); simularEmbarque(); } });
+      document.querySelectorAll('.sim-preset').forEach(btn => {
+        btn.addEventListener('click', () => {
+          if (simKilos) simKilos.value = btn.dataset.kg;
+          simularEmbarque();
+        });
+      });
+      document.querySelectorAll('input[name="simProducto"]').forEach(r => {
+        r.addEventListener('change', () => { if (!simResultado?.classList.contains('hidden')) simularEmbarque(); });
+      });
+
+      document.getElementById('simCotizar')?.addEventListener('click', () => {
+        const kilos = parseFloat(simKilos?.value) || 0;
+        const total = (kilos / 100) * USD_POR_100KG;
+        const ta = document.getElementById('cf-mensaje');
+        if (!ta || kilos < 100) return;
+        const linea = 'Simulación web: ' + productoLabel() + ', ' + kilos.toLocaleString('es-CL') + ' kg, estimado ' + fmtUsd(total) + ' (USD 2.220/100 kg). Solicito cotización formal.';
+        if (!ta.value.includes('Simulación web:')) {
+          ta.value = (ta.value ? ta.value + '\n\n' : '') + linea;
+        }
+      });
+
+      simularEmbarque();
     })();
   </script>
 </body>
