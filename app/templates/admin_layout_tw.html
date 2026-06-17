@@ -5,8 +5,9 @@
   {% include "partials/ps_loading_head.html" %}
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <meta name="theme-color" content="#587232">
+  {% include "partials/pwa_admin_head.html" %}
   <title>{% block title %}Admin{% endblock %} · {{ config.STORE_NAME or 'Patagonia Sur' }}</title>
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌿</text></svg>">
+  <link rel="icon" href="{{ url_for('static', filename='img/pwa/ship-admin-192.png') }}">
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/lipis/flag-icons@7.2.3/css/flag-icons.min.css">
@@ -253,5 +254,8 @@
   {% block extra_js %}{% endblock %}
 </script>
 {% include "partials/admin_tutorial_assets.html" %}
+{% set sw_path = url_for('admin.pwa_sw') %}
+{% set scope = '/admin/' %}
+{% include "partials/pwa_register_sw.html" %}
 </body>
 </html>

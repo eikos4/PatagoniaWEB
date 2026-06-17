@@ -12,6 +12,8 @@ from flask import (
     send_from_directory,
     send_file,
     session,
+    jsonify,
+    current_app,
 )
 from flask_login import login_user, logout_user, login_required, current_user
 from werkzeug.utils import secure_filename
@@ -70,6 +72,7 @@ from app.signature_utils import (
     parse_geo_form,
 )
 from app.pdf_signature import apply_signatures_to_pdf
+from app.pwa_utils import build_manifest
 
 admin = Blueprint("admin", __name__, template_folder="templates")
 
@@ -260,6 +263,8 @@ def _fill_embarque_from_form(emb, form):
 
 @admin.route("/login", methods=["GET", "POST"])
 def login():
+    if current_user.is_authenticated and request.args.get("source") != "pwa":
+        return redirect(url_for("admin.dashboard"))
     form = LoginForm()
     if form.validate_on_submit():
         user = AdminUser.query.filter_by(username=form.username.data).first()
@@ -272,7 +277,22 @@ def login():
                 flash("Bienvenido al panel de Patagonia Sur", "success")
                 return redirect(url_for("admin.dashboard"))
         flash("Usuario o contraseña incorrectos", "danger")
-    return render_template("login.html", form=form)
+    return render_template("login.html", form=form, pwa_profile="admin")
+
+
+@admin.route("/manifest.webmanifest")
+def pwa_manifest():
+    manifest = build_manifest("admin", lambda f: url_for("static", filename=f))
+    resp = jsonify(manifest)
+    resp.headers["Content-Type"] = "application/manifest+json"
+    resp.headers["Cache-Control"] = "public, max-age=3600"
+    return resp
+
+
+@admin.route("/sw.js")
+def pwa_sw():
+    js_dir = os.path.join(current_app.root_path, "static", "js")
+    return send_from_directory(js_dir, "sw-admin.js", mimetype="application/javascript")
 
 
 # ── Resumen KPIs ──────────────────────────────────────────────────

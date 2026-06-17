@@ -5,8 +5,9 @@
   {% include "partials/ps_loading_head.html" %}
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <meta name="theme-color" content="#587232">
+  {% include "partials/pwa_admin_head.html" %}
   <title>Administrador · {{ config.STORE_NAME or 'Patagonia Sur' }}</title>
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌿</text></svg>">
+  <link rel="icon" href="{{ url_for('static', filename='img/pwa/ship-admin-192.png') }}">
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/lipis/flag-icons@7.2.3/css/flag-icons.min.css">
@@ -205,6 +206,8 @@
           <p class="text-xs text-ink-muted leading-relaxed">Acceso exclusivo para administradores. Todas las sesiones pueden ser registradas.</p>
         </div>
       </form>
+
+      {% include "partials/pwa_install_card.html" %}
 
       <a href="{{ url_for('main.index') }}" class="inline-flex items-center gap-2 mt-8 text-sm font-semibold text-ink-muted hover:text-patagonia transition-colors">
         <i class="fas fa-arrow-left text-xs"></i> Volver al sitio público

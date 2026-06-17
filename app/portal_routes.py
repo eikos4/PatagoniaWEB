@@ -2,7 +2,8 @@ import json
 from datetime import datetime
 from functools import wraps
 
-from flask import Blueprint, render_template, redirect, url_for, flash, session, send_file, request
+from flask import Blueprint, render_template, redirect, url_for, flash, session, send_file, request, jsonify, send_from_directory, current_app
+import os
 
 from app import db
 from app.models import ClientFolder, ExportDocument
@@ -32,6 +33,7 @@ from app.portal_utils import (
 from app.portal_tutorial_data import PORTAL_GUIA_IMPORTADOR, PORTAL_MODULE_TOURS
 from app.signature_utils import register_document_signature, parse_geo_form, document_signing_status
 from app.pdf_signature import apply_signatures_to_pdf
+from app.pwa_utils import build_manifest
 
 portal = Blueprint("portal", __name__, template_folder="templates")
 
@@ -95,7 +97,7 @@ def inject_portal():
 
 @portal.route("/login", methods=["GET", "POST"])
 def login():
-    if session.get("portal_cliente_id"):
+    if session.get("portal_cliente_id") and request.args.get("source") != "pwa":
         return redirect(url_for("portal.dashboard"))
     form = PortalLoginForm()
     if form.validate_on_submit():
@@ -109,7 +111,22 @@ def login():
             flash(f"Bienvenido, {cliente.nombre}", "success")
             return redirect(url_for("portal.dashboard"))
         flash("Credenciales incorrectas o portal no activo.", "danger")
-    return render_template("portal_login.html", form=form)
+    return render_template("portal_login.html", form=form, pwa_profile="portal")
+
+
+@portal.route("/manifest.webmanifest")
+def pwa_manifest():
+    manifest = build_manifest("portal", lambda f: url_for("static", filename=f))
+    resp = jsonify(manifest)
+    resp.headers["Content-Type"] = "application/manifest+json"
+    resp.headers["Cache-Control"] = "public, max-age=3600"
+    return resp
+
+
+@portal.route("/sw.js")
+def pwa_sw():
+    js_dir = os.path.join(current_app.root_path, "static", "js")
+    return send_from_directory(js_dir, "sw-portal.js", mimetype="application/javascript")
 
 
 @portal.route("/logout")

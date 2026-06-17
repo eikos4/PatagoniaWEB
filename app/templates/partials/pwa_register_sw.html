@@ -1,0 +1,9 @@
+{# Registro service worker en vistas autenticadas #}
+<script>
+(function () {
+  if (!('serviceWorker' in navigator)) return;
+  var sw = '{{ sw_path }}';
+  var scope = '{{ scope }}';
+  navigator.serviceWorker.register(sw, { scope: scope }).catch(function () {});
+})();
+</script>
