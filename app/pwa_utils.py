@@ -1,47 +1,46 @@
 """Utilidades PWA — manifiestos portal y admin (Patagonia Export)."""
 
+from flask import url_for
+
 PWA_APP_NAME = "Patagonia Export"
 
 PWA_PROFILES = {
     "portal": {
         "id": "/portal/",
         "scope": "/portal/",
-        "start_url": "/portal/login?source=pwa",
         "description": "Portal de clientes · seguimiento de embarques y exportación",
         "theme_color": "#587232",
         "background_color": "#F7F3EA",
-        "icon": "pwa/ship-portal-192.png",
-        "icon_512": "pwa/ship-portal-512.png",
-        "sw_path": "/portal/sw.js",
-        "profile": "clientes",
+        "icon_192": "img/pwa/ship-portal-192.png",
+        "icon_512": "img/pwa/ship-portal-512.png",
+        "login_endpoint": "portal.login",
     },
     "admin": {
         "id": "/admin/",
         "scope": "/admin/",
-        "start_url": "/admin/login?source=pwa",
         "description": "Panel administrativo · exportación Patagonia Sur",
         "theme_color": "#111111",
         "background_color": "#F7F3EA",
-        "icon": "pwa/ship-admin-192.png",
-        "icon_512": "pwa/ship-admin-512.png",
-        "sw_path": "/admin/sw.js",
-        "profile": "admin",
+        "icon_192": "img/pwa/ship-admin-192.png",
+        "icon_512": "img/pwa/ship-admin-512.png",
+        "login_endpoint": "admin.login",
     },
 }
 
 
-def build_manifest(profile_key, static_url_fn):
+def build_manifest(profile_key):
     """Construye el dict del web app manifest para portal o admin."""
     cfg = PWA_PROFILES[profile_key]
-    icon192 = static_url_fn(cfg["icon"])
-    icon512 = static_url_fn(cfg["icon_512"])
+    icon192 = url_for("static", filename=cfg["icon_192"], _external=True)
+    icon512 = url_for("static", filename=cfg["icon_512"], _external=True)
+    start_url = url_for(cfg["login_endpoint"], source="pwa", _external=True)
 
     return {
         "id": cfg["id"],
         "name": PWA_APP_NAME,
         "short_name": PWA_APP_NAME,
         "description": cfg["description"],
-        "start_url": cfg["start_url"],
+        "start_url": start_url,
         "scope": cfg["scope"],
         "display": "standalone",
         "orientation": "portrait-primary",
@@ -61,12 +60,6 @@ def build_manifest(profile_key, static_url_fn):
                 "sizes": "512x512",
                 "type": "image/png",
                 "purpose": "any",
-            },
-            {
-                "src": icon512,
-                "sizes": "512x512",
-                "type": "image/png",
-                "purpose": "maskable",
             },
         ],
     }

@@ -1,5 +1,5 @@
 /* Service Worker — Portal clientes (Patagonia Export) */
-const CACHE = 'ps-portal-v1';
+const CACHE = 'ps-portal-v2';
 const PRECACHE = [
   '/static/css/ps-loading.css',
   '/static/js/ps-loading.js',
@@ -8,7 +8,9 @@ const PRECACHE = [
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
-    caches.open(CACHE).then((cache) => cache.addAll(PRECACHE)).then(() => self.skipWaiting())
+    caches.open(CACHE)
+      .then((cache) => Promise.allSettled(PRECACHE.map((url) => cache.add(url))))
+      .then(() => self.skipWaiting())
   );
 });
 

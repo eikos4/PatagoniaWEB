@@ -1,6 +1,5 @@
 /**
  * Instalación PWA Patagonia Export — portal o admin.
- * Android: botón visible + barra inferior al detectar instalación.
  */
 (function () {
   const root = document.getElementById('ps-pwa-install');
@@ -19,8 +18,10 @@
   const androidWait = document.getElementById('ps-pwa-android-wait');
   const iosHint = document.getElementById('ps-pwa-ios-hint');
   const desktopHint = document.getElementById('ps-pwa-desktop-hint');
+  const fallback = document.getElementById('ps-pwa-fallback');
+  const httpsWarn = document.getElementById('ps-pwa-https-warn');
   const installed = document.getElementById('ps-pwa-installed');
-  let deferredPrompt = null;
+  let deferredPrompt = window.__psPwaPrompt || null;
 
   function isStandalone() {
     return window.matchMedia('(display-mode: standalone)').matches
@@ -41,11 +42,13 @@
     if (androidWait) androidWait.classList.add('hidden');
     if (iosHint) iosHint.classList.add('hidden');
     if (desktopHint) desktopHint.classList.add('hidden');
+    if (fallback) fallback.classList.add('hidden');
     hideAndroidBar();
   }
 
   function hideAndroidBar() {
     if (androidBar) androidBar.classList.remove('is-visible');
+    document.body.style.paddingBottom = '';
   }
 
   function showAndroidBar() {
@@ -54,94 +57,127 @@
     document.body.style.paddingBottom = 'calc(5.5rem + env(safe-area-inset-bottom, 0px))';
   }
 
-  function setBtnReady(ready) {
-    if (!btn) return;
-    btn.disabled = !ready;
-    btn.classList.toggle('opacity-60', !ready);
-    btn.classList.toggle('cursor-wait', !ready);
+  function setInstallReady(ready) {
+    if (btn) {
+      btn.disabled = !ready;
+      btn.classList.toggle('opacity-60', !ready);
+      btn.classList.toggle('cursor-not-allowed', !ready);
+    }
+    if (androidBarBtn) {
+      androidBarBtn.disabled = !ready;
+      androidBarBtn.style.opacity = ready ? '1' : '0.55';
+    }
   }
 
-  async function triggerInstall() {
-    if (!deferredPrompt) return false;
-    deferredPrompt.prompt();
-    await deferredPrompt.userChoice;
-    deferredPrompt = null;
-    hideAndroidBar();
-    return true;
+  function showFallback() {
+    if (!fallback) return;
+    fallback.classList.remove('hidden');
+    if (!window.isSecureContext && httpsWarn) {
+      httpsWarn.classList.remove('hidden');
+    }
+    if (androidWait) androidWait.classList.add('hidden');
+  }
+
+  function onInstallable(e) {
+    if (e && e.preventDefault) {
+      e.preventDefault();
+      deferredPrompt = e;
+    } else if (window.__psPwaPrompt) {
+      deferredPrompt = window.__psPwaPrompt;
+    }
+    if (!deferredPrompt) return;
+
+    setInstallReady(true);
+    if (androidWait) androidWait.classList.add('hidden');
+    if (fallback) fallback.classList.add('hidden');
+    if (btn) btn.classList.remove('hidden');
+    if (isAndroid()) showAndroidBar();
+    if (desktopHint) desktopHint.classList.add('hidden');
+  }
+
+  function triggerInstall() {
+    if (!deferredPrompt) {
+      showFallback();
+      return;
+    }
+
+    try {
+      deferredPrompt.prompt();
+      deferredPrompt.userChoice.then(function () {
+        deferredPrompt = null;
+        window.__psPwaPrompt = null;
+        hideAndroidBar();
+      });
+    } catch (err) {
+      showFallback();
+    }
   }
 
   function registerSw() {
-    if (!('serviceWorker' in navigator)) return;
-    navigator.serviceWorker.register(swPath, { scope: scope }).catch(function () {});
+    if (!('serviceWorker' in navigator)) return Promise.resolve();
+    return navigator.serviceWorker.register(swPath, { scope: scope }).catch(function () {});
   }
 
-  registerSw();
+  registerSw().then(function () {
+    if (deferredPrompt) onInstallable();
+  });
 
   if (isStandalone()) {
     showInstalled();
     return;
   }
 
+  setInstallReady(false);
+
   if (isIos()) {
     if (btn) btn.classList.add('hidden');
     if (iosHint) iosHint.classList.remove('hidden');
   } else if (isAndroid()) {
-    setBtnReady(false);
     if (androidWait) androidWait.classList.remove('hidden');
     showAndroidBar();
+    if (!window.isSecureContext) {
+      window.setTimeout(showFallback, 500);
+    }
   } else {
-    setBtnReady(false);
     if (btn) btn.classList.add('hidden');
   }
 
-  window.addEventListener('beforeinstallprompt', function (e) {
-    e.preventDefault();
-    deferredPrompt = e;
-    setBtnReady(true);
-    if (androidWait) androidWait.classList.add('hidden');
-    if (btn) btn.classList.remove('hidden');
-    if (isAndroid()) {
-      showAndroidBar();
-    }
-    if (desktopHint) desktopHint.classList.add('hidden');
+  window.addEventListener('beforeinstallprompt', onInstallable);
+  window.addEventListener('ps-pwa-installable', function () {
+    onInstallable();
   });
 
   window.addEventListener('appinstalled', function () {
     deferredPrompt = null;
+    window.__psPwaPrompt = null;
     showInstalled();
-    document.body.style.paddingBottom = '';
   });
 
   if (btn) {
-    btn.addEventListener('click', function () {
-      triggerInstall();
-    });
+    btn.addEventListener('click', triggerInstall);
   }
 
   if (androidBarBtn) {
-    androidBarBtn.addEventListener('click', function () {
-      triggerInstall();
-    });
+    androidBarBtn.addEventListener('click', triggerInstall);
   }
 
   if (!isIos() && !isAndroid() && desktopHint) {
     window.setTimeout(function () {
       if (!deferredPrompt && !isStandalone()) {
         desktopHint.classList.remove('hidden');
-        if (btn && deferredPrompt) btn.classList.remove('hidden');
       }
-      if (deferredPrompt && btn) {
-        btn.classList.remove('hidden');
-        setBtnReady(true);
+      if (deferredPrompt) {
+        if (btn) btn.classList.remove('hidden');
+        setInstallReady(true);
       }
     }, 1500);
   }
 
   window.setTimeout(function () {
-    if (isAndroid() && !deferredPrompt && !isStandalone() && androidWait) {
-      androidWait.innerHTML = '<i class="fas fa-circle-info mr-1"></i> Toca <strong>Instalar</strong> cuando el navegador lo habilite, o usa el menú ⋮ → <strong>Instalar aplicación</strong>.';
+    if (!deferredPrompt && !isStandalone() && isAndroid()) {
+      showFallback();
     }
-  }, 8000);
+  }, 6000);
 
   document.querySelectorAll('#ps-pwa-install-icon, #ps-pwa-android-bar-icon').forEach(function (el) {
     el.src = iconSrc;

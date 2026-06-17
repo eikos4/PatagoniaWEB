@@ -77,7 +77,7 @@ button {
   white-space: nowrap;
 }
 
-.ps-pwa-android-bar__btn:active {
+.ps-pwa-android-bar__btn:not(:disabled):active {
   transform: scale(0.98);
 }
 

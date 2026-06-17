@@ -282,7 +282,7 @@ def login():
 
 @admin.route("/manifest.webmanifest")
 def pwa_manifest():
-    manifest = build_manifest("admin", lambda f: url_for("static", filename=f))
+    manifest = build_manifest("admin")
     resp = jsonify(manifest)
     resp.headers["Content-Type"] = "application/manifest+json"
     resp.headers["Cache-Control"] = "public, max-age=3600"

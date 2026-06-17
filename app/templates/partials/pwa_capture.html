@@ -1,0 +1,9 @@
+{# Captura temprana del evento de instalación (antes de que cargue el script principal) #}
+<script>
+window.__psPwaPrompt = null;
+window.addEventListener('beforeinstallprompt', function (e) {
+  e.preventDefault();
+  window.__psPwaPrompt = e;
+  window.dispatchEvent(new CustomEvent('ps-pwa-installable'));
+});
+</script>
