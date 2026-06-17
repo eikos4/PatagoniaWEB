@@ -1,321 +1,203 @@
-{% extends "admin_layout.html" %}
+{% extends "admin_layout_tw.html" %}
+{% from "admin_macros_tw.html" import embarque_badge %}
 {% block title %}Resumen{% endblock %}
 {% block topbar_title %}Resumen ejecutivo{% endblock %}
-{% block topbar_subtitle %}Vista ejecutiva: exportaciones, documentos y alertas críticas{% endblock %}
+{% block topbar_subtitle %}Operaciones Chile → Latinoamérica · contenedores, ETA y documentación{% endblock %}
 {% block topbar_actions %}
-  <a href="{{ url_for('admin.alertas') }}" class="btn-top" style="background:{% if kpis.alertas.criticas %}var(--red){% else %}var(--orange){% endif %};color:#fff;">
-    <i class="fas fa-bell"></i> Alertas ({{ kpis.alertas.total }})
+  <a href="{{ url_for('admin.alertas') }}" class="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-bold text-white transition-colors
+    {% if kpis.alertas.criticas %}bg-red-600 hover:bg-red-700{% else %}bg-sunset hover:bg-sunset-dark{% endif %}">
+    <i class="fas fa-bell text-xs"></i> Alertas ({{ kpis.alertas.total }})
   </a>
-  <a href="{{ url_for('admin.reportes') }}" class="btn-top ghost"><i class="fas fa-chart-line"></i> Reportes</a>
-  <a href="{{ url_for('admin.documento_nuevo') }}" class="btn-top accent"><i class="fas fa-file-circle-plus"></i> Documento</a>
-  <a href="{{ url_for('admin.embarque_nuevo') }}" class="btn-top ghost"><i class="fas fa-ship"></i> Embarque</a>
+  <a href="{{ url_for('admin.reportes') }}" class="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-gray-200 bg-white text-sm font-semibold hover:border-patagonia hover:text-patagonia transition-colors">
+    <i class="fas fa-chart-line text-xs"></i> Reportes
+  </a>
+  <a href="{{ url_for('admin.embarque_nuevo') }}" class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-patagonia text-white text-sm font-bold hover:bg-patagonia-dark transition-colors">
+    <i class="fas fa-ship text-xs"></i> Embarque
+  </a>
 {% endblock %}
 
 {% block content %}
 {% if kpis.alertas.criticas %}
-<div class="alert-panel crit" style="margin-bottom:1.25rem;">
-  <i class="fas fa-triangle-exclamation"></i>
-  <span><strong>{{ kpis.alertas.criticas }} alerta(s) crítica(s)</strong> requieren atención inmediata. <a href="{{ url_for('admin.alertas') }}" style="color:inherit;font-weight:700;">Ver todas →</a></span>
+<div class="mb-6 flex items-start gap-3 px-5 py-4 rounded-2xl bg-red-50 border border-red-200 text-red-900 text-sm font-medium">
+  <i class="fas fa-triangle-exclamation mt-0.5 text-red-600"></i>
+  <span><strong>{{ kpis.alertas.criticas }} alerta(s) crítica(s)</strong> requieren atención. <a href="{{ url_for('admin.alertas') }}" class="font-bold underline">Ver todas →</a></span>
 </div>
 {% endif %}
 
-<div class="kpi-grid">
-  <div class="kpi-card green">
-    <div class="kpi-icon"><i class="fas fa-ship"></i></div>
-    <div class="kpi-label">Exportaciones activas</div>
-    <div class="kpi-value">{{ kpis.embarques_activos }}</div>
-    <div class="kpi-sub">{{ kpis.embarques_en_transito }} en tránsito</div>
+<div id="tour-kpis" class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6">
+  <div class="bg-white rounded-2xl border border-gray-100 p-4 sm:p-5 shadow-sm">
+    <div class="w-10 h-10 rounded-xl bg-patagonia-50 text-patagonia flex items-center justify-center mb-3"><i class="fas fa-ship"></i></div>
+    <p class="text-2xl sm:text-3xl font-extrabold text-ink">{{ kpis.embarques_activos }}</p>
+    <p class="text-xs font-semibold text-ink-muted uppercase tracking-wider mt-1">Exportaciones activas</p>
+    <p class="text-[11px] text-patagonia font-medium mt-1">{{ kpis.embarques_en_transito }} en tránsito</p>
   </div>
-  <div class="kpi-card blue">
-    <div class="kpi-icon"><i class="fas fa-globe-americas"></i></div>
-    <div class="kpi-label">Países destino</div>
-    <div class="kpi-value">{{ kpis.paises_atendidos }}</div>
-    <div class="kpi-sub">{{ kpis.paises_con_clientes|length }} con clientes</div>
+  <div class="bg-white rounded-2xl border border-gray-100 p-4 sm:p-5 shadow-sm">
+    <div class="w-10 h-10 rounded-xl bg-blue-50 text-blue-700 flex items-center justify-center mb-3"><i class="fas fa-globe-americas"></i></div>
+    <p class="text-2xl sm:text-3xl font-extrabold text-ink">{{ kpis.paises_atendidos }}</p>
+    <p class="text-xs font-semibold text-ink-muted uppercase tracking-wider mt-1">Países destino</p>
+    <p class="text-[11px] text-ink-muted mt-1">{{ kpis.paises_con_clientes|length }} con clientes</p>
   </div>
-  <div class="kpi-card orange">
-    <div class="kpi-icon"><i class="fas fa-folder-open"></i></div>
-    <div class="kpi-label">Documentos pendientes</div>
-    <div class="kpi-value">{{ kpis.documentos_pendientes }}</div>
-    <div class="kpi-sub">{{ kpis.documentos_vencidos }} vencidos · {{ kpis.documentos_total }} total</div>
+  <div class="bg-white rounded-2xl border border-gray-100 p-4 sm:p-5 shadow-sm">
+    <div class="w-10 h-10 rounded-xl bg-sunset/10 text-sunset flex items-center justify-center mb-3"><i class="fas fa-folder-open"></i></div>
+    <p class="text-2xl sm:text-3xl font-extrabold text-ink">{{ kpis.documentos_pendientes }}</p>
+    <p class="text-xs font-semibold text-ink-muted uppercase tracking-wider mt-1">Docs pendientes</p>
+    <p class="text-[11px] text-ink-muted mt-1">{{ kpis.documentos_vencidos }} vencidos</p>
   </div>
-  <div class="kpi-card dark">
-    <div class="kpi-icon"><i class="fas fa-bell"></i></div>
-    <div class="kpi-label">Alertas activas</div>
-    <div class="kpi-value">{{ kpis.alertas.total }}</div>
-    <div class="kpi-sub">{{ kpis.alertas.criticas }} críticas · {{ kpis.alertas.advertencias }} advertencias</div>
+  <div class="bg-white rounded-2xl border border-gray-100 p-4 sm:p-5 shadow-sm">
+    <div class="w-10 h-10 rounded-xl bg-ink/5 text-ink flex items-center justify-center mb-3"><i class="fas fa-bell"></i></div>
+    <p class="text-2xl sm:text-3xl font-extrabold text-ink">{{ kpis.alertas.total }}</p>
+    <p class="text-xs font-semibold text-ink-muted uppercase tracking-wider mt-1">Alertas activas</p>
+    <p class="text-[11px] text-red-600 font-medium mt-1">{{ kpis.alertas.criticas }} críticas</p>
   </div>
 </div>
 
-<div class="grid-2">
-  <div class="panel">
-    <div class="panel-header">
-      <h3><i class="fas fa-route" style="color:var(--accent);margin-right:.4rem;"></i>Operaciones activas</h3>
-      <a href="{{ url_for('admin.embarques') }}" class="btn btn-ghost" style="padding:.45rem .9rem;font-size:.75rem;">Ver embarques</a>
+<div class="grid grid-cols-1 xl:grid-cols-2 gap-6 mb-6">
+  <div id="tour-operaciones" class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+    <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
+      <h2 class="font-bold text-ink flex items-center gap-2"><i class="fas fa-route text-patagonia"></i> Operaciones activas</h2>
+      <a href="{{ url_for('admin.embarques') }}" class="text-xs font-bold text-patagonia hover:underline">Ver embarques</a>
     </div>
     {% if kpis.operaciones_activas %}
+    <div class="divide-y divide-gray-50">
       {% for op in kpis.operaciones_activas %}
       {% set e = op.embarque %}
-      <div class="ops-card">
-        <div>
-          <div class="ops-route">
-            <a href="{{ url_for('admin.embarque_detalle', id=e.id) }}" class="link-row">{{ e.numero }}</a>
-            · {{ op.ruta }}
+      <div class="px-6 py-4 hover:bg-cream/30 transition-colors">
+        <div class="flex flex-wrap items-start justify-between gap-3">
+          <div class="min-w-0 flex-1">
+            <div class="flex flex-wrap items-center gap-2 mb-1">
+              <a href="{{ url_for('admin.embarque_detalle', id=e.id) }}" class="font-extrabold text-patagonia hover:text-patagonia-dark">{{ e.numero }}</a>
+              {{ embarque_badge(e.estado) }}
+            </div>
+            <p class="text-sm font-semibold text-ink">{{ op.ruta }}</p>
+            <p class="text-xs text-ink-muted mt-1">
+              {{ e.cliente_nombre }}
+              {% if op.contenedores %} · {{ op.contenedores }} contenedor{% if op.contenedores > 1 %}es{% endif %}{% endif %}
+              {% if op.eta_dias is not none %} · ETA {{ op.eta_dias }} día{% if op.eta_dias != 1 %}s{% endif %}{% endif %}
+            </p>
           </div>
-          <div class="ops-meta">
-            {{ e.cliente_nombre }}
-            {% if op.contenedores %} · {{ op.contenedores }} contenedor{% if op.contenedores > 1 %}es{% endif %}{% endif %}
-            · {{ embarque_estados.get(e.estado, e.estado) }}
-            {% if op.eta_dias is not none %} · ETA: {{ op.eta_dias }} días{% endif %}
+          <div class="text-right shrink-0">
+            <span class="inline-flex items-center gap-1.5 text-[11px] font-bold px-3 py-1.5 rounded-full
+              {% if op.doc_status == 'ok' %}bg-green-50 text-green-800
+              {% elif op.doc_status == 'warn' %}bg-amber-50 text-amber-900
+              {% else %}bg-red-50 text-red-700{% endif %}">
+              <i class="fas fa-clipboard-check"></i> {{ op.doc_texto }}
+            </span>
+            {% if op.checklist_pct is defined %}
+            <div class="mt-2 w-24 h-1.5 rounded-full bg-gray-100 overflow-hidden ml-auto">
+              <div class="h-full rounded-full {% if op.checklist_completo %}bg-green-500{% elif op.checklist_pct >= 50 %}bg-sunset{% else %}bg-red-500{% endif %}" style="width:{{ op.checklist_pct }}%;"></div>
+            </div>
+            {% endif %}
           </div>
         </div>
-        <span class="ops-badge {{ op.doc_status }}">{{ op.doc_texto }}</span>
       </div>
       {% endfor %}
+    </div>
     {% else %}
-    <div class="empty-state" style="padding:2rem;"><p>Sin operaciones activas. <a href="{{ url_for('admin.embarque_nuevo') }}">Crear embarque</a></p></div>
+    <div class="p-10 text-center text-sm text-ink-muted">Sin operaciones activas. <a href="{{ url_for('admin.embarque_nuevo') }}" class="text-patagonia font-bold hover:underline">Crear embarque</a></div>
     {% endif %}
   </div>
 
-  <div class="panel">
-    <div class="panel-header">
-      <h3><i class="fas fa-bell" style="color:var(--orange);margin-right:.4rem;"></i>Alertas críticas</h3>
-      <a href="{{ url_for('admin.alertas') }}" class="btn btn-ghost" style="padding:.45rem .9rem;font-size:.75rem;">Ver todas</a>
+  <div id="tour-alertas-panel" class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+    <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
+      <h2 class="font-bold text-ink flex items-center gap-2"><i class="fas fa-bell text-sunset"></i> Alertas críticas</h2>
+      <a href="{{ url_for('admin.alertas') }}" class="text-xs font-bold text-patagonia hover:underline">Ver todas</a>
     </div>
     {% if kpis.alertas.lista %}
-    <ul class="alert-list">
+    <ul class="divide-y divide-gray-50">
       {% for a in kpis.alertas.lista[:6] %}
-      <li class="alert-item {{ a.nivel }}">
-        <i class="fas {{ a.icono }}" style="margin-top:.15rem;color:{% if a.nivel == 'critica' %}var(--red){% elif a.nivel == 'advertencia' %}var(--orange){% else %}#2563eb{% endif %};"></i>
-        <div>
+      <li class="px-6 py-4 flex gap-3">
+        <i class="fas {{ a.icono }} mt-1 shrink-0
+          {% if a.nivel == 'critica' %}text-red-500{% elif a.nivel == 'advertencia' %}text-sunset{% else %}text-blue-500{% endif %}"></i>
+        <div class="min-w-0">
           {% if a.endpoint %}
-          <a href="{% if a.entity_id %}{{ url_for(a.endpoint, id=a.entity_id) }}{% else %}{{ url_for(a.endpoint) }}{% endif %}">{{ a.titulo }}</a>
-          {% else %}{{ a.titulo }}{% endif %}
-          <div style="color:var(--gray);font-size:.75rem;margin-top:.2rem;">{{ a.mensaje }}</div>
+          <a href="{% if a.entity_id %}{{ url_for(a.endpoint, id=a.entity_id) }}{% else %}{{ url_for(a.endpoint) }}{% endif %}" class="font-semibold text-sm text-ink hover:text-patagonia">{{ a.titulo }}</a>
+          {% else %}
+          <p class="font-semibold text-sm text-ink">{{ a.titulo }}</p>
+          {% endif %}
+          <p class="text-xs text-ink-muted mt-0.5">{{ a.mensaje }}</p>
         </div>
       </li>
       {% endfor %}
     </ul>
     {% else %}
-    <div class="empty-state" style="padding:2rem;"><p><i class="fas fa-circle-check" style="color:var(--green-ok);"></i> Sin alertas pendientes.</p></div>
+    <div class="p-10 text-center text-sm text-ink-muted"><i class="fas fa-circle-check text-green-500 mr-1"></i> Sin alertas pendientes.</div>
     {% endif %}
   </div>
 </div>
 
-<div class="grid-2" style="margin-top:1.25rem;">
-  <div class="panel">
-    <div class="panel-header"><h3><i class="fas fa-chart-bar" style="color:var(--accent);margin-right:.4rem;"></i>Ventas por país</h3></div>
-    <div class="chart-bars">
+<div class="grid grid-cols-1 xl:grid-cols-2 gap-6 mb-6">
+  <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+    <div class="px-6 py-4 border-b border-gray-100">
+      <h2 class="font-bold text-ink flex items-center gap-2"><i class="fas fa-chart-bar text-patagonia"></i> Ventas por país</h2>
+    </div>
+    <div class="p-6 space-y-3">
       {% if kpis.ventas_por_pais %}
         {% set max_v = kpis.ventas_por_pais|map(attribute='2')|max %}
         {% for pais, count, total in kpis.ventas_por_pais %}
-        <div class="bar-row">
-          <span class="bar-label">{{ pais or 'Sin país' }}</span>
-          <div class="bar-track"><div class="bar-fill" style="width:{{ ((total or 0) / max_v * 100)|int if max_v else 0 }}%;background:var(--orange);"></div></div>
-          <span class="bar-num">${{ "{:,.0f}".format(total or 0) }}</span>
+        <div class="flex items-center gap-3">
+          <span class="text-xs font-semibold text-ink w-24 truncate">{{ pais or 'Sin país' }}</span>
+          <div class="flex-1 h-2 rounded-full bg-gray-100 overflow-hidden">
+            <div class="h-full bg-sunset rounded-full" style="width:{{ ((total or 0) / max_v * 100)|int if max_v else 0 }}%;"></div>
+          </div>
+          <span class="text-xs font-bold text-ink w-20 text-right">${{ "{:,.0f}".format(total or 0) }}</span>
         </div>
         {% endfor %}
       {% else %}
-        <p style="padding:1rem;color:var(--gray);font-size:.85rem;">Aún no hay pedidos por país.</p>
+        <p class="text-sm text-ink-muted">Aún no hay pedidos por país.</p>
       {% endif %}
     </div>
   </div>
 
-  <div class="panel">
-    <div class="panel-header"><h3><i class="fas fa-users" style="color:var(--accent);margin-right:.4rem;"></i>Clientes por país</h3></div>
-    <div class="chart-bars">
-      {% if kpis.paises_con_clientes %}
-        {% set max_c = kpis.paises_con_clientes|map(attribute='1')|max %}
-        {% for pais, count in kpis.paises_con_clientes %}
-        <div class="bar-row">
-          <span class="bar-label">{{ pais }}</span>
-          <div class="bar-track"><div class="bar-fill" style="width:{{ (count / max_c * 100)|int }}%;"></div></div>
-          <span class="bar-num">{{ count }}</span>
-        </div>
-        {% endfor %}
-      {% else %}
-        <p style="padding:1rem;color:var(--gray);font-size:.85rem;">Sin clientes con país asignado.</p>
-      {% endif %}
+  <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+    <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
+      <h2 class="font-bold text-ink flex items-center gap-2"><i class="fas fa-ship text-patagonia"></i> Últimos embarques</h2>
+      <a href="{{ url_for('admin.embarques') }}" class="text-xs font-bold text-patagonia hover:underline">Ver todos</a>
     </div>
-  </div>
-</div>
-
-<div class="pipeline-bar" style="margin-top:1.25rem;">
-  <div class="pipeline-step"><i class="fas fa-inbox"></i><span>Mensaje</span></div>
-  <i class="fas fa-chevron-right pipeline-arrow"></i>
-  <div class="pipeline-step"><i class="fas fa-users"></i><span>Cliente</span></div>
-  <i class="fas fa-chevron-right pipeline-arrow"></i>
-  <div class="pipeline-step"><i class="fas fa-file-invoice-dollar"></i><span>Cotización</span></div>
-  <i class="fas fa-chevron-right pipeline-arrow"></i>
-  <div class="pipeline-step"><i class="fas fa-cart-shopping"></i><span>Pedido</span></div>
-  <i class="fas fa-chevron-right pipeline-arrow"></i>
-  <div class="pipeline-step active"><i class="fas fa-ship"></i><span>Embarque</span></div>
-</div>
-
-<div class="kpi-grid">
-  <div class="kpi-card green">
-    <div class="kpi-icon"><i class="fas fa-users"></i></div>
-    <div class="kpi-label">Clientes internacionales</div>
-    <div class="kpi-value">{{ kpis.total_clientes }}</div>
-    <div class="kpi-sub">{{ kpis.clientes_con_abono }} con abono</div>
-  </div>
-  <div class="kpi-card blue">
-    <div class="kpi-icon"><i class="fas fa-hand-holding-dollar"></i></div>
-    <div class="kpi-label">Pedidos del mes</div>
-    <div class="kpi-value">${{ "{:,.0f}".format(kpis.monto_pedidos_mes) }}</div>
-    <div class="kpi-sub">{{ kpis.pedidos_mes }} pedidos · {{ kpis.pedidos_activos }} activos</div>
-  </div>
-  <div class="kpi-card orange">
-    <div class="kpi-icon"><i class="fas fa-envelope"></i></div>
-    <div class="kpi-label">Consultas web</div>
-    <div class="kpi-value">{{ kpis.mensajes_pendientes }}</div>
-    <div class="kpi-sub">pendientes · {{ kpis.mensajes_mes }} este mes</div>
-  </div>
-  <div class="kpi-card dark">
-    <div class="kpi-icon"><i class="fas fa-file-invoice-dollar"></i></div>
-    <div class="kpi-label">Cotizaciones pendientes</div>
-    <div class="kpi-value">{{ kpis.cotizaciones_pendientes }}</div>
-    <div class="kpi-sub">{{ kpis.cotizaciones_total }} total</div>
-  </div>
-</div>
-
-<div class="grid-2">
-  <div class="panel">
-    <div class="panel-header"><h3><i class="fas fa-layer-group" style="color:var(--accent);margin-right:.4rem;"></i>Clientes por clasificación</h3></div>
-    <div class="chart-bars">
-      {% set max_estado = kpis.por_estado.values()|max if kpis.por_estado.values()|max > 0 else 1 %}
-      {% for key, label in kpis.estados_labels.items() %}
-      {% set n = kpis.por_estado.get(key, 0) %}
-      <div class="bar-row">
-        <span class="bar-label">{{ label }}</span>
-        <div class="bar-track"><div class="bar-fill" style="width:{{ (n / max_estado * 100)|int }}%;background:{{ estado_colors.get(key, 'var(--accent)') }};"></div></div>
-        <span class="bar-num">{{ n }}</span>
-      </div>
-      {% endfor %}
+    {% if kpis.embarques_recientes %}
+    <div class="overflow-x-auto">
+      <table class="w-full text-sm">
+        <thead>
+          <tr class="bg-gray-50/80 text-left">
+            <th class="px-4 py-3 text-[11px] font-bold uppercase text-ink-muted">Nº</th>
+            <th class="px-4 py-3 text-[11px] font-bold uppercase text-ink-muted">Cliente</th>
+            <th class="px-4 py-3 text-[11px] font-bold uppercase text-ink-muted">Ruta</th>
+            <th class="px-4 py-3 text-[11px] font-bold uppercase text-ink-muted">ETA</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-50">
+          {% for e in kpis.embarques_recientes[:5] %}
+          <tr class="hover:bg-cream/30">
+            <td class="px-4 py-3"><a href="{{ url_for('admin.embarque_detalle', id=e.id) }}" class="font-bold text-patagonia">{{ e.numero }}</a></td>
+            <td class="px-4 py-3 text-ink-muted">{{ e.cliente_nombre }}</td>
+            <td class="px-4 py-3 text-xs">{{ e.puerto_origen or '—' }} → {{ e.puerto_destino or '—' }}</td>
+            <td class="px-4 py-3 text-xs {% if e.tiene_retraso %}text-red-600 font-semibold{% endif %}">{{ e.eta.strftime("%d/%m/%Y") if e.eta else '—' }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
     </div>
-  </div>
-
-  <div class="panel">
-    <div class="panel-header"><h3><i class="fas fa-chart-bar" style="color:var(--accent);margin-right:.4rem;"></i>Interés por producto</h3></div>
-    <div class="chart-bars">
-      {% if kpis.por_producto %}
-        {% set max_prod = kpis.por_producto|map(attribute='1')|max %}
-        {% for nombre, count in kpis.por_producto %}
-        <div class="bar-row">
-          <span class="bar-label">{{ nombre }}</span>
-          <div class="bar-track"><div class="bar-fill" style="width:{{ (count / max_prod * 100)|int }}%;"></div></div>
-          <span class="bar-num">{{ count }}</span>
-        </div>
-        {% endfor %}
-      {% else %}
-        <p style="padding:1rem;color:var(--gray);font-size:.85rem;">Aún no hay clientes asignados a productos.</p>
-      {% endif %}
-    </div>
-  </div>
-</div>
-
-<div class="grid-2">
-  <div class="panel">
-    <div class="panel-header">
-      <h3>Últimos clientes</h3>
-      <a href="{{ url_for('admin.clientes') }}" class="btn btn-ghost" style="padding:.45rem .9rem;font-size:.75rem;">Ver todos</a>
-    </div>
-    {% if kpis.clientes_recientes %}
-    <table class="data-table">
-      <thead><tr><th>Cliente</th><th>Estado</th><th>Producto</th></tr></thead>
-      <tbody>
-        {% for c in kpis.clientes_recientes %}
-        <tr>
-          <td><a href="{{ url_for('admin.cartera_detalle', id=c.id) }}" class="link-row">{{ c.nombre }}</a></td>
-          <td><span class="badge" style="background:{{ estado_colors.get(c.estado, '#eee') }}22;color:{{ estado_colors.get(c.estado, '#666') }};">{{ cliente_estados.get(c.estado, c.estado) }}</span></td>
-          <td style="color:var(--gray);font-size:.8rem;">{{ c.producto.nombre if c.producto else '—' }}</td>
-        </tr>
-        {% endfor %}
-      </tbody>
-    </table>
     {% else %}
-    <div class="empty-state" style="padding:2rem;"><p>Sin clientes registrados.</p></div>
-    {% endif %}
-  </div>
-
-  <div class="panel">
-    <div class="panel-header"><h3>Últimos abonos</h3></div>
-    {% if kpis.abonos_recientes %}
-    <table class="data-table">
-      <thead><tr><th>Cliente</th><th>Monto</th><th>Producto</th></tr></thead>
-      <tbody>
-        {% for a in kpis.abonos_recientes %}
-        <tr>
-          <td><a href="{{ url_for('admin.cartera_detalle', id=a.folder_id) }}" class="link-row">{{ a.folder.nombre }}</a></td>
-          <td style="font-weight:700;">{{ "{:,.0f}".format(a.monto) }} {{ a.moneda }}</td>
-          <td style="color:var(--gray);font-size:.8rem;">{{ a.producto.nombre if a.producto else 'General' }}</td>
-        </tr>
-        {% endfor %}
-      </tbody>
-    </table>
-    {% else %}
-    <div class="empty-state" style="padding:2rem;"><p>Sin abonos registrados.</p></div>
+    <div class="p-8 text-center text-sm text-ink-muted">Sin embarques registrados.</div>
     {% endif %}
   </div>
 </div>
 
-<div class="panel" style="margin-top:1.25rem;">
-  <div class="panel-header">
-    <h3><i class="fas fa-cart-shopping" style="color:var(--accent);margin-right:.4rem;"></i>Últimos pedidos</h3>
-    <a href="{{ url_for('admin.pedidos') }}" class="btn btn-ghost" style="padding:.45rem .9rem;font-size:.75rem;">Ver todos</a>
+<div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+  <div class="bg-white rounded-2xl border border-gray-100 p-4 shadow-sm">
+    <p class="text-2xl font-extrabold text-ink">{{ kpis.total_clientes }}</p>
+    <p class="text-xs text-ink-muted font-medium">Clientes internacionales</p>
   </div>
-  {% if kpis.pedidos_recientes %}
-  <table class="data-table">
-    <thead><tr><th>Nº</th><th>Cliente</th><th>Estado</th><th>Total</th><th>Fecha</th></tr></thead>
-    <tbody>
-      {% for p in kpis.pedidos_recientes %}
-      <tr>
-        <td><a href="{{ url_for('admin.pedido_detalle', id=p.id) }}" class="link-row">{{ p.numero }}</a></td>
-        <td>{{ p.cliente_nombre }}</td>
-        <td>
-          <span class="estado-badge" style="background:{{ pedido_estado_colors.get(p.estado, '#eee') }}18;color:{{ pedido_estado_colors.get(p.estado, '#666') }};">
-            <i class="fas {{ pedido_estado_icons.get(p.estado, 'fa-circle') }}"></i>
-            {{ pedido_estados.get(p.estado, p.estado) }}
-          </span>
-        </td>
-        <td style="font-weight:700;">{{ "{:,.2f}".format(p.total) }} {{ p.moneda }}</td>
-        <td style="font-size:.85rem;">{{ p.fecha_pedido.strftime("%d/%m/%Y") }}</td>
-      </tr>
-      {% endfor %}
-    </tbody>
-  </table>
-  {% else %}
-  <div class="empty-state" style="padding:2rem;"><p>Sin pedidos registrados.</p></div>
-  {% endif %}
-</div>
-
-<div class="panel" style="margin-top:1.25rem;">
-  <div class="panel-header">
-    <h3><i class="fas fa-ship" style="color:var(--accent);margin-right:.4rem;"></i>Últimos embarques</h3>
-    <a href="{{ url_for('admin.embarques') }}" class="btn btn-ghost" style="padding:.45rem .9rem;font-size:.75rem;">Ver todos</a>
+  <div class="bg-white rounded-2xl border border-gray-100 p-4 shadow-sm">
+    <p class="text-2xl font-extrabold text-ink">${{ "{:,.0f}".format(kpis.monto_pedidos_mes) }}</p>
+    <p class="text-xs text-ink-muted font-medium">Pedidos del mes</p>
   </div>
-  {% if kpis.embarques_recientes %}
-  <table class="data-table">
-    <thead><tr><th></th><th>Nº</th><th>Cliente</th><th>Ruta</th><th>Estado</th><th>ETA</th></tr></thead>
-    <tbody>
-      {% for e in kpis.embarques_recientes %}
-      <tr>
-        <td style="color:{{ embarque_estado_colors.get(e.estado, '#666') }};"><i class="fas {{ embarque_estado_icons.get(e.estado, 'fa-ship') }}"></i></td>
-        <td><a href="{{ url_for('admin.embarque_detalle', id=e.id) }}" class="link-row">{{ e.numero }}</a></td>
-        <td>{{ e.cliente_nombre }}</td>
-        <td style="font-size:.8rem;">{{ e.puerto_origen or '—' }} → {{ e.puerto_destino or '—' }}</td>
-        <td>
-          <span class="estado-badge" style="background:{{ embarque_estado_colors.get(e.estado, '#eee') }}18;color:{{ embarque_estado_colors.get(e.estado, '#666') }};">
-            <i class="fas {{ embarque_estado_icons.get(e.estado) }}"></i>
-            {{ embarque_estados.get(e.estado, e.estado) }}
-          </span>
-        </td>
-        <td style="font-size:.85rem;">{{ e.eta.strftime("%d/%m/%Y") if e.eta else '—' }}</td>
-      </tr>
-      {% endfor %}
-    </tbody>
-  </table>
-  {% else %}
-  <div class="empty-state" style="padding:2rem;"><p>Sin embarques registrados. <a href="{{ url_for('admin.embarque_nuevo') }}">Crear el primero</a></p></div>
-  {% endif %}
+  <div class="bg-white rounded-2xl border border-gray-100 p-4 shadow-sm">
+    <p class="text-2xl font-extrabold text-ink">{{ kpis.cotizaciones_pendientes }}</p>
+    <p class="text-xs text-ink-muted font-medium">Cotizaciones pendientes</p>
+  </div>
+  <div class="bg-white rounded-2xl border border-gray-100 p-4 shadow-sm">
+    <p class="text-2xl font-extrabold text-ink">{{ kpis.mensajes_pendientes }}</p>
+    <p class="text-xs text-ink-muted font-medium">Consultas web</p>
+  </div>
 </div>
 {% endblock %}

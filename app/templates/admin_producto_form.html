@@ -1,81 +1,50 @@
-{% extends "admin_layout.html" %}
+{% extends "admin_layout_tw.html" %}
+{% from "admin_macros_tw.html" import tw_input %}
 {% block title %}{% if editing %}Editar producto{% else %}Nuevo producto{% endif %}{% endblock %}
 {% block topbar_title %}{% if editing %}Editar producto{% else %}Nuevo producto{% endif %}{% endblock %}
-{% block topbar_subtitle %}Catálogo de exportación — ficha técnica y logística{% endblock %}
+{% block topbar_subtitle %}Catálogo de exportación — ficha técnica, logística y mercados{% endblock %}
 {% block topbar_actions %}
-  <a href="{{ url_for('admin.productos') }}" class="btn-top ghost"><i class="fas fa-arrow-left"></i> Volver</a>
+  <a href="{{ url_for('admin.productos') }}" class="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-gray-200 bg-white text-sm font-semibold hover:border-patagonia hover:text-patagonia transition-colors">
+    <i class="fas fa-arrow-left text-xs"></i> Volver
+  </a>
 {% endblock %}
 
 {% block content %}
-<div class="panel">
-  <form method="POST" enctype="multipart/form-data">
+<div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+  <div class="px-6 py-4 border-b border-gray-100 bg-cream/40">
+    <p class="text-sm text-ink-muted">Completa datos logísticos (peso, dimensiones, temperatura) para cotizar y calcular pallets por contenedor.</p>
+  </div>
+  <form method="POST" enctype="multipart/form-data" class="p-6">
     {{ form.hidden_tag() }}
-    <div class="form-grid">
-      <div class="form-group full">
-        <label>{{ form.nombre.label.text }}</label>
-        {{ form.nombre(class="form-control", placeholder="Ej: Cerezas premium") }}
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+      {{ tw_input('Nombre del producto', form.nombre, 'fa-seedling', full=true) }}
+      {{ tw_input('Categoría', form.categoria, 'fa-layer-group') }}
+      {{ tw_input('Formato de venta', form.formato_venta, 'fa-box') }}
+      {{ tw_input('Peso caja (kg)', form.peso_caja_kg, 'fa-weight-hanging') }}
+      {{ tw_input('Largo caja (cm)', form.caja_largo_cm, 'fa-ruler-horizontal') }}
+      {{ tw_input('Ancho caja (cm)', form.caja_ancho_cm, 'fa-ruler-vertical') }}
+      {{ tw_input('Alto caja (cm)', form.caja_alto_cm, 'fa-ruler-combined') }}
+      {{ tw_input('Temperatura', form.temperatura, 'fa-temperature-low') }}
+      {{ tw_input('Vida útil (días)', form.vida_util_dias, 'fa-clock') }}
+      {{ tw_input('Orden en catálogo', form.orden, 'fa-sort-numeric-down') }}
+      {{ tw_input('Países permitidos', form.paises_permitidos, 'fa-globe-americas', full=true) }}
+      {{ tw_input('Descripción', form.descripcion, 'fa-align-left', full=true, rows=3) }}
+      {{ tw_input('Certificaciones', form.certificaciones, 'fa-certificate', full=true, rows=2) }}
+      <div>
+        <label class="block text-[11px] font-bold uppercase tracking-wider text-ink-muted mb-2"><i class="fas fa-image text-patagonia mr-1"></i>{{ form.imagen.label.text }}</label>
+        {{ form.imagen(class="w-full text-sm file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:bg-patagonia-50 file:text-patagonia file:font-semibold") }}
       </div>
-      <div class="form-group">
-        <label>{{ form.categoria.label.text }}</label>
-        {{ form.categoria(class="form-control") }}
-      </div>
-      <div class="form-group">
-        <label>{{ form.formato_venta.label.text }}</label>
-        {{ form.formato_venta(class="form-control") }}
-      </div>
-      <div class="form-group">
-        <label>{{ form.peso_caja_kg.label.text }}</label>
-        {{ form.peso_caja_kg(class="form-control") }}
-      </div>
-      <div class="form-group">
-        <label>{{ form.caja_largo_cm.label.text }}</label>
-        {{ form.caja_largo_cm(class="form-control") }}
-      </div>
-      <div class="form-group">
-        <label>{{ form.caja_ancho_cm.label.text }}</label>
-        {{ form.caja_ancho_cm(class="form-control") }}
-      </div>
-      <div class="form-group">
-        <label>{{ form.caja_alto_cm.label.text }}</label>
-        {{ form.caja_alto_cm(class="form-control") }}
-      </div>
-      <div class="form-group">
-        <label>{{ form.temperatura.label.text }}</label>
-        {{ form.temperatura(class="form-control", placeholder="Ej: -1°C a +4°C") }}
-      </div>
-      <div class="form-group">
-        <label>{{ form.vida_util_dias.label.text }}</label>
-        {{ form.vida_util_dias(class="form-control") }}
-      </div>
-      <div class="form-group">
-        <label>{{ form.orden.label.text }}</label>
-        {{ form.orden(class="form-control") }}
-      </div>
-      <div class="form-group full">
-        <label>{{ form.paises_permitidos.label.text }}</label>
-        {{ form.paises_permitidos(class="form-control", placeholder="México, Colombia, España") }}
-      </div>
-      <div class="form-group full">
-        <label>{{ form.descripcion.label.text }}</label>
-        {{ form.descripcion(class="form-control", rows=3) }}
-      </div>
-      <div class="form-group full">
-        <label>{{ form.certificaciones.label.text }}</label>
-        {{ form.certificaciones(class="form-control", rows=2) }}
-      </div>
-      <div class="form-group">
-        <label>{{ form.imagen.label.text }}</label>
-        {{ form.imagen(class="form-control") }}
-      </div>
-      <div class="form-group">
-        <label>{{ form.ficha.label.text }}</label>
-        {{ form.ficha(class="form-control") }}
-        {% if editing and producto.tiene_ficha %}<p style="font-size:.75rem;color:var(--gray);margin-top:.35rem;">Actual: {{ producto.ficha_original }}</p>{% endif %}
+      <div>
+        <label class="block text-[11px] font-bold uppercase tracking-wider text-ink-muted mb-2"><i class="fas fa-file-pdf text-patagonia mr-1"></i>{{ form.ficha.label.text }}</label>
+        {{ form.ficha(class="w-full text-sm file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:bg-patagonia-50 file:text-patagonia file:font-semibold") }}
+        {% if editing and producto.tiene_ficha %}<p class="text-xs text-ink-muted mt-2">Actual: {{ producto.ficha_original }}</p>{% endif %}
       </div>
     </div>
-    <div class="form-actions">
-      <button type="submit" class="btn btn-green"><i class="fas fa-save"></i> Guardar</button>
-      <a href="{% if editing %}{{ url_for('admin.producto_detalle', id=producto.id) }}{% else %}{{ url_for('admin.productos') }}{% endif %}" class="btn btn-ghost">Cancelar</a>
+    <div class="flex flex-wrap gap-3 mt-8 pt-6 border-t border-gray-100">
+      <button type="submit" class="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-patagonia text-white text-sm font-bold hover:bg-patagonia-dark transition-colors">
+        <i class="fas fa-save"></i> Guardar
+      </button>
+      <a href="{% if editing %}{{ url_for('admin.producto_detalle', id=producto.id) }}{% else %}{{ url_for('admin.productos') }}{% endif %}" class="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl border border-gray-200 text-sm font-semibold hover:border-patagonia hover:text-patagonia transition-colors">Cancelar</a>
     </div>
   </form>
 </div>

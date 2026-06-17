@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="es" class="h-full">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% if valido %}Firma verificada{% else %}Token no válido{% endif %} · Patagonia Sur</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = { theme: { extend: { colors: { patagonia: { DEFAULT: '#587232', 50: '#EEF3E8' }, ink: { muted: '#6B7280' } }, fontFamily: { sans: ['Inter', 'sans-serif'] } } } };
+  </script>
+</head>
+<body class="min-h-full bg-[#F7F3EA] font-sans text-gray-900 antialiased p-6">
+  <div class="max-w-lg mx-auto">
+    <div class="text-center mb-8">
+      <span class="inline-flex w-14 h-14 rounded-2xl bg-patagonia text-white items-center justify-center font-black text-lg mb-4">PS</span>
+      <h1 class="text-2xl font-black">Verificación de firma digital</h1>
+      <p class="text-ink-muted text-sm mt-1">Patagonia Sur · documentos de exportación</p>
+    </div>
+
+    {% if valido and firma and doc %}
+    <div class="bg-white rounded-2xl border border-green-200 shadow-lg overflow-hidden">
+      <div class="bg-green-600 text-white px-6 py-4 flex items-center gap-3">
+        <i class="fas fa-shield-halved text-2xl"></i>
+        <div>
+          <p class="font-bold">Firma auténtica</p>
+          <p class="text-sm text-green-100">Token válido en el registro de Patagonia Sur</p>
+        </div>
+      </div>
+      <div class="p-6 space-y-5">
+        <div>
+          <p class="text-[10px] font-bold uppercase text-gray-400 mb-1">Documento</p>
+          <p class="font-bold">{{ doc.titulo }}</p>
+          <p class="text-xs text-ink-muted">{{ documento_tipos.get(doc.tipo, doc.tipo) }}</p>
+        </div>
+        <div>
+          <p class="text-[10px] font-bold uppercase text-gray-400 mb-1">Firmante ({{ firma_partes.get(firma.parte, firma.parte) }})</p>
+          <p class="font-bold">{{ firma.signer_name }}</p>
+          <p class="text-sm text-ink-muted">{{ firma.signer_email }}</p>
+        </div>
+        <div class="bg-gray-50 rounded-xl p-4 border border-gray-100">
+          <img src="{{ firma.signature_data }}" alt="Firma" class="max-h-20 mx-auto object-contain">
+        </div>
+        <dl class="grid grid-cols-1 gap-3 text-sm">
+          <div class="flex justify-between gap-4 border-b border-gray-100 pb-2">
+            <dt class="text-ink-muted">Fecha y hora (UTC)</dt>
+            <dd class="font-semibold text-right">{{ firma.signed_at.strftime('%d/%m/%Y %H:%M:%S') }}</dd>
+          </div>
+          <div class="flex justify-between gap-4 border-b border-gray-100 pb-2">
+            <dt class="text-ink-muted">Token</dt>
+            <dd class="font-mono text-xs text-patagonia text-right break-all">{{ firma.token }}</dd>
+          </div>
+          <div class="flex justify-between gap-4 border-b border-gray-100 pb-2">
+            <dt class="text-ink-muted">IP</dt>
+            <dd class="font-semibold">{{ firma.ip_address or '—' }}</dd>
+          </div>
+          <div class="flex justify-between gap-4">
+            <dt class="text-ink-muted">Ubicación</dt>
+            <dd class="font-semibold text-right">{{ firma.location_label or '—' }}</dd>
+          </div>
+        </dl>
+      </div>
+    </div>
+    {% else %}
+    <div class="bg-white rounded-2xl border border-red-200 p-8 text-center">
+      <i class="fas fa-circle-xmark text-5xl text-red-400 mb-4"></i>
+      <h2 class="font-bold text-lg mb-2">Token no encontrado</h2>
+      <p class="text-sm text-ink-muted">El código de verificación no coincide con ninguna firma registrada.</p>
+    </div>
+    {% endif %}
+
+    <p class="text-center text-xs text-ink-muted mt-8">
+      <a href="{{ url_for('main.index') }}" class="text-patagonia font-semibold hover:underline">patagoniasur.cl</a>
+    </p>
+  </div>
+</body>
+</html>

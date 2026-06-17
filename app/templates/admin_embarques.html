@@ -4,7 +4,7 @@
 {% block topbar_title %}Embarques{% endblock %}
 {% block topbar_subtitle %}Logística de exportación · Chile → mercados internacionales{% endblock %}
 {% block topbar_actions %}
-  <a href="{{ url_for('admin.embarque_nuevo') }}" class="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-patagonia text-white text-sm font-bold hover:bg-patagonia-dark shadow-lg shadow-patagonia/25 transition-all">
+  <a href="{{ url_for('admin.embarque_nuevo') }}" id="tour-btn-nuevo" class="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-patagonia text-white text-sm font-bold hover:bg-patagonia-dark shadow-lg shadow-patagonia/25 transition-all">
     <i class="fas fa-ship text-xs"></i> Nuevo embarque
   </a>
 {% endblock %}
@@ -16,7 +16,7 @@
 {% for e in embarques %}{% if e.estado not in ['entregado', 'cerrado', 'cancelado'] %}{% set activos_ns.n = activos_ns.n + 1 %}{% endif %}{% endfor %}
 
 <!-- Pipeline -->
-<div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 sm:p-5 mb-6 overflow-x-auto">
+<div id="tour-pipeline" class="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 sm:p-5 mb-6 overflow-x-auto">
   <div class="flex items-center justify-center min-w-[520px] gap-2 sm:gap-4">
     <div class="flex flex-col items-center gap-1.5 opacity-50">
       <span class="w-10 h-10 rounded-xl bg-gray-100 text-ink-muted flex items-center justify-center"><i class="fas fa-file-invoice-dollar"></i></span>
@@ -41,7 +41,7 @@
 </div>
 
 <!-- KPIs -->
-<div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+<div id="tour-kpis" class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
   <div class="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm">
     <div class="flex items-center gap-3">
       <span class="w-10 h-10 rounded-xl bg-patagonia-50 text-patagonia flex items-center justify-center"><i class="fas fa-ship"></i></span>
@@ -81,7 +81,7 @@
 </div>
 
 <!-- Filtros -->
-<div class="bg-white rounded-2xl border border-gray-100 shadow-sm mb-6 overflow-hidden">
+<div id="tour-filtros" class="bg-white rounded-2xl border border-gray-100 shadow-sm mb-6 overflow-hidden">
   <div class="px-5 py-3 border-b border-gray-100 flex items-center gap-2">
     <i class="fas fa-filter text-patagonia text-sm"></i>
     <span class="text-sm font-semibold text-ink">Estado logístico</span>
@@ -108,7 +108,7 @@
 </div>
 
 {% if embarques %}
-<div class="hidden lg:block bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+<div id="tour-lista" class="hidden lg:block bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
   <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
     <h2 class="font-bold text-ink flex items-center gap-2">
       <i class="fas fa-anchor text-patagonia"></i> Operaciones marítimas
@@ -126,6 +126,7 @@
           <th class="px-4 py-3 text-[11px] font-bold uppercase tracking-wider text-ink-muted">Estado</th>
           <th class="px-4 py-3 text-[11px] font-bold uppercase tracking-wider text-ink-muted">ETD</th>
           <th class="px-4 py-3 text-[11px] font-bold uppercase tracking-wider text-ink-muted">ETA</th>
+          <th class="px-4 py-3 text-[11px] font-bold uppercase tracking-wider text-ink-muted">Docs</th>
           <th class="px-6 py-3"></th>
         </tr>
       </thead>
@@ -162,6 +163,17 @@
           <td class="px-4 py-4 text-xs whitespace-nowrap {% if e.tiene_retraso %}text-red-600 font-semibold{% else %}text-ink-muted{% endif %}">
             {{ e.eta.strftime("%d/%m/%Y") if e.eta else '—' }}
           </td>
+          {% set cl = checklists.get(e.id) %}
+          <td class="px-4 py-4">
+            {% if cl %}
+            <span class="inline-flex items-center gap-1 text-[11px] font-bold px-2 py-1 rounded-full
+              {% if cl.semaforo == 'ok' %}bg-green-50 text-green-700
+              {% elif cl.semaforo == 'warn' %}bg-amber-50 text-amber-800
+              {% else %}bg-red-50 text-red-700{% endif %}" title="{{ cl.resumen }}">
+              {{ cl.pct }}%
+            </span>
+            {% else %}—{% endif %}
+          </td>
           <td class="px-6 py-4">
             <div class="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
               <a href="{{ url_for('admin.embarque_detalle', id=e.id) }}" class="w-9 h-9 rounded-xl border border-gray-200 flex items-center justify-center text-ink-muted hover:border-patagonia hover:text-patagonia hover:bg-patagonia-50 transition-colors" title="Ver">
@@ -195,6 +207,13 @@
     </div>
     <div class="flex items-center justify-between text-xs text-ink-muted">
       <span>ETD {{ e.etd.strftime("%d/%m") if e.etd else '—' }}</span>
+      {% set cl = checklists.get(e.id) %}
+      {% if cl %}
+      <span class="font-bold px-2 py-0.5 rounded-full
+        {% if cl.semaforo == 'ok' %}bg-green-50 text-green-700
+        {% elif cl.semaforo == 'warn' %}bg-amber-50 text-amber-800
+        {% else %}bg-red-50 text-red-700{% endif %}">Docs {{ cl.pct }}%</span>
+      {% endif %}
       <span class="{% if e.tiene_retraso %}text-red-600 font-semibold{% endif %}">ETA {{ e.eta.strftime("%d/%m") if e.eta else '—' }}</span>
     </div>
   </a>

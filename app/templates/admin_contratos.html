@@ -1,53 +1,83 @@
-{% extends "admin_layout.html" %}
+{% extends "admin_layout_tw.html" %}
 {% block title %}Contratos{% endblock %}
 {% block topbar_title %}Gestión de contratos{% endblock %}
-{% block topbar_subtitle %}Acuerdos comerciales con clientes internacionales{% endblock %}
+{% block topbar_subtitle %}Acuerdos comerciales con clientes internacionales · vigencia y renovación{% endblock %}
 {% block topbar_actions %}
   {% if puede_editar %}
-  <a href="{{ url_for('admin.contrato_nuevo') }}" class="btn-top accent"><i class="fas fa-plus"></i> Nuevo contrato</a>
+  <a href="{{ url_for('admin.contrato_nuevo') }}" id="tour-btn-nuevo" class="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-patagonia text-white text-sm font-bold hover:bg-patagonia-dark transition-colors">
+    <i class="fas fa-plus text-xs"></i> Nuevo contrato
+  </a>
   {% endif %}
 {% endblock %}
 
 {% block content %}
-<div class="panel">
-  <div class="panel-header">
-    <h3><i class="fas fa-file-contract" style="color:var(--accent);margin-right:.5rem;"></i>{{ contratos|length }} contrato{% if contratos|length != 1 %}s{% endif %}</h3>
+<p id="tour-intro" class="text-sm text-ink-muted mb-6 max-w-3xl">
+  Registra acuerdos marco por cliente, país y producto. Controla vencimientos y adjunta el PDF firmado para auditoría.
+</p>
+
+<div id="tour-lista" class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+  <div class="px-6 py-4 border-b border-gray-100">
+    <h2 class="font-bold text-ink flex items-center gap-2"><i class="fas fa-file-contract text-patagonia"></i> {{ contratos|length }} contrato{% if contratos|length != 1 %}s{% endif %}</h2>
   </div>
-  <div class="filter-bar">
-    <a href="{{ url_for('admin.contratos') }}" class="filter-chip {% if not filtro_estado %}active{% endif %}">Todos</a>
+  <div id="tour-filtros" class="px-5 py-4 border-b border-gray-100 flex flex-wrap gap-2">
+    <a href="{{ url_for('admin.contratos') }}" class="inline-flex px-3.5 py-1.5 rounded-full text-xs font-semibold {% if not filtro_estado %}bg-patagonia text-white{% else %}bg-gray-50 text-ink-muted hover:bg-gray-100{% endif %}">Todos</a>
     {% for key, label in contrato_estados.items() %}
-    <a href="{{ url_for('admin.contratos', estado=key) }}" class="filter-chip {% if filtro_estado == key %}active{% endif %}">{{ label }}</a>
+    <a href="{{ url_for('admin.contratos', estado=key) }}" class="inline-flex px-3.5 py-1.5 rounded-full text-xs font-semibold {% if filtro_estado == key %}bg-patagonia text-white{% else %}bg-gray-50 text-ink-muted hover:bg-gray-100{% endif %}">{{ label }}</a>
     {% endfor %}
   </div>
   {% if contratos %}
-  <table class="data-table">
-    <thead>
-      <tr><th>Nº</th><th>Título</th><th>Cliente</th><th>País</th><th>Estado</th><th>Vence</th><th></th></tr>
-    </thead>
-    <tbody>
-      {% for c in contratos %}
-      <tr>
-        <td><a href="{{ url_for('admin.contrato_detalle', id=c.id) }}" class="link-row">{{ c.numero }}</a></td>
-        <td>{{ c.titulo }}</td>
-        <td style="font-size:.8rem;">{{ c.cliente.nombre if c.cliente else '—' }}</td>
-        <td style="font-size:.8rem;">{{ c.pais.nombre if c.pais else '—' }}</td>
-        <td>
-          <span class="estado-badge" style="background:{{ contrato_estado_colors.get(c.estado) }}18;color:{{ contrato_estado_colors.get(c.estado) }};">
-            {{ contrato_estados.get(c.estado) }}
-          </span>
-        </td>
-        <td style="font-size:.8rem;">
-          {% if c.fecha_fin %}
-            {% if c.esta_vencido %}<span style="color:var(--red);">{{ c.fecha_fin.strftime('%d/%m/%Y') }}</span>{% else %}{{ c.fecha_fin.strftime('%d/%m/%Y') }}{% endif %}
-          {% else %}—{% endif %}
-        </td>
-        <td><a href="{{ url_for('admin.contrato_editar', id=c.id) }}" class="btn-icon"><i class="fas fa-pen"></i></a></td>
-      </tr>
-      {% endfor %}
-    </tbody>
-  </table>
+  <div class="hidden md:block overflow-x-auto">
+    <table class="w-full text-sm">
+      <thead>
+        <tr class="bg-gray-50/80 text-left">
+          <th class="px-4 py-3 text-[11px] font-bold uppercase text-ink-muted">Nº</th>
+          <th class="px-4 py-3 text-[11px] font-bold uppercase text-ink-muted">Título</th>
+          <th class="px-4 py-3 text-[11px] font-bold uppercase text-ink-muted">Cliente</th>
+          <th class="px-4 py-3 text-[11px] font-bold uppercase text-ink-muted">País</th>
+          <th class="px-4 py-3 text-[11px] font-bold uppercase text-ink-muted">Estado</th>
+          <th class="px-4 py-3 text-[11px] font-bold uppercase text-ink-muted">Vence</th>
+          <th class="px-4 py-3"></th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-gray-50">
+        {% for c in contratos %}
+        <tr class="hover:bg-cream/30">
+          <td class="px-4 py-4"><a href="{{ url_for('admin.contrato_detalle', id=c.id) }}" class="font-bold text-patagonia hover:underline">{{ c.numero }}</a></td>
+          <td class="px-4 py-4 font-medium">{{ c.titulo }}</td>
+          <td class="px-4 py-4 text-xs text-ink-muted">{{ c.cliente.nombre if c.cliente else '—' }}</td>
+          <td class="px-4 py-4 text-xs">{{ c.pais.nombre if c.pais else '—' }}</td>
+          <td class="px-4 py-4">
+            <span class="text-xs font-semibold px-2 py-0.5 rounded-full" style="background:{{ contrato_estado_colors.get(c.estado) }}18;color:{{ contrato_estado_colors.get(c.estado) }};">{{ contrato_estados.get(c.estado) }}</span>
+          </td>
+          <td class="px-4 py-4 text-xs {% if c.esta_vencido %}text-red-600 font-semibold{% else %}text-ink-muted{% endif %}">
+            {{ c.fecha_fin.strftime('%d/%m/%Y') if c.fecha_fin else '—' }}
+          </td>
+          <td class="px-4 py-4">
+            <a href="{{ url_for('admin.contrato_editar', id=c.id) }}" class="w-8 h-8 rounded-lg border border-gray-200 inline-flex items-center justify-center text-ink-muted hover:text-patagonia hover:border-patagonia transition-colors"><i class="fas fa-pen text-xs"></i></a>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <div class="md:hidden divide-y divide-gray-50">
+    {% for c in contratos %}
+    <a href="{{ url_for('admin.contrato_detalle', id=c.id) }}" class="block p-4 hover:bg-cream/30 transition-colors">
+      <div class="flex items-start justify-between gap-2 mb-1">
+        <p class="font-bold text-patagonia">{{ c.numero }}</p>
+        <span class="text-[10px] font-semibold px-2 py-0.5 rounded-full shrink-0" style="background:{{ contrato_estado_colors.get(c.estado) }}18;color:{{ contrato_estado_colors.get(c.estado) }};">{{ contrato_estados.get(c.estado) }}</span>
+      </div>
+      <p class="text-sm font-medium text-ink">{{ c.titulo }}</p>
+      <p class="text-xs text-ink-muted mt-1">{{ c.cliente.nombre if c.cliente else '—' }}{% if c.pais %} · {{ c.pais.nombre }}{% endif %}</p>
+      {% if c.fecha_fin %}
+      <p class="text-xs mt-2 {% if c.esta_vencido %}text-red-600 font-semibold{% else %}text-ink-muted{% endif %}">Vence {{ c.fecha_fin.strftime('%d/%m/%Y') }}</p>
+      {% endif %}
+    </a>
+    {% endfor %}
+  </div>
   {% else %}
-  <div class="empty-state"><i class="fas fa-file-contract"></i><p>No hay contratos{% if filtro_estado %} con este estado{% endif %}.</p></div>
+  <div class="p-12 text-center"><i class="fas fa-file-contract text-5xl text-gray-200 mb-4"></i><p class="text-ink-muted">No hay contratos{% if filtro_estado %} con este estado{% endif %}.</p></div>
   {% endif %}
 </div>
 {% endblock %}

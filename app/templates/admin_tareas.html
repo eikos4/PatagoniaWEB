@@ -1,78 +1,102 @@
-{% extends "admin_layout.html" %}
+{% extends "admin_layout_tw.html" %}
 {% block title %}Tareas internas{% endblock %}
 {% block topbar_title %}Tareas internas{% endblock %}
-{% block topbar_subtitle %}Seguimiento operativo del equipo{% endblock %}
+{% block topbar_subtitle %}Seguimiento operativo del equipo · vinculadas a embarques y clientes{% endblock %}
 {% block topbar_actions %}
   {% if puede_editar %}
-  <a href="{{ url_for('admin.tarea_nueva') }}" class="btn-top accent"><i class="fas fa-plus"></i> Nueva tarea</a>
+  <a href="{{ url_for('admin.tarea_nueva') }}" id="tour-btn-nuevo" class="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-patagonia text-white text-sm font-bold hover:bg-patagonia-dark transition-colors">
+    <i class="fas fa-plus text-xs"></i> Nueva tarea
+  </a>
   {% endif %}
 {% endblock %}
 
 {% block content %}
-<div class="panel">
-  <div class="panel-header">
-    <h3><i class="fas fa-list-check" style="color:var(--accent);margin-right:.5rem;"></i>{{ tareas|length }} tarea{% if tareas|length != 1 %}s{% endif %}</h3>
+<p id="tour-intro" class="text-sm text-ink-muted mb-6 max-w-3xl">
+  Asigna pendientes al equipo (documentación, booking, inspección). Cada tarea puede ligarse a un embarque o cliente de la cartera.
+</p>
+
+<div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+  <div class="px-6 py-4 border-b border-gray-100 flex flex-wrap items-center justify-between gap-3">
+    <h2 class="font-bold text-ink flex items-center gap-2"><i class="fas fa-list-check text-sunset"></i> {{ tareas|length }} tarea{% if tareas|length != 1 %}s{% endif %}</h2>
   </div>
-  <div class="filter-bar">
-    <a href="{{ url_for('admin.tareas') }}" class="filter-chip {% if not filtro_estado %}active{% endif %}">Todas</a>
+  <div id="tour-filtros" class="px-5 py-4 border-b border-gray-100 flex flex-wrap gap-2">
+    <a href="{{ url_for('admin.tareas') }}" class="inline-flex px-3.5 py-1.5 rounded-full text-xs font-semibold {% if not filtro_estado %}bg-patagonia text-white{% else %}bg-gray-50 text-ink-muted hover:bg-gray-100{% endif %}">Todas</a>
     {% for key, label in tarea_estados.items() %}
-    <a href="{{ url_for('admin.tareas', estado=key) }}" class="filter-chip {% if filtro_estado == key %}active{% endif %}">{{ label }}</a>
+    <a href="{{ url_for('admin.tareas', estado=key) }}" class="inline-flex px-3.5 py-1.5 rounded-full text-xs font-semibold {% if filtro_estado == key %}bg-patagonia text-white{% else %}bg-gray-50 text-ink-muted hover:bg-gray-100{% endif %}">{{ label }}</a>
     {% endfor %}
   </div>
 
   {% if tareas %}
-  <table class="data-table">
-    <thead>
-      <tr>
-        <th>Tarea</th>
-        <th>Prioridad</th>
-        <th>Estado</th>
-        <th>Responsable</th>
-        <th>Embarque</th>
-        <th>Límite</th>
-        <th></th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for t in tareas %}
-      <tr>
-        <td>
-          <a href="{{ url_for('admin.tarea_editar', id=t.id) }}" class="link-row">{{ t.titulo }}</a>
-          {% if t.descripcion %}<div style="font-size:.75rem;color:var(--gray);margin-top:.15rem;">{{ t.descripcion[:80] }}{% if t.descripcion|length > 80 %}…{% endif %}</div>{% endif %}
-        </td>
-        <td>
-          <span class="estado-badge" style="background:{{ tarea_prioridad_colors.get(t.prioridad) }}18;color:{{ tarea_prioridad_colors.get(t.prioridad) }};">
-            {{ tarea_prioridades.get(t.prioridad) }}
-          </span>
-        </td>
-        <td>
-          <span class="estado-badge" style="background:{{ tarea_estado_colors.get(t.estado) }}18;color:{{ tarea_estado_colors.get(t.estado) }};">
-            {{ tarea_estados.get(t.estado) }}
-          </span>
-        </td>
-        <td style="font-size:.8rem;">{{ t.responsable.nombre or t.responsable.username if t.responsable else '—' }}</td>
-        <td style="font-size:.8rem;">
-          {% if t.embarque %}<a href="{{ url_for('admin.embarque_detalle', id=t.embarque.id) }}" class="link-row">{{ t.embarque.numero }}</a>{% else %}—{% endif %}
-        </td>
-        <td style="font-size:.8rem;">
-          {% if t.fecha_limite %}
-            {% if t.esta_vencida %}<span style="color:var(--red);">{{ t.fecha_limite.strftime('%d/%m/%Y') }}</span>{% else %}{{ t.fecha_limite.strftime('%d/%m/%Y') }}{% endif %}
-          {% else %}—{% endif %}
-        </td>
-        <td>
-          {% if puede_editar and t.estado not in ['completada', 'cancelada'] %}
-          <form method="POST" action="{{ url_for('admin.tarea_cambiar_estado', id=t.id, estado='completada') }}" style="display:inline;">
-            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-            <button type="submit" class="btn-icon" title="Completar"><i class="fas fa-check"></i></button>
-          </form>
-          {% endif %}
-        </td>
-      </tr>
-      {% endfor %}
-    </tbody>
-  </table>
+  <div id="tour-lista">
+  <div class="hidden md:block overflow-x-auto">
+    <table class="w-full text-sm">
+      <thead>
+        <tr class="bg-gray-50/80 text-left">
+          <th class="px-4 py-3 text-[11px] font-bold uppercase text-ink-muted">Tarea</th>
+          <th class="px-4 py-3 text-[11px] font-bold uppercase text-ink-muted">Prioridad</th>
+          <th class="px-4 py-3 text-[11px] font-bold uppercase text-ink-muted">Estado</th>
+          <th class="px-4 py-3 text-[11px] font-bold uppercase text-ink-muted">Responsable</th>
+          <th class="px-4 py-3 text-[11px] font-bold uppercase text-ink-muted">Embarque</th>
+          <th class="px-4 py-3 text-[11px] font-bold uppercase text-ink-muted">Límite</th>
+          <th class="px-4 py-3"></th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-gray-50">
+        {% for t in tareas %}
+        <tr class="hover:bg-cream/30">
+          <td class="px-4 py-4">
+            <a href="{{ url_for('admin.tarea_editar', id=t.id) }}" class="font-bold text-patagonia hover:underline">{{ t.titulo }}</a>
+            {% if t.descripcion %}<p class="text-xs text-ink-muted mt-0.5">{{ t.descripcion[:80] }}{% if t.descripcion|length > 80 %}…{% endif %}</p>{% endif %}
+          </td>
+          <td class="px-4 py-4">
+            <span class="text-xs font-semibold px-2 py-0.5 rounded-full" style="background:{{ tarea_prioridad_colors.get(t.prioridad) }}18;color:{{ tarea_prioridad_colors.get(t.prioridad) }};">{{ tarea_prioridades.get(t.prioridad) }}</span>
+          </td>
+          <td class="px-4 py-4">
+            <span class="text-xs font-semibold px-2 py-0.5 rounded-full" style="background:{{ tarea_estado_colors.get(t.estado) }}18;color:{{ tarea_estado_colors.get(t.estado) }};">{{ tarea_estados.get(t.estado) }}</span>
+          </td>
+          <td class="px-4 py-4 text-xs text-ink-muted">{{ t.responsable.nombre or t.responsable.username if t.responsable else '—' }}</td>
+          <td class="px-4 py-4 text-xs">
+            {% if t.embarque %}<a href="{{ url_for('admin.embarque_detalle', id=t.embarque.id) }}" class="font-semibold text-patagonia hover:underline">{{ t.embarque.numero }}</a>{% else %}—{% endif %}
+          </td>
+          <td class="px-4 py-4 text-xs {% if t.esta_vencida %}text-red-600 font-semibold{% else %}text-ink-muted{% endif %}">
+            {{ t.fecha_limite.strftime('%d/%m/%Y') if t.fecha_limite else '—' }}
+          </td>
+          <td class="px-4 py-4">
+            {% if puede_editar and t.estado not in ['completada', 'cancelada'] %}
+            <form method="POST" action="{{ url_for('admin.tarea_cambiar_estado', id=t.id, estado='completada') }}">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <button type="submit" title="Completar" class="w-8 h-8 rounded-lg border border-gray-200 text-green-600 hover:bg-green-50 transition-colors"><i class="fas fa-check text-xs"></i></button>
+            </form>
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <div class="md:hidden divide-y divide-gray-50">
+    {% for t in tareas %}
+    <a href="{{ url_for('admin.tarea_editar', id=t.id) }}" class="block p-4 hover:bg-cream/30 transition-colors">
+      <div class="flex items-start justify-between gap-2 mb-2">
+        <p class="font-bold text-patagonia leading-snug">{{ t.titulo }}</p>
+        <span class="text-[10px] font-semibold px-2 py-0.5 rounded-full shrink-0" style="background:{{ tarea_estado_colors.get(t.estado) }}18;color:{{ tarea_estado_colors.get(t.estado) }};">{{ tarea_estados.get(t.estado) }}</span>
+      </div>
+      {% if t.descripcion %}<p class="text-xs text-ink-muted mb-2">{{ t.descripcion[:100] }}{% if t.descripcion|length > 100 %}…{% endif %}</p>{% endif %}
+      <div class="flex flex-wrap gap-2 text-[11px] text-ink-muted">
+        <span class="font-semibold px-2 py-0.5 rounded-full" style="background:{{ tarea_prioridad_colors.get(t.prioridad) }}18;color:{{ tarea_prioridad_colors.get(t.prioridad) }};">{{ tarea_prioridades.get(t.prioridad) }}</span>
+        {% if t.embarque %}<span><i class="fas fa-ship text-patagonia mr-1"></i>{{ t.embarque.numero }}</span>{% endif %}
+        {% if t.fecha_limite %}<span class="{% if t.esta_vencida %}text-red-600 font-semibold{% endif %}"><i class="fas fa-calendar mr-1"></i>{{ t.fecha_limite.strftime('%d/%m/%Y') }}</span>{% endif %}
+      </div>
+    </a>
+    {% endfor %}
+  </div>
+  </div>
   {% else %}
-  <div class="empty-state"><i class="fas fa-clipboard-list"></i><p>No hay tareas{% if filtro_estado %} con este estado{% endif %}.</p></div>
+  <div id="tour-lista" class="p-12 text-center">
+    <i class="fas fa-clipboard-list text-5xl text-gray-200 mb-4"></i>
+    <p class="text-ink-muted">No hay tareas{% if filtro_estado %} con este estado{% endif %}.</p>
+  </div>
   {% endif %}
 </div>
 {% endblock %}

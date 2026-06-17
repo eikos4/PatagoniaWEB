@@ -1,0 +1,32 @@
+{% macro firma_card(firma, parte_label) %}
+{% if firma %}
+<div class="rounded-2xl border border-green-200 bg-green-50/50 p-5">
+  <div class="flex flex-wrap items-start justify-between gap-3 mb-4">
+    <div>
+      <p class="text-[10px] font-bold uppercase text-green-800/70 mb-1">{{ parte_label }}</p>
+      <p class="font-bold text-ink">{{ firma.signer_name }}</p>
+      <p class="text-xs text-ink-muted">{{ firma.signer_email }}</p>
+    </div>
+    <span class="text-xs font-bold px-2.5 py-1 rounded-full bg-green-100 text-green-800"><i class="fas fa-circle-check mr-1"></i> Firmado</span>
+  </div>
+  <div class="bg-white rounded-xl border border-gray-100 p-3 mb-4">
+    <img src="{{ firma.signature_data }}" alt="Firma" class="max-h-24 mx-auto object-contain">
+  </div>
+  <dl class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs text-ink-muted">
+    <div><dt class="font-bold text-ink-muted uppercase text-[10px]">Fecha y hora (UTC)</dt><dd class="font-semibold text-ink">{{ firma.signed_at.strftime('%d/%m/%Y %H:%M:%S') }}</dd></div>
+    <div><dt class="font-bold text-ink-muted uppercase text-[10px]">Token de verificación</dt><dd class="font-mono text-[11px] text-patagonia break-all">{{ firma.token }}</dd></div>
+    <div><dt class="font-bold text-ink-muted uppercase text-[10px]">IP</dt><dd>{{ firma.ip_address or '—' }}</dd></div>
+    <div><dt class="font-bold text-ink-muted uppercase text-[10px]">Ubicación</dt><dd>{{ firma.location_label or '—' }}</dd></div>
+  </dl>
+  <a href="{{ url_for('main.verificar_firma', token=firma.token) }}" target="_blank" class="inline-flex items-center gap-1.5 mt-4 text-xs font-bold text-patagonia hover:underline">
+    <i class="fas fa-shield-halved"></i> Verificar autenticidad
+  </a>
+</div>
+{% else %}
+<div class="rounded-2xl border border-dashed border-gray-200 bg-gray-50/50 p-5 text-center">
+  <i class="fas fa-pen-nib text-3xl text-gray-300 mb-2"></i>
+  <p class="text-sm font-semibold text-ink-muted">{{ parte_label }}</p>
+  <p class="text-xs text-ink-muted mt-1">Pendiente de firma</p>
+</div>
+{% endif %}
+{% endmacro %}

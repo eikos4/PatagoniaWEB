@@ -1,0 +1,7 @@
+{# Body: overlay de carga (logo 1.png) #}
+<div id="ps-loading-splash" class="ps-loading-splash" role="status" aria-live="polite" aria-label="Cargando">
+  <img src="{{ url_for('static', filename='img/1.png') }}" alt="Patagonia Sur" class="ps-loading-splash__logo" width="200" height="200" decoding="async">
+  <div class="ps-loading-splash__bar" aria-hidden="true"><span></span></div>
+  <p class="ps-loading-splash__label">Cargando</p>
+</div>
+<script src="{{ url_for('static', filename='js/ps-loading.js') }}?v=1"></script>

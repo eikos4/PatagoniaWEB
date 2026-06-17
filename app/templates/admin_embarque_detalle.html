@@ -27,7 +27,7 @@
 
 <!-- Timeline -->
 <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 sm:p-6 mb-6 overflow-x-auto">
-  <div class="flex items-center min-w-[720px] gap-0">
+  <div class="flex items-center min-w-[600px] sm:min-w-[720px] gap-0">
     {% for key in orden_estados %}
     {% set is_current = emb.estado == key %}
     {% set is_done = idx_actual > loop.index0 %}
@@ -309,6 +309,61 @@
   <p class="text-sm text-ink whitespace-pre-wrap">{{ emb.notas }}</p>
 </div>
 {% endif %}
+
+<!-- Checklist documental -->
+<div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden mb-6">
+  <div class="px-6 py-4 border-b border-gray-100 flex flex-wrap items-center justify-between gap-3">
+    <h2 class="font-bold text-ink flex items-center gap-2">
+      <i class="fas fa-clipboard-check text-patagonia"></i> Checklist documental
+      <span class="text-xs font-semibold text-ink-muted">· {{ doc_checklist.pais_nombre }}</span>
+    </h2>
+    <div class="flex items-center gap-3">
+      <div class="w-32 h-2 rounded-full bg-gray-100 overflow-hidden">
+        <div class="h-full rounded-full transition-all
+          {% if doc_checklist.semaforo == 'ok' %}bg-green-500{% elif doc_checklist.semaforo == 'warn' %}bg-sunset{% else %}bg-red-500{% endif %}"
+             style="width:{{ doc_checklist.pct }}%;"></div>
+      </div>
+      <span class="text-xs font-bold px-3 py-1 rounded-full
+        {% if doc_checklist.semaforo == 'ok' %}bg-green-50 text-green-800
+        {% elif doc_checklist.semaforo == 'warn' %}bg-amber-50 text-amber-900
+        {% else %}bg-red-50 text-red-700{% endif %}">
+        <i class="fas {% if doc_checklist.semaforo == 'ok' %}fa-circle-check{% elif doc_checklist.semaforo == 'warn' %}fa-triangle-exclamation{% else %}fa-circle-xmark{% endif %} mr-1"></i>
+        {{ doc_checklist.resumen }}
+      </span>
+    </div>
+  </div>
+  <div class="divide-y divide-gray-50">
+    {% for item in doc_checklist['items'] %}
+    <div class="flex flex-wrap items-center gap-4 px-6 py-3.5 hover:bg-cream/30 transition-colors">
+      <span class="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 text-sm
+        {% if item.estado == 'ok' %}bg-green-50 text-green-600
+        {% elif item.estado in ['faltante', 'vencido', 'rechazado'] %}bg-red-50 text-red-600
+        {% elif item.estado == 'opcional' %}bg-gray-50 text-gray-400
+        {% else %}bg-amber-50 text-amber-600{% endif %}">
+        <i class="fas {{ item.icon }}"></i>
+      </span>
+      <div class="flex-1 min-w-0">
+        <p class="font-semibold text-sm text-ink">{{ item.titulo }}</p>
+        <p class="text-[11px] text-ink-muted">
+          {{ item.tipo_label }}
+          {% if item.origen != 'exportación' %} · Requisito {{ item.origen }}{% endif %}
+          {% if not item.obligatorio %} · <span class="text-gray-400">Opcional</span>{% endif %}
+        </p>
+      </div>
+      <span class="text-[11px] font-bold px-2.5 py-1 rounded-full
+        {% if item.estado == 'ok' %}bg-green-50 text-green-700
+        {% elif item.estado in ['faltante', 'vencido', 'rechazado'] %}bg-red-50 text-red-700
+        {% elif item.estado == 'opcional' %}bg-gray-50 text-gray-500
+        {% else %}bg-amber-50 text-amber-800{% endif %}">{{ item.label }}</span>
+      {% if item.doc_id %}
+      <a href="{{ url_for('admin.documento_detalle', id=item.doc_id) }}" class="text-xs font-bold text-patagonia hover:underline">Ver doc</a>
+      {% elif puede_editar %}
+      <a href="{{ url_for('admin.documento_nuevo', embarque_id=emb.id, cliente_id=emb.folder_id) }}" class="text-xs font-bold text-sunset hover:underline">+ Agregar</a>
+      {% endif %}
+    </div>
+    {% endfor %}
+  </div>
+</div>
 
 <!-- Documentos -->
 <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden mb-6">

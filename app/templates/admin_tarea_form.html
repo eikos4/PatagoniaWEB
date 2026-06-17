@@ -1,63 +1,45 @@
-{% extends "admin_layout.html" %}
+{% extends "admin_layout_tw.html" %}
+{% from "admin_macros_tw.html" import tw_input %}
 {% block title %}{% if editing %}Editar tarea{% else %}Nueva tarea{% endif %}{% endblock %}
 {% block topbar_title %}{% if editing %}{{ tarea.titulo }}{% else %}Nueva tarea{% endif %}{% endblock %}
 {% block topbar_subtitle %}Asignación interna · embarque o cliente opcional{% endblock %}
 {% block topbar_actions %}
-  <a href="{{ url_for('admin.tareas') }}" class="btn-top ghost"><i class="fas fa-arrow-left"></i> Tareas</a>
+  <a href="{{ url_for('admin.tareas') }}" class="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-gray-200 bg-white text-sm font-semibold hover:border-patagonia hover:text-patagonia transition-colors">
+    <i class="fas fa-arrow-left text-xs"></i> Tareas
+  </a>
 {% endblock %}
 
 {% block content %}
-<div class="panel">
-  <form method="POST">
+<div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+  <div class="px-6 py-4 border-b border-gray-100 bg-cream/40">
+    <p class="text-sm text-ink-muted">Define responsable, prioridad y fecha límite. Vincula la tarea a un embarque para que aparezca en su ficha.</p>
+  </div>
+  <form method="POST" class="p-6">
     {{ form.hidden_tag() }}
-    <div class="form-grid" style="padding-top:1.5rem;">
-      <div class="form-group full">
-        <label><i class="fas fa-heading"></i> {{ form.titulo.label.text }}</label>
-        {{ form.titulo(class="form-control") }}
-        {% for e in form.titulo.errors %}<div class="form-errors">{{ e }}</div>{% endfor %}
-      </div>
-      <div class="form-group full">
-        <label><i class="fas fa-align-left"></i> {{ form.descripcion.label.text }}</label>
-        {{ form.descripcion(class="form-control", rows=3) }}
-      </div>
-      <div class="form-group">
-        <label><i class="fas fa-user"></i> {{ form.responsable_id.label.text }}</label>
-        {{ form.responsable_id(class="form-control") }}
-      </div>
-      <div class="form-group">
-        <label><i class="fas fa-flag"></i> {{ form.prioridad.label.text }}</label>
-        {{ form.prioridad(class="form-control") }}
-      </div>
-      <div class="form-group">
-        <label><i class="fas fa-traffic-light"></i> {{ form.estado.label.text }}</label>
-        {{ form.estado(class="form-control") }}
-      </div>
-      <div class="form-group">
-        <label><i class="fas fa-calendar"></i> {{ form.fecha_limite.label.text }}</label>
-        {{ form.fecha_limite(class="form-control") }}
-      </div>
-      <div class="form-group">
-        <label><i class="fas fa-ship"></i> {{ form.shipment_id.label.text }}</label>
-        {{ form.shipment_id(class="form-control") }}
-      </div>
-      <div class="form-group">
-        <label><i class="fas fa-users"></i> {{ form.folder_id.label.text }}</label>
-        {{ form.folder_id(class="form-control") }}
-      </div>
-      <div class="form-group full">
-        <label><i class="fas fa-comment"></i> {{ form.comentarios.label.text }}</label>
-        {{ form.comentarios(class="form-control", rows=2) }}
-      </div>
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+      {{ tw_input('Título', form.titulo, 'fa-heading', full=true) }}
+      {{ tw_input('Descripción', form.descripcion, 'fa-align-left', full=true, rows=3) }}
+      {{ tw_input('Responsable', form.responsable_id, 'fa-user') }}
+      {{ tw_input('Prioridad', form.prioridad, 'fa-flag') }}
+      {{ tw_input('Estado', form.estado, 'fa-traffic-light') }}
+      {{ tw_input('Fecha límite', form.fecha_limite, 'fa-calendar') }}
+      {{ tw_input('Embarque', form.shipment_id, 'fa-ship') }}
+      {{ tw_input('Cliente', form.folder_id, 'fa-users') }}
+      {{ tw_input('Comentarios', form.comentarios, 'fa-comment', full=true, rows=2) }}
     </div>
-    <div class="form-actions">
-      <button type="submit" class="btn btn-green"><i class="fas fa-save"></i> {% if editing %}Guardar{% else %}Crear tarea{% endif %}</button>
-      <a href="{{ url_for('admin.tareas') }}" class="btn btn-ghost">Cancelar</a>
+    <div class="flex flex-wrap gap-3 mt-8 pt-6 border-t border-gray-100">
+      <button type="submit" class="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-patagonia text-white text-sm font-bold hover:bg-patagonia-dark transition-colors">
+        <i class="fas fa-save"></i> {% if editing %}Guardar{% else %}Crear tarea{% endif %}
+      </button>
+      <a href="{{ url_for('admin.tareas') }}" class="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl border border-gray-200 text-sm font-semibold hover:border-patagonia hover:text-patagonia transition-colors">Cancelar</a>
     </div>
   </form>
   {% if editing %}
-  <form method="POST" action="{{ url_for('admin.tarea_eliminar', id=tarea.id) }}" onsubmit="return confirm('¿Eliminar esta tarea?');" style="padding:0 1.5rem 1.5rem;display:flex;justify-content:flex-end;">
+  <form method="POST" action="{{ url_for('admin.tarea_eliminar', id=tarea.id) }}" onsubmit="return confirm('¿Eliminar esta tarea?');" class="px-6 pb-6 flex justify-end">
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-    <button type="submit" class="btn btn-danger"><i class="fas fa-trash"></i> Eliminar</button>
+    <button type="submit" class="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-red-200 text-red-600 text-sm font-semibold hover:bg-red-50 transition-colors">
+      <i class="fas fa-trash"></i> Eliminar
+    </button>
   </form>
   {% endif %}
 </div>

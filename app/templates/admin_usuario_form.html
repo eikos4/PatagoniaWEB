@@ -1,42 +1,36 @@
-{% extends "admin_layout.html" %}
+{% extends "admin_layout_tw.html" %}
+{% from "admin_macros_tw.html" import tw_input %}
 {% block title %}{% if editing %}Editar usuario{% else %}Nuevo usuario{% endif %}{% endblock %}
 {% block topbar_title %}{% if editing %}{{ user.username }}{% else %}Nuevo usuario{% endif %}{% endblock %}
-{% block topbar_subtitle %}Email, rol y permisos de acceso{% endblock %}
+{% block topbar_subtitle %}Email, rol y permisos de acceso al panel{% endblock %}
 {% block topbar_actions %}
-  <a href="{{ url_for('admin.usuarios') }}" class="btn-top ghost"><i class="fas fa-arrow-left"></i> Usuarios</a>
+  <a href="{{ url_for('admin.usuarios') }}" class="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-gray-200 bg-white text-sm font-semibold hover:border-patagonia hover:text-patagonia transition-colors">
+    <i class="fas fa-arrow-left text-xs"></i> Usuarios
+  </a>
 {% endblock %}
 
 {% block content %}
-<div class="panel">
-  <form method="POST">
+<div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden max-w-2xl">
+  <div class="px-6 py-4 border-b border-gray-100 bg-cream/40">
+    <p class="text-sm text-ink-muted">El email será el usuario de login. Deja la contraseña vacía al editar si no quieres cambiarla.</p>
+  </div>
+  <form method="POST" class="p-6">
     {{ form.hidden_tag() }}
-    <div class="form-grid" style="padding-top:1.5rem;">
-      <div class="form-group">
-        <label><i class="fas fa-envelope"></i> {{ form.username.label.text }}</label>
-        {{ form.username(class="form-control") }}
-        {% for e in form.username.errors %}<div class="form-errors">{{ e }}</div>{% endfor %}
-      </div>
-      <div class="form-group">
-        <label><i class="fas fa-id-card"></i> {{ form.nombre.label.text }}</label>
-        {{ form.nombre(class="form-control") }}
-      </div>
-      <div class="form-group">
-        <label><i class="fas fa-user-shield"></i> {{ form.rol.label.text }}</label>
-        {{ form.rol(class="form-control") }}
-      </div>
-      <div class="form-group">
-        <label><i class="fas fa-toggle-on"></i> {{ form.activo.label.text }}</label>
-        {{ form.activo(class="form-control") }}
-      </div>
-      <div class="form-group full">
-        <label><i class="fas fa-key"></i> {{ form.password.label.text }}</label>
-        {{ form.password(class="form-control", placeholder="{% if editing %}Dejar vacío para no cambiar{% else %}Mínimo 4 caracteres{% endif %}") }}
-        {% for e in form.password.errors %}<div class="form-errors">{{ e }}</div>{% endfor %}
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+      {{ tw_input('Email / usuario', form.username, 'fa-envelope') }}
+      {{ tw_input('Nombre completo', form.nombre, 'fa-id-card') }}
+      {{ tw_input('Rol', form.rol, 'fa-user-shield') }}
+      {{ tw_input('Activo', form.activo, 'fa-toggle-on') }}
+      <div class="col-span-full">
+        {{ tw_input('Contraseña', form.password, 'fa-key', full=true) }}
+        {% if editing %}<p class="text-xs text-ink-muted -mt-3">Dejar vacío para no cambiar</p>{% endif %}
       </div>
     </div>
-    <div class="form-actions">
-      <button type="submit" class="btn btn-green"><i class="fas fa-save"></i> {% if editing %}Guardar{% else %}Crear usuario{% endif %}</button>
-      <a href="{{ url_for('admin.usuarios') }}" class="btn btn-ghost">Cancelar</a>
+    <div class="flex flex-wrap gap-3 mt-8 pt-6 border-t border-gray-100">
+      <button type="submit" class="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-patagonia text-white text-sm font-bold hover:bg-patagonia-dark transition-colors">
+        <i class="fas fa-save"></i> {% if editing %}Guardar{% else %}Crear usuario{% endif %}
+      </button>
+      <a href="{{ url_for('admin.usuarios') }}" class="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl border border-gray-200 text-sm font-semibold hover:border-patagonia hover:text-patagonia transition-colors">Cancelar</a>
     </div>
   </form>
 </div>

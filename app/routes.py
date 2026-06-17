@@ -1,6 +1,8 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash
 from .forms import ContactoForm
 from .models import db, ContactMessage
+from app.signature_utils import firma_by_token
+from app.constants import FIRMA_PARTES, DOCUMENTO_TIPOS
 
 main = Blueprint("main", __name__)
 
@@ -53,3 +55,17 @@ def servicios():
     # Página de servicios con el formulario también
     form = ContactoForm()
     return render_template("services.html", form=form)
+
+
+@main.route("/verificar-firma/<token>")
+def verificar_firma(token):
+    firma = firma_by_token(token)
+    doc = firma.documento if firma else None
+    return render_template(
+        "firma_verificar.html",
+        firma=firma,
+        doc=doc,
+        firma_partes=FIRMA_PARTES,
+        documento_tipos=DOCUMENTO_TIPOS,
+        valido=bool(firma),
+    )

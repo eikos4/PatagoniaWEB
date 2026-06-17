@@ -7,7 +7,7 @@
 {% block content %}
 <div class="grid lg:grid-cols-2 gap-6">
   <!-- Formulario -->
-  <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+  <div id="tour-form" class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
     <div class="px-5 py-4 border-b border-gray-100 flex items-center gap-3">
       <span class="w-10 h-10 rounded-xl bg-patagonia-50 text-patagonia flex items-center justify-center"><i class="fas fa-calculator"></i></span>
       <div>
@@ -51,7 +51,7 @@
   </div>
 
   <!-- Resultado principal -->
-  <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+  <div id="tour-resultado" class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
     <div class="px-5 py-4 border-b border-gray-100 flex items-center gap-3">
       <span class="w-10 h-10 rounded-xl bg-patagonia-50 text-patagonia flex items-center justify-center"><i class="fas fa-chart-bar"></i></span>
       <div>
@@ -163,7 +163,7 @@
 
 {% if resultado and resultado.comparativa %}
 <!-- Comparativa multi-mercado -->
-<div class="mt-6 bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+<div id="tour-comparativa" class="mt-6 bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
   <div class="px-5 py-4 border-b border-gray-100">
     <h3 class="font-bold text-ink flex items-center gap-2">
       <i class="fas fa-earth-americas text-patagonia"></i>

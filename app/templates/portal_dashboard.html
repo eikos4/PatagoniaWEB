@@ -1,44 +1,179 @@
 {% extends "portal_layout.html" %}
 {% from "portal_macros.html" import status_badge, timeline, route_visual, progress_pct %}
-{% set active_nav = 'inicio' %}
 {% block title %}Mi cuenta{% endblock %}
+
+{% block extra_head %}
+<style>
+  .dash-hero {
+    background: linear-gradient(135deg, #F7F3EA 0%, #EEF3E8 40%, #fff 100%);
+  }
+  .dash-hero-ship {
+    animation: dash-bob 4s ease-in-out infinite;
+  }
+  @keyframes dash-bob {
+    0%, 100% { transform: translateY(0) rotate(-2deg); }
+    50% { transform: translateY(-6px) rotate(2deg); }
+  }
+  .dash-route-dot {
+    animation: dash-pulse 2.5s ease-out infinite;
+  }
+  @keyframes dash-pulse {
+    0% { transform: scale(1); opacity: .7; }
+    100% { transform: scale(2); opacity: 0; }
+  }
+  .dash-kpi:hover { transform: translateY(-2px); }
+  .dash-kpi { transition: transform .2s, box-shadow .2s; }
+  @media (prefers-reduced-motion: reduce) {
+    .dash-hero-ship, .dash-route-dot { animation: none !important; }
+    .dash-kpi:hover { transform: none; }
+  }
+</style>
+{% endblock %}
+
 {% block content %}
 
-<!-- Welcome -->
-<div class="mb-8">
-  <p class="text-xs font-bold uppercase tracking-widest text-patagonia mb-1">Bienvenido</p>
-  <h1 class="text-2xl sm:text-3xl font-black text-ink">Hola, {{ cliente.contacto or cliente.nombre }}</h1>
-  <p class="text-ink-muted mt-1">{{ cliente.empresa or cliente.nombre }}{% if cliente.pais %} · {{ cliente.ciudad or '' }}{% if cliente.ciudad %}, {% endif %}{{ cliente.pais }}{% endif %}</p>
+<!-- Tarjeta principal de bienvenida -->
+<div id="tour-kpis" class="dash-hero rounded-2xl sm:rounded-3xl border border-patagonia/15 shadow-lg shadow-patagonia/10 overflow-hidden mb-6 sm:mb-8">
+  <div class="relative">
+    <div class="absolute top-0 right-0 w-48 sm:w-72 h-48 sm:h-72 bg-gradient-to-bl from-patagonia/10 to-transparent rounded-full -translate-y-1/3 translate-x-1/4 pointer-events-none"></div>
+    <div class="absolute bottom-0 left-0 w-32 h-32 bg-sunset/5 rounded-full translate-y-1/2 -translate-x-1/4 pointer-events-none"></div>
+
+    <div class="relative z-10 p-5 sm:p-8">
+      <div class="flex flex-col lg:flex-row lg:items-center gap-6 lg:gap-8">
+        <!-- Saludo y datos -->
+        <div class="flex-1 min-w-0">
+          <div class="flex flex-wrap items-center gap-2 mb-3">
+            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-patagonia text-white text-[10px] font-bold uppercase tracking-wider">
+              <i class="fas fa-leaf"></i> Portal importador
+            </span>
+            {% if alertas_stats.critica > 0 %}
+            <a href="{{ url_for('portal.alertas') }}" class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-red-100 text-red-700 text-[10px] font-bold uppercase tracking-wider hover:bg-red-200 transition-colors">
+              <span class="w-1.5 h-1.5 rounded-full bg-red-500 dash-route-dot"></span>
+              {{ alertas_stats.critica }} urgente{{ 's' if alertas_stats.critica != 1 else '' }}
+            </a>
+            {% elif alertas_stats.total > 0 %}
+            <a href="{{ url_for('portal.alertas') }}" class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-sunset/15 text-sunset-dark text-[10px] font-bold uppercase tracking-wider hover:bg-sunset/25 transition-colors">
+              <i class="fas fa-bell"></i> {{ alertas_stats.total }} alerta{{ 's' if alertas_stats.total != 1 else '' }}
+            </a>
+            {% endif %}
+          </div>
+
+          <h1 class="text-2xl sm:text-3xl lg:text-4xl font-black text-ink leading-tight mb-2">
+            Hola, {{ cliente.contacto or cliente.nombre }}
+          </h1>
+          <p class="text-sm sm:text-base text-ink-muted mb-4">
+            {{ cliente.empresa or cliente.nombre }}{% if cliente.pais %} · {{ cliente.ciudad or '' }}{% if cliente.ciudad %}, {% endif %}{{ cliente.pais }}{% endif %}
+          </p>
+
+          <!-- Ruta mini -->
+          <div class="flex items-center gap-2 sm:gap-3 max-w-md mb-5">
+            <span class="text-[10px] font-bold text-patagonia shrink-0">Chile</span>
+            <div class="flex-1 h-1 rounded-full bg-gradient-to-r from-patagonia via-sunset to-patagonia/40 relative">
+              {% if embarques_activos|length > 0 %}
+              <span class="absolute top-1/2 -translate-y-1/2 left-[60%] w-2 h-2 rounded-full bg-sunset dash-route-dot"></span>
+              {% endif %}
+            </div>
+            <span class="text-[10px] font-bold text-ink-muted shrink-0">
+              {% if embarque_destacado and embarque_destacado.puerto_destino %}{{ embarque_destacado.puerto_destino.split(',')[0] }}{% else %}Destino{% endif %}
+            </span>
+          </div>
+
+          <!-- Accesos rápidos -->
+          <div class="flex flex-wrap gap-2">
+            <a href="{{ url_for('portal.embarques') }}" class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-patagonia text-white text-xs sm:text-sm font-bold hover:bg-patagonia-dark shadow-md shadow-patagonia/20 transition-colors">
+              <i class="fas fa-ship"></i> Embarques
+              {% if embarques_activos|length %}<span class="bg-white/20 px-1.5 py-0.5 rounded-md text-[10px]">{{ embarques_activos|length }}</span>{% endif %}
+            </a>
+            <a href="{{ url_for('portal.documentos') }}" class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white border border-gray-200 text-ink text-xs sm:text-sm font-bold hover:border-patagonia hover:text-patagonia transition-colors">
+              <i class="fas fa-folder-open text-patagonia"></i> Documentos
+            </a>
+            <a href="{{ url_for('portal.alertas') }}" class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white border border-gray-200 text-ink text-xs sm:text-sm font-bold hover:border-sunset hover:text-sunset transition-colors">
+              <i class="fas fa-bell text-sunset"></i> Alertas
+            </a>
+            <a href="{{ url_for('portal.guia_importacion') }}" class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white border border-gray-200 text-ink text-xs sm:text-sm font-bold hover:border-patagonia hover:text-patagonia transition-colors hidden sm:inline-flex">
+              <i class="fas fa-compass text-patagonia"></i> Guía
+            </a>
+          </div>
+        </div>
+
+        <!-- Ilustración barco + resumen -->
+        <div class="shrink-0 flex flex-col items-center lg:items-end gap-4">
+          <div class="relative">
+            <div class="w-28 h-28 sm:w-36 sm:h-36 rounded-3xl bg-gradient-to-br from-patagonia to-patagonia-dark flex items-center justify-center shadow-xl shadow-patagonia/30 dash-hero-ship">
+              <i class="fas fa-ship text-4xl sm:text-5xl text-white"></i>
+            </div>
+            {% if embarque_destacado %}
+            <div class="absolute -bottom-2 -right-2 bg-white rounded-xl shadow-lg border border-gray-100 px-3 py-2 text-center min-w-[5rem]">
+              <div class="text-[9px] font-bold uppercase text-ink-muted">Progreso</div>
+              <div class="text-lg font-black text-patagonia">{{ progress_pct(embarque_destacado) }}%</div>
+            </div>
+            {% endif %}
+          </div>
+
+          <div class="grid grid-cols-2 gap-2 w-full sm:w-48">
+            <div class="bg-white/80 backdrop-blur rounded-xl border border-gray-100 px-3 py-2 text-center">
+              <div class="text-lg font-black text-patagonia">{{ embarques_activos|length }}</div>
+              <div class="text-[9px] font-bold text-ink-muted uppercase">Activos</div>
+            </div>
+            <div class="bg-white/80 backdrop-blur rounded-xl border border-gray-100 px-3 py-2 text-center">
+              <div class="text-lg font-black text-ink">{{ embarques_entregados|length }}</div>
+              <div class="text-[9px] font-bold text-ink-muted uppercase">Entregados</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
 
-<!-- KPIs -->
-<div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-  <div class="bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
-    <div class="w-10 h-10 rounded-xl bg-patagonia-50 text-patagonia flex items-center justify-center mb-3"><i class="fas fa-ship"></i></div>
-    <div class="text-3xl font-black text-patagonia">{{ embarques_activos|length }}</div>
-    <div class="text-xs font-semibold text-ink-muted uppercase tracking-wider mt-1">En tránsito / activos</div>
-  </div>
-  <div class="bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
-    <div class="w-10 h-10 rounded-xl bg-sunset/10 text-sunset flex items-center justify-center mb-3"><i class="fas fa-circle-check"></i></div>
-    <div class="text-3xl font-black text-ink">{{ embarques_entregados|length }}</div>
-    <div class="text-xs font-semibold text-ink-muted uppercase tracking-wider mt-1">Entregados</div>
-  </div>
-  <div class="bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
-    <div class="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center mb-3"><i class="fas fa-box"></i></div>
-    <div class="text-3xl font-black text-ink">{{ pedidos|length }}</div>
-    <div class="text-xs font-semibold text-ink-muted uppercase tracking-wider mt-1">Pedidos</div>
-  </div>
-  <div class="bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
-    <div class="w-10 h-10 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center mb-3"><i class="fas fa-file-lines"></i></div>
-    <div class="text-3xl font-black text-ink">{{ documentos|length }}</div>
-    <div class="text-xs font-semibold text-ink-muted uppercase tracking-wider mt-1">Documentos</div>
-  </div>
+<!-- Alertas destacadas -->
+{% if alertas %}
+<div class="mb-6 space-y-2">
+  {% for a in alertas[:2] %}
+  <a href="{% if a.embarque_id %}{{ url_for('portal.embarque_detalle', id=a.embarque_id) }}{% elif a.documento_id %}{{ url_for('portal.documento_firmar', id=a.documento_id) }}{% else %}{{ url_for('portal.alertas') }}{% endif %}"
+     class="flex items-start gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-colors
+     {% if a.nivel == 'critica' %}bg-red-50 border border-red-200 text-red-900 hover:bg-red-100
+     {% elif a.nivel == 'advertencia' %}bg-amber-50 border border-amber-200 text-amber-900 hover:bg-amber-100
+     {% else %}bg-blue-50 border border-blue-200 text-blue-900 hover:bg-blue-100{% endif %}">
+    <i class="fas {{ a.icono }} mt-0.5 shrink-0"></i>
+    <span class="flex-1 min-w-0"><strong>{{ a.titulo }}</strong> — <span class="break-words">{{ a.mensaje }}</span></span>
+    <i class="fas fa-chevron-right text-xs opacity-50 shrink-0"></i>
+  </a>
+  {% endfor %}
+  {% if alertas|length > 2 %}
+  <a href="{{ url_for('portal.alertas') }}" class="text-xs font-bold text-patagonia hover:underline pl-1">Ver las {{ alertas|length }} alertas →</a>
+  {% endif %}
+</div>
+{% endif %}
+
+<!-- KPIs secundarios -->
+<div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-8">
+  <a href="{{ url_for('portal.embarques') }}" class="dash-kpi bg-white rounded-2xl p-4 shadow-sm border border-gray-100 hover:shadow-md hover:border-patagonia/30 block">
+    <div class="w-9 h-9 rounded-lg bg-patagonia-50 text-patagonia flex items-center justify-center mb-2"><i class="fas fa-ship text-sm"></i></div>
+    <div class="text-xl sm:text-2xl font-black text-patagonia">{{ embarques_activos|length }}</div>
+    <div class="text-[10px] font-semibold text-ink-muted uppercase tracking-wider">En tránsito</div>
+  </a>
+  <a href="{{ url_for('portal.embarques') }}" class="dash-kpi bg-white rounded-2xl p-4 shadow-sm border border-gray-100 hover:shadow-md block">
+    <div class="w-9 h-9 rounded-lg bg-green-50 text-green-600 flex items-center justify-center mb-2"><i class="fas fa-circle-check text-sm"></i></div>
+    <div class="text-xl sm:text-2xl font-black text-ink">{{ embarques_entregados|length }}</div>
+    <div class="text-[10px] font-semibold text-ink-muted uppercase tracking-wider">Entregados</div>
+  </a>
+  <a href="{{ url_for('portal.pedidos') }}" class="dash-kpi bg-white rounded-2xl p-4 shadow-sm border border-gray-100 hover:shadow-md block">
+    <div class="w-9 h-9 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center mb-2"><i class="fas fa-box text-sm"></i></div>
+    <div class="text-xl sm:text-2xl font-black text-ink">{{ pedidos|length }}</div>
+    <div class="text-[10px] font-semibold text-ink-muted uppercase tracking-wider">Pedidos</div>
+  </a>
+  <a href="{{ url_for('portal.documentos') }}" class="dash-kpi bg-white rounded-2xl p-4 shadow-sm border border-gray-100 hover:shadow-md block">
+    <div class="w-9 h-9 rounded-lg bg-purple-50 text-purple-600 flex items-center justify-center mb-2"><i class="fas fa-file-lines text-sm"></i></div>
+    <div class="text-xl sm:text-2xl font-black text-ink">{{ documentos|length }}</div>
+    <div class="text-[10px] font-semibold text-ink-muted uppercase tracking-wider">Documentos</div>
+  </a>
 </div>
 
 <div class="grid lg:grid-cols-3 gap-6">
 
   <!-- Embarques activos -->
-  <div class="lg:col-span-2 space-y-5">
+  <div id="tour-embarque" class="lg:col-span-2 space-y-5">
     <div class="flex items-center justify-between">
       <h2 class="text-lg font-bold flex items-center gap-2"><i class="fas fa-map-location-dot text-patagonia"></i> Seguimiento de envíos</h2>
       <a href="{{ url_for('portal.embarques') }}" class="text-sm font-semibold text-patagonia hover:underline">Ver todos</a>
@@ -117,7 +252,7 @@
       {% endif %}
       {% endfor %}
     </div>
-    {% else %}
+    {% elif not embarque_destacado %}
     <div class="bg-white rounded-2xl border border-dashed border-gray-200 p-10 text-center">
       <i class="fas fa-ship text-4xl text-gray-200 mb-3"></i>
       <p class="text-ink-muted font-medium">No hay embarques activos en este momento.</p>
@@ -125,20 +260,20 @@
     {% endif %}
   </div>
 
-  <!-- Sidebar info -->
-  <div class="space-y-5">
+  <!-- Sidebar -->
+  <div id="tour-sidebar" class="space-y-5">
     {% if ejecutivo %}
     <div class="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm">
       <h3 class="text-sm font-bold uppercase tracking-wider text-ink-muted mb-4 flex items-center gap-2">
         <i class="fas fa-user-tie text-patagonia"></i> Tu ejecutivo
       </h3>
       <div class="flex items-center gap-4">
-        <div class="w-12 h-12 rounded-full bg-patagonia text-white flex items-center justify-center font-bold text-lg">
+        <div class="w-12 h-12 rounded-full bg-patagonia text-white flex items-center justify-center font-bold text-lg shrink-0">
           {{ (ejecutivo.nombre or ejecutivo.username)[0]|upper }}
         </div>
-        <div>
-          <div class="font-bold">{{ ejecutivo.nombre or 'Ejecutivo comercial' }}</div>
-          <a href="mailto:{{ ejecutivo.username }}" class="text-sm text-patagonia hover:underline">{{ ejecutivo.username }}</a>
+        <div class="min-w-0">
+          <div class="font-bold truncate">{{ ejecutivo.nombre or 'Ejecutivo comercial' }}</div>
+          <a href="mailto:{{ ejecutivo.username }}" class="text-sm text-patagonia hover:underline truncate block">{{ ejecutivo.username }}</a>
         </div>
       </div>
     </div>
@@ -159,7 +294,7 @@
             <div class="text-xs text-ink-muted">{{ documento_tipos.get(d.tipo, d.tipo) }}</div>
           </div>
           {% if d.tiene_archivo %}
-          <a href="{{ url_for('portal.documento_descargar', id=d.id) }}" class="w-8 h-8 rounded-lg bg-patagonia-50 text-patagonia flex items-center justify-center hover:bg-patagonia hover:text-white transition-colors">
+          <a href="{{ url_for('portal.documento_descargar', id=d.id) }}" class="w-8 h-8 rounded-lg bg-patagonia-50 text-patagonia flex items-center justify-center hover:bg-patagonia hover:text-white transition-colors shrink-0">
             <i class="fas fa-download text-xs"></i>
           </a>
           {% endif %}
@@ -178,11 +313,11 @@
       <ul class="space-y-3">
         {% for p in pedidos[:3] %}
         <li class="flex items-center justify-between gap-2 py-2 border-b border-gray-50 last:border-0">
-          <div>
-            <div class="text-sm font-bold">{{ p.numero }}</div>
+          <div class="min-w-0">
+            <div class="text-sm font-bold truncate">{{ p.numero }}</div>
             <div class="text-xs text-ink-muted">{{ p.fecha_pedido.strftime('%d/%m/%Y') }}</div>
           </div>
-          <div class="text-right">
+          <div class="text-right shrink-0">
             <div class="text-sm font-bold">{{ "{:,.0f}".format(p.total) }} {{ p.moneda }}</div>
             <div class="text-[10px] font-semibold text-patagonia">{{ pedido_estados.get(p.estado, p.estado) }}</div>
           </div>
@@ -191,6 +326,16 @@
       </ul>
     </div>
     {% endif %}
+
+    <div class="bg-gradient-to-br from-patagonia-50 to-cream rounded-2xl border border-patagonia-100 p-5 shadow-sm">
+      <h3 class="text-sm font-bold uppercase tracking-wider text-patagonia-dark mb-2 flex items-center gap-2">
+        <i class="fas fa-book-open"></i> Guía del importador
+      </h3>
+      <p class="text-xs text-ink-muted mb-4 leading-relaxed">{{ portal_guia.subtitulo }}</p>
+      <a href="{{ url_for('portal.guia_importacion') }}" class="inline-flex items-center gap-2 w-full justify-center py-3 rounded-xl bg-patagonia text-white text-sm font-bold hover:bg-patagonia-dark transition-colors shadow-md shadow-patagonia/20">
+        <i class="fas fa-compass"></i> Ver guía completa
+      </a>
+    </div>
   </div>
 </div>
 {% endblock %}

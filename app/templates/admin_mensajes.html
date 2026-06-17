@@ -1,81 +1,129 @@
-{% extends "admin_layout.html" %}
+{% extends "admin_layout_tw.html" %}
+{% from "admin_macros_tw.html" import cliente_avatar %}
 {% block title %}Mensajes{% endblock %}
 {% block topbar_title %}Bandeja de entrada{% endblock %}
-{% block topbar_subtitle %}Consultas del formulario web{% endblock %}
-
-{% block extra_css %}
-.msg-item { display: grid; grid-template-columns: auto 1fr auto auto; gap: 1rem; align-items: center; padding: 1rem 1.5rem; border-bottom: 1px solid var(--gray-light); }
-.msg-item.unread { background: #fffbeb; border-left: 3px solid var(--orange); }
-.msg-item[data-hidden="true"] { display: none; }
-.avatar { width: 40px; height: 40px; border-radius: 12px; background: var(--accent); color: #fff; font-weight: 700; display: flex; align-items: center; justify-content: center; }
-.search-box { flex: 1; max-width: 320px; position: relative; }
-.search-box input { width: 100%; padding: .65rem 1rem .65rem 2.5rem; border: 1px solid var(--gray-mid); border-radius: 99px; font-size: .85rem; }
-.search-box i { position: absolute; left: .9rem; top: 50%; transform: translateY(-50%); color: #9ca3af; }
-.segmented { display: inline-flex; background: var(--gray-light); border-radius: 99px; padding: 3px; }
-.segmented button { padding: .4rem .9rem; border: none; background: transparent; border-radius: 99px; font-size: .75rem; font-weight: 600; cursor: pointer; font-family: inherit; }
-.segmented button.active { background: var(--white); box-shadow: 0 1px 4px rgba(0,0,0,.08); }
-{% endblock %}
+{% block topbar_subtitle %}Consultas del formulario web · primer contacto con importadores{% endblock %}
 
 {% block content %}
 {% set total = mensajes|length %}
 {% set pendientes = mensajes|selectattr("leido", "equalto", False)|list|length %}
 
-<div class="kpi-grid" style="grid-template-columns:repeat(3,1fr);margin-bottom:1.25rem;">
-  <div class="kpi-card orange"><div class="kpi-icon"><i class="fas fa-clock"></i></div><div class="kpi-label">Pendientes</div><div class="kpi-value">{{ pendientes }}</div></div>
-  <div class="kpi-card green"><div class="kpi-icon"><i class="fas fa-check"></i></div><div class="kpi-label">Leídos</div><div class="kpi-value">{{ total - pendientes }}</div></div>
-  <div class="kpi-card dark"><div class="kpi-icon"><i class="fas fa-envelope"></i></div><div class="kpi-label">Total</div><div class="kpi-value">{{ total }}</div></div>
+<p class="text-sm text-ink-muted mb-6 max-w-3xl">
+  Cada mensaje puede convertirse en cotización. Marca como leído, responde por email o crea una cotización directa desde la bandeja.
+</p>
+
+<div id="tour-kpis" class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+  <div class="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm">
+    <div class="w-10 h-10 rounded-xl bg-sunset/10 text-sunset flex items-center justify-center mb-3"><i class="fas fa-clock"></i></div>
+    <p class="text-3xl font-extrabold text-ink">{{ pendientes }}</p>
+    <p class="text-xs font-semibold text-ink-muted uppercase tracking-wider mt-1">Pendientes</p>
+  </div>
+  <div class="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm">
+    <div class="w-10 h-10 rounded-xl bg-green-50 text-green-700 flex items-center justify-center mb-3"><i class="fas fa-check"></i></div>
+    <p class="text-3xl font-extrabold text-ink">{{ total - pendientes }}</p>
+    <p class="text-xs font-semibold text-ink-muted uppercase tracking-wider mt-1">Leídos</p>
+  </div>
+  <div class="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm">
+    <div class="w-10 h-10 rounded-xl bg-ink/5 text-ink flex items-center justify-center mb-3"><i class="fas fa-envelope"></i></div>
+    <p class="text-3xl font-extrabold text-ink">{{ total }}</p>
+    <p class="text-xs font-semibold text-ink-muted uppercase tracking-wider mt-1">Total</p>
+  </div>
 </div>
 
-<div class="panel">
-  <div class="panel-header">
-    <div class="search-box"><i class="fas fa-search"></i><input type="text" id="searchInput" placeholder="Buscar..."></div>
-    <div class="segmented" id="filterBtns">
-      <button class="active" data-filter="all">Todos</button>
-      <button data-filter="pending">Pendientes</button>
-      <button data-filter="read">Leídos</button>
+<div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+  <div id="tour-filtros" class="px-5 py-4 border-b border-gray-100 flex flex-wrap items-center gap-4">
+    <div class="relative flex-1 min-w-[200px] max-w-sm">
+      <i class="fas fa-search absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
+      <input type="text" id="searchInput" placeholder="Buscar por nombre, email, empresa..."
+             class="w-full pl-10 pr-4 py-2.5 rounded-full border border-gray-200 bg-gray-50 text-sm focus:bg-white focus:border-patagonia focus:ring-2 focus:ring-patagonia/20 outline-none transition-all">
+    </div>
+    <div class="inline-flex bg-gray-100 rounded-full p-1" id="filterBtns">
+      <button type="button" class="filter-btn active px-4 py-1.5 rounded-full text-xs font-bold transition-all bg-white text-ink shadow-sm" data-filter="all">Todos</button>
+      <button type="button" class="filter-btn px-4 py-1.5 rounded-full text-xs font-bold text-ink-muted transition-all" data-filter="pending">Pendientes</button>
+      <button type="button" class="filter-btn px-4 py-1.5 rounded-full text-xs font-bold text-ink-muted transition-all" data-filter="read">Leídos</button>
     </div>
   </div>
-  <div id="msgList">
+
+  <div id="tour-lista" class="divide-y divide-gray-50">
     {% for m in mensajes %}
-    <div class="msg-item {% if not m.leido %}unread{% endif %}" data-status="{{ 'read' if m.leido else 'pending' }}" data-search="{{ (m.nombre ~ ' ' ~ m.email ~ ' ' ~ (m.empresa or '') ~ ' ' ~ m.mensaje)|lower }}">
-      <div class="avatar">{{ m.nombre[0]|upper if m.nombre else '?' }}</div>
-      <div>
-        <div style="font-weight:700;">{{ m.nombre }} <span style="color:#9ca3af;font-size:.75rem;">#{{ m.id }}</span></div>
-        <div style="font-size:.8rem;color:var(--gray);"><a href="mailto:{{ m.email }}" style="color:var(--accent);">{{ m.email }}</a>{% if m.empresa %} · {{ m.empresa }}{% endif %}</div>
-        <p style="font-size:.85rem;color:#4b5563;margin-top:.35rem;">{{ m.mensaje[:120] }}{% if m.mensaje|length > 120 %}…{% endif %}</p>
+    <div class="msg-item flex flex-wrap items-start gap-4 px-5 py-4 hover:bg-cream/30 transition-colors
+                {% if not m.leido %}bg-amber-50/50 border-l-4 border-l-sunset{% endif %}"
+         data-status="{{ 'read' if m.leido else 'pending' }}"
+         data-search="{{ (m.nombre ~ ' ' ~ m.email ~ ' ' ~ (m.empresa or '') ~ ' ' ~ m.mensaje)|lower }}">
+      {{ cliente_avatar(m.nombre or '?', 'sm') }}
+      <div class="flex-1 min-w-0">
+        <div class="font-bold text-ink">{{ m.nombre }} <span class="text-xs font-normal text-ink-muted">#{{ m.id }}</span></div>
+        <div class="text-sm text-ink-muted">
+          <a href="mailto:{{ m.email }}" class="text-patagonia hover:underline">{{ m.email }}</a>
+          {% if m.empresa %} · {{ m.empresa }}{% endif %}
+        </div>
+        <p class="text-sm text-ink mt-2">{{ m.mensaje[:120] }}{% if m.mensaje|length > 120 %}…{% endif %}</p>
       </div>
-      <div style="text-align:right;font-size:.75rem;color:var(--gray);">{{ m.fecha.strftime("%d/%m/%Y") }}<br>{{ m.fecha.strftime("%H:%M") }}</div>
-      <div style="display:flex;gap:.35rem;">
-        <a href="{{ url_for('admin.mensaje_cotizar', id=m.id) }}" class="btn-icon" title="Crear cotización" style="border-color:var(--accent);color:var(--accent);"><i class="fas fa-file-invoice"></i></a>
-        <form method="POST" action="{{ url_for('admin.toggle_mensaje', id=m.id) }}"><button type="submit" class="btn-icon" title="Marcar"><i class="fas fa-envelope{% if not m.leido %}-open{% endif %}"></i></button></form>
-        <a href="mailto:{{ m.email }}" class="btn-icon dl"><i class="fas fa-reply"></i></a>
-        <form method="POST" action="{{ url_for('admin.delete_mensaje', id=m.id) }}" onsubmit="return confirm('¿Eliminar?');"><button type="submit" class="btn-icon del"><i class="fas fa-trash"></i></button></form>
+      <div class="text-xs text-ink-muted text-right shrink-0">
+        {{ m.fecha.strftime("%d/%m/%Y") }}<br>{{ m.fecha.strftime("%H:%M") }}
+      </div>
+      <div class="flex items-center gap-1 shrink-0">
+        <a href="{{ url_for('admin.mensaje_cotizar', id=m.id) }}" title="Crear cotización"
+           class="w-9 h-9 rounded-xl border border-patagonia/30 text-patagonia flex items-center justify-center hover:bg-patagonia hover:text-white transition-colors">
+          <i class="fas fa-file-invoice text-xs"></i>
+        </a>
+        <form method="POST" action="{{ url_for('admin.toggle_mensaje', id=m.id) }}">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <button type="submit" title="Marcar leído/no leído"
+                  class="w-9 h-9 rounded-xl border border-gray-200 text-ink-muted flex items-center justify-center hover:border-patagonia hover:text-patagonia transition-colors">
+            <i class="fas fa-envelope{% if not m.leido %}-open{% endif %} text-xs"></i>
+          </button>
+        </form>
+        <a href="mailto:{{ m.email }}" title="Responder"
+           class="w-9 h-9 rounded-xl border border-gray-200 text-ink-muted flex items-center justify-center hover:border-blue-300 hover:text-blue-600 transition-colors">
+          <i class="fas fa-reply text-xs"></i>
+        </a>
+        <form method="POST" action="{{ url_for('admin.delete_mensaje', id=m.id) }}" onsubmit="return confirm('¿Eliminar?');">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <button type="submit" title="Eliminar"
+                  class="w-9 h-9 rounded-xl border border-gray-200 text-ink-muted flex items-center justify-center hover:border-red-200 hover:text-red-500 transition-colors">
+            <i class="fas fa-trash text-xs"></i>
+          </button>
+        </form>
       </div>
     </div>
     {% else %}
-    <div class="empty-state"><i class="fas fa-inbox"></i><p>Sin mensajes aún.</p></div>
+    <div class="p-16 text-center">
+      <i class="fas fa-inbox text-5xl text-gray-200 mb-4"></i>
+      <p class="text-ink-muted font-medium">Sin mensajes aún.</p>
+    </div>
     {% endfor %}
   </div>
-  <p id="noResults" style="display:none;text-align:center;padding:2rem;color:var(--gray);">Sin resultados</p>
+  <p id="noResults" class="hidden text-center py-10 text-sm text-ink-muted">Sin resultados para tu búsqueda.</p>
 </div>
 {% endblock %}
 
 {% block extra_js %}
 (function(){
   const input = document.getElementById('searchInput');
-  const btns = document.querySelectorAll('.segmented button');
-  const items = document.querySelectorAll('[data-search]');
+  const btns = document.querySelectorAll('.filter-btn');
+  const items = document.querySelectorAll('.msg-item[data-search]');
+  const noResults = document.getElementById('noResults');
   let filter = 'all';
   function apply(){
     let v = 0;
     items.forEach(el => {
       const ok = (!input.value || el.dataset.search.includes(input.value.toLowerCase())) && (filter === 'all' || el.dataset.status === filter);
-      el.dataset.hidden = ok ? 'false' : 'true';
+      el.style.display = ok ? '' : 'none';
       if (ok) v++;
     });
-    document.getElementById('noResults').style.display = (v === 0 && items.length) ? 'block' : 'none';
+    if (noResults) noResults.classList.toggle('hidden', v > 0 || !items.length);
   }
   input?.addEventListener('input', apply);
-  btns.forEach(b => b.addEventListener('click', () => { filter = b.dataset.filter; btns.forEach(x => x.classList.remove('active')); b.classList.add('active'); apply(); }));
+  btns.forEach(b => b.addEventListener('click', () => {
+    filter = b.dataset.filter;
+    btns.forEach(x => {
+      x.classList.remove('active', 'bg-white', 'text-ink', 'shadow-sm');
+      x.classList.add('text-ink-muted');
+    });
+    b.classList.add('active', 'bg-white', 'text-ink', 'shadow-sm');
+    b.classList.remove('text-ink-muted');
+    apply();
+  }));
 })();
 {% endblock %}

@@ -9,6 +9,7 @@ from app.models import (
 from app.constants import CLIENTE_ESTADOS, PRODUCTO_CATEGORIAS, PEDIDO_ESTADOS, EMBARQUE_ESTADOS
 from app.embarque_utils import embarques_activos_filter
 from app.alertas import get_alertas_resumen
+from app.document_checklist_utils import get_embarque_document_checklist
 
 
 def _doc_estado_efectivo(doc):
@@ -118,14 +119,18 @@ def get_dashboard_kpis():
         if emb.eta:
             eta_dias = max((emb.eta - now).days, 0)
         doc_txt, doc_status = _embarque_doc_resumen(emb)
+        checklist = get_embarque_document_checklist(emb)
         operaciones_activas.append({
             "embarque": emb,
-            "ruta": f"Chile → {emb.puerto_destino or 'Destino'}",
+            "ruta": f"Chile → {emb.puerto_destino or (emb.cliente.pais if emb.cliente else 'Destino')}",
             "contenedores": 1 if emb.numero_contenedor else 0,
-            "doc_texto": doc_txt,
-            "doc_status": doc_status,
+            "doc_texto": checklist["resumen"],
+            "doc_status": checklist["semaforo"] if checklist["semaforo"] != "ok" else "ok",
+            "checklist_pct": checklist["pct"],
+            "checklist_completo": checklist["completo"],
             "eta_dias": eta_dias,
             "cliente_pais": emb.cliente.pais if emb.cliente else None,
+            "estado_label": EMBARQUE_ESTADOS.get(emb.estado, emb.estado),
         })
 
     alertas = get_alertas_resumen()

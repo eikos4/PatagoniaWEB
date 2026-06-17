@@ -1,48 +1,42 @@
-{% extends "admin_layout.html" %}
+{% extends "admin_layout_tw.html" %}
+{% from "admin_macros_tw.html" import tw_input %}
 {% block title %}{% if editing %}Editar plantilla{% else %}Nueva plantilla{% endif %}{% endblock %}
 {% block topbar_title %}{% if editing %}{{ plantilla.titulo }}{% else %}Nueva plantilla{% endif %}{% endblock %}
+{% block topbar_subtitle %}Documento modelo descargable para el equipo{% endblock %}
 {% block topbar_actions %}
-  <a href="{{ url_for('admin.plantillas') }}" class="btn-top ghost"><i class="fas fa-arrow-left"></i> Plantillas</a>
+  <a href="{{ url_for('admin.plantillas') }}" class="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-gray-200 bg-white text-sm font-semibold hover:border-patagonia hover:text-patagonia transition-colors">
+    <i class="fas fa-arrow-left text-xs"></i> Plantillas
+  </a>
 {% endblock %}
 
 {% block content %}
-<div class="panel">
-  <form method="POST" enctype="multipart/form-data">
+<div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+  <form method="POST" enctype="multipart/form-data" class="p-6">
     {{ form.hidden_tag() }}
-    <div class="form-grid" style="padding-top:1.5rem;">
-      <div class="form-group full">
-        <label>{{ form.titulo.label.text }}</label>
-        {{ form.titulo(class="form-control") }}
-      </div>
-      <div class="form-group">
-        <label>{{ form.tipo.label.text }}</label>
-        {{ form.tipo(class="form-control") }}
-      </div>
-      <div class="form-group">
-        <label>{{ form.activo.label.text }}</label>
-        {{ form.activo(class="form-control") }}
-      </div>
-      <div class="form-group full">
-        <label>{{ form.descripcion.label.text }}</label>
-        {{ form.descripcion(class="form-control", rows=3) }}
-      </div>
-      <div class="form-group full">
-        <label>{{ form.archivo.label.text }}</label>
-        {{ form.archivo(class="form-control") }}
-        {% if editing and plantilla.tiene_archivo %}
-        <p style="font-size:.8rem;color:var(--gray);margin-top:.35rem;">Actual: {{ plantilla.original_filename }}</p>
-        {% endif %}
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+      {{ tw_input('Título', form.titulo, 'fa-heading', full=true) }}
+      {{ tw_input('Tipo', form.tipo, 'fa-tag') }}
+      {{ tw_input('Activa', form.activo, 'fa-toggle-on') }}
+      {{ tw_input('Descripción', form.descripcion, 'fa-align-left', full=true, rows=3) }}
+      <div class="col-span-full">
+        <label class="block text-[11px] font-bold uppercase tracking-wider text-ink-muted mb-2"><i class="fas fa-file text-patagonia mr-1"></i>{{ form.archivo.label.text }}</label>
+        {{ form.archivo(class="w-full text-sm file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:bg-patagonia-50 file:text-patagonia file:font-semibold") }}
+        {% if editing and plantilla.tiene_archivo %}<p class="text-xs text-ink-muted mt-2">Actual: {{ plantilla.original_filename }}</p>{% endif %}
       </div>
     </div>
-    <div class="form-actions">
-      <button type="submit" class="btn btn-green"><i class="fas fa-save"></i> Guardar</button>
-      <a href="{{ url_for('admin.plantillas') }}" class="btn btn-ghost">Cancelar</a>
+    <div class="flex flex-wrap gap-3 mt-8 pt-6 border-t border-gray-100">
+      <button type="submit" class="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-patagonia text-white text-sm font-bold hover:bg-patagonia-dark transition-colors">
+        <i class="fas fa-save"></i> Guardar
+      </button>
+      <a href="{{ url_for('admin.plantillas') }}" class="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl border border-gray-200 text-sm font-semibold hover:border-patagonia hover:text-patagonia transition-colors">Cancelar</a>
     </div>
   </form>
   {% if editing %}
-  <form method="POST" action="{{ url_for('admin.plantilla_eliminar', id=plantilla.id) }}" onsubmit="return confirm('¿Eliminar?');" style="padding:0 1.5rem 1.5rem;display:flex;justify-content:flex-end;">
+  <form method="POST" action="{{ url_for('admin.plantilla_eliminar', id=plantilla.id) }}" onsubmit="return confirm('¿Eliminar?');" class="px-6 pb-6 flex justify-end">
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-    <button type="submit" class="btn btn-danger"><i class="fas fa-trash"></i> Eliminar</button>
+    <button type="submit" class="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-red-200 text-red-600 text-sm font-semibold hover:bg-red-50 transition-colors">
+      <i class="fas fa-trash"></i> Eliminar
+    </button>
   </form>
   {% endif %}
 </div>

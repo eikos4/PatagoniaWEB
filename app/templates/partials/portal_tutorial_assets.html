@@ -1,0 +1,40 @@
+{# Driver.js + tours portal cliente + modal bienvenida #}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/driver.js@1.3.1/dist/driver.css">
+<style>
+  .ps-driver-popover { border-radius: 14px !important; }
+  .ps-driver-popover .driver-popover-title { font-weight: 800 !important; color: #465C28 !important; }
+  .ps-driver-popover .driver-popover-description { font-size: 0.875rem !important; line-height: 1.5 !important; }
+  .ps-driver-popover .driver-popover-next-btn,
+  .ps-driver-popover .driver-popover-prev-btn,
+  .ps-driver-popover .driver-popover-close-btn { border-radius: 999px !important; font-weight: 600 !important; }
+  .ps-driver-popover .driver-popover-next-btn { background: #587232 !important; }
+  #psPortalWelcomeModal { display: none; position: fixed; inset: 0; z-index: 9999; align-items: center; justify-content: center; padding: 1rem; background: rgba(17,17,17,.5); backdrop-filter: blur(4px); }
+  #psPortalWelcomeModal.flex { display: flex; }
+  #psPortalWelcomeModal .ps-welcome-card { background: #fff; border-radius: 16px; max-width: 28rem; width: 100%; padding: 1.75rem; position: relative; box-shadow: 0 20px 50px rgba(0,0,0,.15); border: 1px solid #DCE8D0; }
+  #psPortalWelcomeModal .ps-welcome-close { position: absolute; top: 1rem; right: 1rem; width: 2.25rem; height: 2.25rem; border: none; border-radius: 10px; background: #f4f5f7; cursor: pointer; color: #6b7280; }
+  #psPortalWelcomeModal .ps-welcome-icon { width: 3.5rem; height: 3.5rem; border-radius: 14px; background: #EEF3E8; color: #587232; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; margin-bottom: 1rem; }
+  #psPortalWelcomeModal h3 { font-size: 1.25rem; font-weight: 800; margin: 0 0 .5rem; color: #111; }
+  #psPortalWelcomeModal p { font-size: .875rem; color: #6b7280; line-height: 1.6; margin: 0 0 1.5rem; }
+  #psPortalWelcomeModal .ps-welcome-actions { display: flex; flex-wrap: wrap; gap: .75rem; }
+  #psPortalWelcomeModal .ps-btn-primary { flex: 1; min-width: 140px; padding: .75rem 1.25rem; border: none; border-radius: 12px; background: #587232; color: #fff; font-weight: 700; font-size: .875rem; cursor: pointer; }
+  #psPortalWelcomeModal .ps-btn-primary:hover { background: #465C28; }
+  #psPortalWelcomeModal .ps-btn-ghost { flex: 1; min-width: 140px; padding: .75rem 1.25rem; border: 1px solid #e5e7eb; border-radius: 12px; background: #fff; color: #6b7280; font-weight: 600; font-size: .875rem; cursor: pointer; }
+  #psPortalWelcomeModal .ps-btn-ghost:hover { border-color: #587232; color: #587232; }
+</style>
+<script type="application/json" id="ps-portal-tours">{{ portal_tours_json|default('{}')|safe }}</script>
+
+<div id="psPortalWelcomeModal" data-guide-url="{{ url_for('portal.guia_importacion') }}">
+  <div class="ps-welcome-card">
+    <button type="button" id="psPortalWelcomeClose" class="ps-welcome-close" aria-label="Cerrar"><i class="fas fa-times"></i></button>
+    <div class="ps-welcome-icon"><i class="fas fa-compass"></i></div>
+    <h3>Bienvenido a tu portal</h3>
+    <p>¿Primera vez importando con Patagonia Sur? Lee la <strong>guía del importador</strong> y recorre el tutorial de cada sección para seguir tus embarques sin sorpresas.</p>
+    <div class="ps-welcome-actions">
+      <button type="button" id="psPortalWelcomeGo" class="ps-btn-primary"><i class="fas fa-book-open"></i> Ver guía de importación</button>
+      <button type="button" id="psPortalWelcomeLater" class="ps-btn-ghost">Explorar después</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/driver.js@1.3.1/dist/driver.js.iife.js"></script>
+<script src="{{ url_for('static', filename='js/portal-tours.js') }}?v=1"></script>

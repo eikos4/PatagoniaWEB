@@ -1,79 +1,266 @@
 {% extends "portal_layout.html" %}
-{% from "portal_macros.html" import status_badge %}
 {% set active_nav = 'pedidos' %}
 {% block title %}Mis pedidos{% endblock %}
+
+{% block extra_head %}
+<style>
+  .ped-hero-pattern {
+    background-image: radial-gradient(circle at 20% 80%, rgba(234,148,42,.15) 0%, transparent 50%),
+                      radial-gradient(circle at 80% 20%, rgba(88,114,50,.2) 0%, transparent 45%);
+  }
+  .ped-filter.active { background: #587232; color: #fff; border-color: #587232; }
+  .ped-card.hidden-card { display: none; }
+  .ped-card { animation: ped-in .4s ease both; }
+  @keyframes ped-in {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @media (prefers-reduced-motion: reduce) { .ped-card { animation: none; } }
+</style>
+{% endblock %}
+
 {% block content %}
 
-<div class="mb-8">
-  <h1 class="text-2xl sm:text-3xl font-black text-ink">Mis pedidos</h1>
-  <p class="text-ink-muted mt-1">Historial de compras, montos y estado de cada operación.</p>
+<!-- Hero comercial -->
+<div class="mb-6 sm:mb-8 rounded-2xl sm:rounded-3xl overflow-hidden bg-gradient-to-br from-blue-900 via-patagonia-dark to-patagonia text-white shadow-xl relative ped-hero-pattern">
+  <div class="relative z-10 p-5 sm:p-8">
+    <div class="flex flex-col lg:flex-row lg:items-end justify-between gap-5">
+      <div>
+        <p class="text-[10px] font-bold uppercase tracking-[0.2em] text-white/60 mb-2">
+          <i class="fas fa-handshake mr-1"></i> Operaciones comerciales
+        </p>
+        <h1 class="text-2xl sm:text-3xl font-black mb-2">Mis pedidos</h1>
+        <p class="text-sm text-white/80 max-w-lg">Historial de compras, incoterms, productos y embarques vinculados a cada orden.</p>
+      </div>
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3 shrink-0">
+        <div class="rounded-xl bg-white/10 backdrop-blur border border-white/15 px-3 py-2.5 text-center">
+          <div class="text-xl font-black">{{ pedidos_stats.total }}</div>
+          <div class="text-[9px] font-bold uppercase text-white/60">Pedidos</div>
+        </div>
+        <div class="rounded-xl bg-white/10 backdrop-blur border border-white/15 px-3 py-2.5 text-center">
+          <div class="text-xl font-black text-sunset">{{ pedidos_stats.en_curso }}</div>
+          <div class="text-[9px] font-bold uppercase text-white/60">En curso</div>
+        </div>
+        <div class="rounded-xl bg-white/10 backdrop-blur border border-white/15 px-3 py-2.5 text-center">
+          <div class="text-xl font-black text-green-300">{{ pedidos_stats.entregados }}</div>
+          <div class="text-[9px] font-bold uppercase text-white/60">Entregados</div>
+        </div>
+        <div class="rounded-xl bg-white/10 backdrop-blur border border-white/15 px-3 py-2.5 text-center">
+          <div class="text-xl font-black {% if pedidos_stats.con_saldo %}text-amber-300{% endif %}">{{ pedidos_stats.con_saldo }}</div>
+          <div class="text-[9px] font-bold uppercase text-white/60">Con saldo</div>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
 
 {% if pedidos %}
-<div class="space-y-4">
+<!-- Filtros -->
+<div id="tour-intro" class="flex gap-2 overflow-x-auto pb-2 mb-6 -mx-1 px-1" style="scrollbar-width:none">
+  <button type="button" class="ped-filter active shrink-0 px-4 py-2 rounded-full border border-gray-200 bg-white text-xs font-bold transition-colors" data-filter="todos">
+    <i class="fas fa-layer-group mr-1"></i> Todos ({{ pedidos_stats.total }})
+  </button>
+  <button type="button" class="ped-filter shrink-0 px-4 py-2 rounded-full border border-gray-200 bg-white text-xs font-bold text-ink-muted hover:border-patagonia transition-colors" data-filter="activo">
+    <i class="fas fa-box-open mr-1 text-sunset"></i> En curso ({{ pedidos_stats.en_curso }})
+  </button>
+  <button type="button" class="ped-filter shrink-0 px-4 py-2 rounded-full border border-gray-200 bg-white text-xs font-bold text-ink-muted hover:border-patagonia transition-colors" data-filter="entregado">
+    <i class="fas fa-flag-checkered mr-1 text-green-600"></i> Entregados ({{ pedidos_stats.entregados }})
+  </button>
+</div>
+
+<div id="tour-lista" class="space-y-5">
   {% for p in pedidos %}
-  <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 sm:p-6 hover:shadow-md transition-shadow">
-    <div class="flex flex-wrap items-start justify-between gap-4 mb-4">
-      <div>
-        <div class="text-lg font-black text-ink">{{ p.numero }}</div>
-        <div class="text-sm text-ink-muted mt-0.5">{{ p.fecha_pedido.strftime('%d/%m/%Y') }}</div>
-      </div>
-      {% set color = pedido_estado_colores.get(p.estado, '#6b7280') %}
-      <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold"
-            style="background:{{ color }}18;color:{{ color }};">
-        <i class="fas {{ pedido_estado_iconos.get(p.estado, 'fa-circle') }} text-[10px]"></i>
-        {{ pedido_estados.get(p.estado, p.estado) }}
-      </span>
-    </div>
+  {% set color = pedido_estado_colores.get(p.estado, '#6b7280') %}
+  {% set flujo_idx = pedido_flujo_index(p.estado) %}
+  {% set es_entregado = p.estado == 'entregado' %}
+  <article class="ped-card group bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-lg hover:border-patagonia/20 transition-all overflow-hidden"
+           style="animation-delay: {{ loop.index0 * 0.05 }}s"
+           data-grupo="{% if es_entregado %}entregado{% else %}activo{% endif %}">
 
-    <div class="grid sm:grid-cols-3 gap-4 mb-4">
-      <div class="rounded-xl bg-cream p-4">
-        <div class="text-[10px] font-bold uppercase text-ink-muted mb-1">Total pedido</div>
-        <div class="text-xl font-black text-patagonia">{{ "{:,.2f}".format(p.total) }} <span class="text-sm">{{ p.moneda }}</span></div>
+    <!-- Cabecera -->
+    <div class="px-5 pt-5 pb-4 border-b border-gray-100 {% if es_entregado %}bg-gradient-to-r from-green-50/80 to-cream{% else %}bg-gradient-to-r from-blue-50/50 via-cream to-sunset/5{% endif %}">
+      <div class="flex flex-wrap items-start justify-between gap-3 mb-4">
+        <div class="flex items-start gap-3 min-w-0">
+          <span class="w-12 h-12 rounded-2xl flex items-center justify-center text-xl shrink-0 shadow-sm"
+                style="background:{{ color }}18;color:{{ color }};">
+            <i class="fas {{ pedido_estado_iconos.get(p.estado, 'fa-box') }}"></i>
+          </span>
+          <div class="min-w-0">
+            <h2 class="text-lg font-black text-ink truncate">{{ p.numero }}</h2>
+            <p class="text-xs text-ink-muted mt-0.5 flex items-center gap-2 flex-wrap">
+              <span><i class="fas fa-calendar-day text-patagonia mr-1"></i>{{ p.fecha_pedido.strftime('%d/%m/%Y') }}</span>
+              {% if p.incoterm %}
+              <span class="px-2 py-0.5 rounded-md bg-white border border-gray-200 text-[10px] font-bold">{{ p.incoterm }}</span>
+              {% endif %}
+            </p>
+          </div>
+        </div>
+        <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold shrink-0"
+              style="background:{{ color }}18;color:{{ color }};">
+          <i class="fas {{ pedido_estado_iconos.get(p.estado, 'fa-circle') }} text-[10px]"></i>
+          {{ pedido_estados.get(p.estado, p.estado) }}
+        </span>
       </div>
-      <div class="rounded-xl bg-cream p-4">
-        <div class="text-[10px] font-bold uppercase text-ink-muted mb-1">Incoterm</div>
-        <div class="text-sm font-bold">{{ p.incoterm or 'FOB' }}</div>
-      </div>
-      <div class="rounded-xl bg-cream p-4">
-        <div class="text-[10px] font-bold uppercase text-ink-muted mb-1">Entrega estimada</div>
-        <div class="text-sm font-bold">{{ p.fecha_entrega_estimada.strftime('%d/%m/%Y') if p.fecha_entrega_estimada else 'Por confirmar' }}</div>
-      </div>
-    </div>
 
-    {% if p.lineas %}
-    <div class="border-t border-gray-100 pt-4">
-      <div class="text-[10px] font-bold uppercase text-ink-muted mb-3">Productos</div>
-      <ul class="space-y-2">
-        {% for l in p.lineas %}
-        <li class="flex justify-between gap-4 text-sm">
-          <span class="text-ink">{{ l.descripcion }}</span>
-          <span class="font-semibold text-ink-muted shrink-0">{{ l.cantidad|int if l.cantidad == l.cantidad|int else l.cantidad }} {{ l.unidad }}</span>
-        </li>
+      <!-- Flujo del pedido -->
+      {% if flujo_idx >= 0 %}
+      <div class="flex items-center gap-1">
+        {% for est_key in ['confirmado', 'en_preparacion', 'listo', 'embarcado', 'entregado'] %}
+        {% set step_idx = loop.index0 %}
+        {% set done = step_idx <= flujo_idx %}
+        {% set current = step_idx == flujo_idx %}
+        <div class="flex-1 flex flex-col items-center gap-1 min-w-0">
+          <div class="w-full flex items-center">
+            {% if not loop.first %}<div class="h-0.5 flex-1 {% if done %}bg-patagonia{% else %}bg-gray-200{% endif %}"></div>{% endif %}
+            <div class="w-7 h-7 sm:w-8 sm:h-8 rounded-lg flex items-center justify-center text-[10px] shrink-0 transition-colors
+                        {% if current %}bg-patagonia text-white shadow-md shadow-patagonia/30 ring-2 ring-patagonia/30
+                        {% elif done %}bg-patagonia/15 text-patagonia
+                        {% else %}bg-gray-100 text-gray-300{% endif %}">
+              <i class="fas {{ pedido_estado_iconos.get(est_key, 'fa-circle') }}"></i>
+            </div>
+            {% if not loop.last %}<div class="h-0.5 flex-1 {% if step_idx < flujo_idx %}bg-patagonia{% else %}bg-gray-200{% endif %}"></div>{% endif %}
+          </div>
+          <span class="text-[8px] sm:text-[9px] font-semibold text-center leading-tight hidden sm:block {% if done %}text-patagonia{% else %}text-gray-400{% endif %}">
+            {{ pedido_estados.get(est_key, est_key).split(' ')[0] }}
+          </span>
+        </div>
         {% endfor %}
-      </ul>
+      </div>
+      {% endif %}
     </div>
-    {% endif %}
 
-    {% if p.embarques %}
-    <div class="mt-4 pt-4 border-t border-gray-100 flex flex-wrap gap-2">
-      <span class="text-[10px] font-bold uppercase text-ink-muted w-full mb-1">Embarques vinculados</span>
-      {% for e in p.embarques %}
-      <a href="{{ url_for('portal.embarque_detalle', id=e.id) }}"
-         class="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-patagonia-50 text-patagonia text-xs font-bold hover:bg-patagonia hover:text-white transition-colors">
-        <i class="fas fa-ship"></i> {{ e.numero }}
-      </a>
-      {% endfor %}
+    <div class="p-5 sm:p-6">
+      <!-- Montos -->
+      <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-5">
+        <div class="rounded-xl bg-cream border border-gray-100 p-3 sm:col-span-1">
+          <div class="text-[9px] font-bold uppercase text-ink-muted mb-1 flex items-center gap-1">
+            <i class="fas fa-coins text-sunset"></i> Total
+          </div>
+          <div class="text-lg sm:text-xl font-black text-patagonia leading-tight">
+            {{ "{:,.2f}".format(p.total) }}
+            <span class="text-xs font-bold text-ink-muted">{{ p.moneda }}</span>
+          </div>
+        </div>
+        <div class="rounded-xl bg-cream border border-gray-100 p-3">
+          <div class="text-[9px] font-bold uppercase text-ink-muted mb-1 flex items-center gap-1">
+            <i class="fas fa-wallet text-patagonia"></i> Anticipo
+          </div>
+          <div class="text-sm font-bold text-ink">{{ "{:,.2f}".format(p.anticipo_monto or 0) }} {{ p.moneda }}</div>
+        </div>
+        <div class="rounded-xl border p-3 {% if p.saldo_pendiente > 0 %}bg-amber-50 border-amber-100{% else %}bg-green-50/50 border-green-100{% endif %}">
+          <div class="text-[9px] font-bold uppercase text-ink-muted mb-1 flex items-center gap-1">
+            <i class="fas fa-scale-balanced {% if p.saldo_pendiente > 0 %}text-amber-600{% else %}text-green-600{% endif %}"></i> Saldo
+          </div>
+          <div class="text-sm font-bold {% if p.saldo_pendiente > 0 %}text-amber-800{% else %}text-green-700{% endif %}">
+            {{ "{:,.2f}".format(p.saldo_pendiente) }} {{ p.moneda }}
+          </div>
+        </div>
+      </div>
+
+      <div class="grid sm:grid-cols-2 gap-4 mb-4">
+        <div class="flex items-center gap-3 text-sm">
+          <span class="w-9 h-9 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center shrink-0"><i class="fas fa-truck-fast"></i></span>
+          <div>
+            <div class="text-[10px] font-bold uppercase text-ink-muted">Entrega estimada</div>
+            <div class="font-semibold text-ink">{{ p.fecha_entrega_estimada.strftime('%d/%m/%Y') if p.fecha_entrega_estimada else 'Por confirmar' }}</div>
+          </div>
+        </div>
+        <div class="flex items-center gap-3 text-sm">
+          <span class="w-9 h-9 rounded-lg bg-purple-50 text-purple-600 flex items-center justify-center shrink-0"><i class="fas fa-file-contract"></i></span>
+          <div>
+            <div class="text-[10px] font-bold uppercase text-ink-muted">Incoterm</div>
+            <div class="font-semibold text-ink">{{ p.incoterm or 'FOB' }}</div>
+          </div>
+        </div>
+      </div>
+
+      {% if p.lineas %}
+      <div class="rounded-xl border border-gray-100 bg-gray-50/50 p-4 mb-4">
+        <div class="text-[10px] font-bold uppercase text-ink-muted mb-3 flex items-center gap-2">
+          <i class="fas fa-seedling text-patagonia"></i> Productos ({{ p.lineas|length }})
+        </div>
+        <ul class="space-y-2">
+          {% for l in p.lineas[:5] %}
+          <li class="flex items-center justify-between gap-3 text-sm bg-white rounded-lg px-3 py-2 border border-gray-100">
+            <span class="text-ink flex items-center gap-2 min-w-0">
+              <i class="fas fa-cube text-patagonia/50 text-xs shrink-0"></i>
+              <span class="truncate">{{ l.descripcion }}</span>
+            </span>
+            <span class="font-bold text-ink-muted shrink-0 text-xs">
+              {{ l.cantidad|int if l.cantidad == l.cantidad|int else l.cantidad }} {{ l.unidad }}
+            </span>
+          </li>
+          {% endfor %}
+          {% if p.lineas|length > 5 %}
+          <li class="text-xs text-ink-muted text-center pt-1">+ {{ p.lineas|length - 5 }} producto(s) más</li>
+          {% endif %}
+        </ul>
+      </div>
+      {% endif %}
+
+      {% if p.embarques %}
+      <div class="flex flex-wrap items-center gap-2 pt-2 border-t border-gray-100">
+        <span class="text-[10px] font-bold uppercase text-ink-muted w-full sm:w-auto flex items-center gap-1">
+          <i class="fas fa-ship text-patagonia"></i> Embarques vinculados
+        </span>
+        {% for e in p.embarques %}
+        <a href="{{ url_for('portal.embarque_detalle', id=e.id) }}"
+           class="inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-patagonia-50 text-patagonia text-xs font-bold hover:bg-patagonia hover:text-white transition-colors border border-patagonia/10">
+          <i class="fas fa-ship"></i> {{ e.numero }}
+          <i class="fas fa-arrow-right text-[9px] opacity-60"></i>
+        </a>
+        {% endfor %}
+      </div>
+      {% endif %}
     </div>
-    {% endif %}
-  </div>
+  </article>
   {% endfor %}
 </div>
+
+<div id="ped-empty-filter" class="hidden bg-white rounded-2xl border border-dashed border-gray-200 p-12 text-center">
+  <i class="fas fa-filter text-4xl text-gray-200 mb-3"></i>
+  <p class="font-bold text-ink-muted">No hay pedidos en esta categoría</p>
+</div>
+
 {% else %}
-<div class="bg-white rounded-2xl border border-dashed border-gray-200 p-16 text-center">
-  <i class="fas fa-box text-5xl text-gray-200 mb-4"></i>
-  <h3 class="font-bold text-lg mb-2">Sin pedidos registrados</h3>
-  <p class="text-ink-muted text-sm">Tus pedidos confirmados aparecerán aquí.</p>
+<div id="tour-lista" class="relative rounded-2xl overflow-hidden bg-gradient-to-br from-blue-50 to-cream border border-gray-200 p-12 sm:p-16 text-center">
+  <div class="inline-flex w-20 h-20 rounded-3xl bg-white shadow-lg items-center justify-center text-patagonia text-4xl mb-5">
+    <i class="fas fa-box-open"></i>
+  </div>
+  <h3 class="font-black text-xl text-ink mb-2">Sin pedidos registrados</h3>
+  <p class="text-ink-muted text-sm max-w-md mx-auto">Tus pedidos confirmados con Patagonia Sur aparecerán aquí con productos, montos y embarques asociados.</p>
 </div>
 {% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function () {
+  const filters = document.querySelectorAll('.ped-filter');
+  const cards = document.querySelectorAll('.ped-card');
+  const empty = document.getElementById('ped-empty-filter');
+  const lista = document.getElementById('tour-lista');
+  if (!filters.length || !cards.length) return;
+
+  filters.forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      const f = btn.dataset.filter;
+      filters.forEach(function (b) {
+        b.classList.toggle('active', b === btn);
+        b.classList.toggle('text-ink-muted', b !== btn);
+      });
+      var visible = 0;
+      cards.forEach(function (card) {
+        var match = f === 'todos' || card.dataset.grupo === f;
+        card.classList.toggle('hidden-card', !match);
+        if (match) visible++;
+      });
+      if (empty && lista) {
+        empty.classList.toggle('hidden', visible > 0);
+        lista.classList.toggle('hidden', visible === 0);
+      }
+    });
+  });
+})();
+</script>
 {% endblock %}

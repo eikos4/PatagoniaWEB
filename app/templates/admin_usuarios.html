@@ -1,59 +1,69 @@
-{% extends "admin_layout.html" %}
+{% extends "admin_layout_tw.html" %}
 {% block title %}Usuarios{% endblock %}
 {% block topbar_title %}Usuarios y roles{% endblock %}
 {% block topbar_subtitle %}Gestión de accesos al panel administrativo{% endblock %}
 {% block topbar_actions %}
-  <a href="{{ url_for('admin.usuario_nuevo') }}" class="btn-top accent"><i class="fas fa-user-plus"></i> Nuevo usuario</a>
+  <a href="{{ url_for('admin.usuario_nuevo') }}" id="tour-btn-nuevo" class="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-patagonia text-white text-sm font-bold hover:bg-patagonia-dark transition-colors">
+    <i class="fas fa-user-plus text-xs"></i> Nuevo usuario
+  </a>
 {% endblock %}
 
 {% block content %}
-<div class="panel">
-  <div class="panel-header">
-    <h3><i class="fas fa-users-gear" style="color:var(--accent);margin-right:.5rem;"></i>{{ usuarios|length }} usuario{% if usuarios|length != 1 %}s{% endif %}</h3>
+<p class="text-sm text-ink-muted mb-6 max-w-3xl">
+  Controla quién accede al admin: roles CEO, comercial, operaciones o solo lectura. Cada usuario inicia sesión con su email corporativo.
+</p>
+
+<div id="tour-lista" class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden mb-6">
+  <div class="px-6 py-4 border-b border-gray-100">
+    <h2 class="font-bold text-ink flex items-center gap-2"><i class="fas fa-users-gear text-patagonia"></i> {{ usuarios|length }} usuario{% if usuarios|length != 1 %}s{% endif %}</h2>
   </div>
-  <table class="data-table">
-    <thead>
-      <tr>
-        <th>Usuario</th>
-        <th>Nombre</th>
-        <th>Rol</th>
-        <th>Estado</th>
-        <th></th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for u in usuarios %}
-      <tr>
-        <td><strong>{{ u.username }}</strong></td>
-        <td>{{ u.nombre or '—' }}</td>
-        <td>
-          <span class="estado-badge" style="background:var(--accent-light);color:var(--accent);">
-            {{ user_roles.get(u.rol, u.rol) }}
-          </span>
-        </td>
-        <td>
-          {% if u.activo %}
-          <span class="estado-badge" style="background:#ecfdf5;color:var(--green-ok);"><i class="fas fa-circle"></i> Activo</span>
-          {% else %}
-          <span class="estado-badge" style="background:#f3f4f6;color:var(--gray);"><i class="fas fa-ban"></i> Inactivo</span>
-          {% endif %}
-        </td>
-        <td>
-          <a href="{{ url_for('admin.usuario_editar', id=u.id) }}" class="btn-icon" title="Editar"><i class="fas fa-pen"></i></a>
-        </td>
-      </tr>
-      {% endfor %}
-    </tbody>
-  </table>
+  <div class="overflow-x-auto">
+    <table class="w-full text-sm">
+      <thead>
+        <tr class="bg-gray-50/80 text-left">
+          <th class="px-4 py-3 text-[11px] font-bold uppercase text-ink-muted">Usuario</th>
+          <th class="px-4 py-3 text-[11px] font-bold uppercase text-ink-muted">Nombre</th>
+          <th class="px-4 py-3 text-[11px] font-bold uppercase text-ink-muted">Rol</th>
+          <th class="px-4 py-3 text-[11px] font-bold uppercase text-ink-muted">Estado</th>
+          <th class="px-4 py-3"></th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-gray-50">
+        {% for u in usuarios %}
+        <tr class="hover:bg-cream/30">
+          <td class="px-4 py-4 font-bold text-ink">{{ u.username }}</td>
+          <td class="px-4 py-4 text-ink-muted">{{ u.nombre or '—' }}</td>
+          <td class="px-4 py-4">
+            <span class="text-xs font-semibold px-2.5 py-1 rounded-full bg-patagonia-50 text-patagonia">{{ user_roles.get(u.rol, u.rol) }}</span>
+          </td>
+          <td class="px-4 py-4">
+            {% if u.activo %}
+            <span class="text-xs font-bold px-2 py-0.5 rounded-full bg-green-50 text-green-700"><i class="fas fa-circle text-[6px] mr-1"></i> Activo</span>
+            {% else %}
+            <span class="text-xs font-bold px-2 py-0.5 rounded-full bg-gray-100 text-ink-muted"><i class="fas fa-ban text-[10px] mr-1"></i> Inactivo</span>
+            {% endif %}
+          </td>
+          <td class="px-4 py-4">
+            <a href="{{ url_for('admin.usuario_editar', id=u.id) }}" class="w-8 h-8 rounded-lg border border-gray-200 inline-flex items-center justify-center text-ink-muted hover:text-patagonia hover:border-patagonia transition-colors"><i class="fas fa-pen text-xs"></i></a>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
 </div>
 
-<div class="panel" style="margin-top:1.25rem;">
-  <div class="panel-header"><h3><i class="fas fa-shield-halved" style="color:var(--accent);margin-right:.4rem;"></i>Roles disponibles</h3></div>
-  <div style="padding:1.25rem 1.5rem;font-size:.85rem;line-height:1.8;">
+<div id="tour-roles" class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+  <div class="px-6 py-4 border-b border-gray-100">
+    <h2 class="font-bold text-ink flex items-center gap-2"><i class="fas fa-shield-halved text-patagonia"></i> Roles disponibles</h2>
+  </div>
+  <div class="p-6 space-y-3 text-sm">
     {% for key, label in user_roles.items() %}
-    <div><strong>{{ label }}</strong> <span style="color:var(--gray);">({{ key }})</span>
-      {% if key == 'ceo' %} — acceso total y gestión de usuarios{% endif %}
-      {% if key == 'lectura' %} — solo consulta, sin edición{% endif %}
+    <div class="flex flex-wrap items-baseline gap-2 p-3 rounded-xl bg-gray-50/80">
+      <strong class="text-ink">{{ label }}</strong>
+      <span class="text-xs text-ink-muted font-mono">({{ key }})</span>
+      {% if key == 'ceo' %}<span class="text-xs text-ink-muted">— acceso total y gestión de usuarios</span>{% endif %}
+      {% if key == 'lectura' %}<span class="text-xs text-ink-muted">— solo consulta, sin edición</span>{% endif %}
     </div>
     {% endfor %}
   </div>

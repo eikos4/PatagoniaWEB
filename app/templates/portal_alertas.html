@@ -1,0 +1,263 @@
+{% extends "portal_layout.html" %}
+{% set active_nav = 'alertas' %}
+{% block title %}Alertas{% endblock %}
+
+{% block extra_head %}
+<style>
+  .alertas-radar {
+    background: radial-gradient(circle at 30% 40%, rgba(88,114,50,.25) 0%, transparent 45%),
+                radial-gradient(circle at 70% 60%, rgba(234,148,42,.15) 0%, transparent 40%),
+                linear-gradient(135deg, #1a2e14 0%, #2d4a22 45%, #465C28 100%);
+  }
+  .alertas-wave {
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 80' preserveAspectRatio='none'%3E%3Cpath fill='%23F7F3EA' fill-opacity='.12' d='M0 40 Q150 70 300 40 T600 40 T900 40 T1200 40 V80 H0Z'/%3E%3C/svg%3E") repeat-x bottom;
+    background-size: 600px 40px;
+    animation: alertas-wave 8s linear infinite;
+  }
+  @keyframes alertas-wave {
+    from { background-position-x: 0; }
+    to { background-position-x: 600px; }
+  }
+  .alertas-route-line {
+    background: linear-gradient(90deg, transparent, rgba(247,243,234,.35) 20%, rgba(234,148,42,.5) 50%, rgba(247,243,234,.35) 80%, transparent);
+    height: 2px;
+  }
+  .alertas-ship-wrap {
+    animation: alertas-sail 14s ease-in-out infinite alternate;
+  }
+  @keyframes alertas-sail {
+    0% { left: 8%; transform: translateY(0) rotate(-2deg); }
+    50% { transform: translateY(-4px) rotate(0deg); }
+    100% { left: calc(100% - 3.5rem); transform: translateY(2px) rotate(2deg); }
+  }
+  .alertas-ship-icon {
+    animation: alertas-bob 3s ease-in-out infinite;
+    filter: drop-shadow(0 4px 12px rgba(0,0,0,.35));
+  }
+  @keyframes alertas-bob {
+    0%, 100% { transform: translateY(0) rotate(-3deg); }
+    50% { transform: translateY(-5px) rotate(3deg); }
+  }
+  .alertas-pulse {
+    animation: alertas-pulse 2s ease-out infinite;
+  }
+  @keyframes alertas-pulse {
+    0% { transform: scale(1); opacity: .6; }
+    100% { transform: scale(2.2); opacity: 0; }
+  }
+  .alertas-card {
+    animation: alertas-fade-in .45s ease both;
+  }
+  @keyframes alertas-fade-in {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .alertas-filter.active {
+    background: #587232;
+    color: #fff;
+    border-color: #587232;
+  }
+  .alertas-filter.hidden-card { display: none; }
+  @media (prefers-reduced-motion: reduce) {
+    .alertas-wave, .alertas-ship-wrap, .alertas-ship-icon, .alertas-pulse, .alertas-card {
+      animation: none !important;
+    }
+    .alertas-ship-wrap { left: 50%; transform: translateX(-50%); }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<!-- Hero marítimo -->
+<div id="tour-intro" class="alertas-radar rounded-2xl sm:rounded-3xl overflow-hidden mb-6 sm:mb-8 shadow-xl shadow-patagonia/20 relative text-white">
+  <div class="alertas-wave absolute inset-x-0 bottom-0 h-10 pointer-events-none"></div>
+
+  <div class="relative z-10 p-5 sm:p-8">
+    <div class="flex flex-col lg:flex-row lg:items-end justify-between gap-6">
+      <div>
+        <p class="text-[10px] font-bold uppercase tracking-[0.2em] text-white/60 mb-2">
+          <i class="fas fa-satellite-dish mr-1"></i> Centro de operaciones
+        </p>
+        <h1 class="text-2xl sm:text-3xl font-black mb-2">Alertas de exportación</h1>
+        <p class="text-sm text-white/80 max-w-lg">
+          Seguimiento en vivo de tus embarques desde Chile hacia tu puerto. Retrasos, arribos, documentos y pagos.
+        </p>
+      </div>
+
+      <div class="grid grid-cols-3 gap-2 sm:gap-3 shrink-0 w-full sm:w-auto sm:min-w-[280px]">
+        <div class="rounded-xl bg-white/10 backdrop-blur border border-white/15 px-3 py-2.5 text-center">
+          <div class="text-xl font-black {% if alertas_stats.critica %}text-red-300{% else %}text-white{% endif %}">{{ alertas_stats.critica }}</div>
+          <div class="text-[9px] font-bold uppercase tracking-wider text-white/60">Críticas</div>
+        </div>
+        <div class="rounded-xl bg-white/10 backdrop-blur border border-white/15 px-3 py-2.5 text-center">
+          <div class="text-xl font-black {% if alertas_stats.advertencia %}text-sunset{% else %}text-white{% endif %}">{{ alertas_stats.advertencia }}</div>
+          <div class="text-[9px] font-bold uppercase tracking-wider text-white/60">Avisos</div>
+        </div>
+        <div class="rounded-xl bg-white/10 backdrop-blur border border-white/15 px-3 py-2.5 text-center">
+          <div class="text-xl font-black text-white">{{ alertas_stats.total }}</div>
+          <div class="text-[9px] font-bold uppercase tracking-wider text-white/60">Total</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Ruta Chile → destino con barco animado -->
+    <div class="mt-6 sm:mt-8 relative h-16 sm:h-20">
+      <div class="absolute inset-x-0 top-1/2 -translate-y-1/2 flex items-center gap-2 px-1">
+        <div class="shrink-0 text-center">
+          <div class="w-9 h-9 rounded-full bg-patagonia/80 border-2 border-white/30 flex items-center justify-center text-sm mx-auto">
+            <i class="fas fa-anchor"></i>
+          </div>
+          <span class="text-[9px] font-bold text-white/70 mt-1 block">Chile</span>
+        </div>
+        <div class="flex-1 relative h-8 flex items-center">
+          <div class="alertas-route-line w-full rounded-full"></div>
+          <div class="alertas-ship-wrap absolute top-1/2 -translate-y-1/2 z-10" aria-hidden="true">
+            <span class="alertas-ship-icon inline-flex w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-sunset text-white items-center justify-center text-lg sm:text-xl">
+              <i class="fas fa-ship"></i>
+            </span>
+          </div>
+          {% if alertas_stats.critica > 0 %}
+          <span class="absolute left-1/3 top-0 w-3 h-3 rounded-full bg-red-400 alertas-pulse"></span>
+          {% endif %}
+        </div>
+        <div class="shrink-0 text-center">
+          <div class="w-9 h-9 rounded-full bg-sunset/80 border-2 border-white/30 flex items-center justify-center text-sm mx-auto">
+            <i class="fas fa-flag-checkered"></i>
+          </div>
+          <span class="text-[9px] font-bold text-white/70 mt-1 block">Destino</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% if alertas %}
+<!-- Filtros -->
+<div class="flex gap-2 overflow-x-auto pb-2 mb-5 -mx-1 px-1 scrollbar-none" id="alertas-filtros" style="scrollbar-width:none">
+  <button type="button" class="alertas-filter active shrink-0 px-4 py-2 rounded-full border border-gray-200 bg-white text-xs font-bold transition-colors" data-filter="todas">
+    <i class="fas fa-layer-group mr-1"></i> Todas <span class="opacity-70">({{ alertas_stats.total }})</span>
+  </button>
+  <button type="button" class="alertas-filter shrink-0 px-4 py-2 rounded-full border border-gray-200 bg-white text-xs font-bold text-ink-muted hover:border-patagonia transition-colors" data-filter="embarque">
+    <i class="fas fa-ship mr-1 text-patagonia"></i> Embarques <span class="opacity-70">({{ alertas_stats.embarques }})</span>
+  </button>
+  <button type="button" class="alertas-filter shrink-0 px-4 py-2 rounded-full border border-gray-200 bg-white text-xs font-bold text-ink-muted hover:border-patagonia transition-colors" data-filter="documento">
+    <i class="fas fa-file-signature mr-1 text-patagonia"></i> Documentos <span class="opacity-70">({{ alertas_stats.documentos }})</span>
+  </button>
+  <button type="button" class="alertas-filter shrink-0 px-4 py-2 rounded-full border border-gray-200 bg-white text-xs font-bold text-ink-muted hover:border-patagonia transition-colors" data-filter="pago">
+    <i class="fas fa-coins mr-1 text-sunset"></i> Pagos <span class="opacity-70">({{ alertas_stats.pagos }})</span>
+  </button>
+</div>
+
+<div id="tour-lista" class="space-y-3">
+  {% for a in alertas %}
+  <article class="alertas-card bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden hover:shadow-md transition-shadow"
+           style="animation-delay: {{ loop.index0 * 0.06 }}s"
+           data-categoria="{{ a.categoria|default('otro') }}"
+           data-nivel="{{ a.nivel }}">
+    <div class="flex gap-0 sm:gap-0">
+      <div class="w-1.5 shrink-0 {% if a.nivel == 'critica' %}bg-red-500{% elif a.nivel == 'advertencia' %}bg-sunset{% else %}bg-blue-400{% endif %}"></div>
+      <div class="flex-1 p-4 sm:p-5 flex gap-4 min-w-0">
+        <div class="relative shrink-0">
+          <span class="w-11 h-11 rounded-xl flex items-center justify-center text-lg
+            {% if a.nivel == 'critica' %}bg-red-50 text-red-600{% elif a.nivel == 'advertencia' %}bg-sunset/10 text-sunset{% else %}bg-blue-50 text-blue-600{% endif %}">
+            <i class="fas {{ a.icono }}"></i>
+          </span>
+          {% if a.categoria == 'embarque' %}
+          <span class="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-patagonia text-white text-[8px] flex items-center justify-center border-2 border-white">
+            <i class="fas fa-ship"></i>
+          </span>
+          {% endif %}
+        </div>
+        <div class="flex-1 min-w-0">
+          <div class="flex flex-wrap items-center gap-2 mb-1">
+            <span class="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full
+              {% if a.nivel == 'critica' %}bg-red-50 text-red-700{% elif a.nivel == 'advertencia' %}bg-sunset/10 text-sunset-dark{% else %}bg-blue-50 text-blue-700{% endif %}">
+              {% if a.nivel == 'critica' %}Urgente{% elif a.nivel == 'advertencia' %}Atención{% else %}Info{% endif %}
+            </span>
+            {% if a.embarque_numero %}
+            <span class="text-[10px] font-mono font-bold text-ink-muted">{{ a.embarque_numero }}</span>
+            {% endif %}
+          </div>
+          <p class="font-bold text-ink text-sm sm:text-base">{{ a.titulo }}</p>
+          <p class="text-sm text-ink-muted mt-1 leading-relaxed">{{ a.mensaje }}</p>
+          <div class="flex flex-wrap gap-2 mt-3">
+            {% if a.embarque_id %}
+            <a href="{{ url_for('portal.embarque_detalle', id=a.embarque_id) }}"
+               class="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-patagonia-50 text-patagonia text-xs font-bold hover:bg-patagonia hover:text-white transition-colors">
+              <i class="fas fa-ship"></i> Ver embarque
+            </a>
+            {% elif a.documento_id %}
+            <a href="{{ url_for('portal.documento_firmar', id=a.documento_id) }}"
+               class="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-patagonia-50 text-patagonia text-xs font-bold hover:bg-patagonia hover:text-white transition-colors">
+              <i class="fas fa-file-signature"></i> Firmar ahora
+            </a>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+  </article>
+  {% endfor %}
+</div>
+
+<div id="alertas-empty-filter" class="hidden bg-white rounded-2xl border border-dashed border-gray-200 p-12 text-center">
+  <i class="fas fa-filter text-4xl text-gray-200 mb-3"></i>
+  <p class="font-bold text-ink-muted">No hay alertas en esta categoría</p>
+</div>
+
+{% else %}
+<div id="tour-lista" class="relative rounded-2xl overflow-hidden bg-gradient-to-br from-patagonia-50 to-cream border border-patagonia-100 p-12 sm:p-16 text-center">
+  <div class="alertas-wave absolute inset-x-0 bottom-0 h-8 opacity-30 pointer-events-none"></div>
+  <div class="relative z-10">
+    <div class="inline-flex w-20 h-20 rounded-3xl bg-white shadow-lg items-center justify-center text-patagonia text-4xl mb-5 mx-auto">
+      <i class="fas fa-ship"></i>
+    </div>
+    <h3 class="font-black text-xl text-ink mb-2">Mar en calma</h3>
+    <p class="text-ink-muted text-sm max-w-sm mx-auto">No hay alertas activas. Tus exportaciones navegan sin incidencias reportadas.</p>
+    <a href="{{ url_for('portal.embarques') }}" class="inline-flex items-center gap-2 mt-6 px-5 py-2.5 rounded-full bg-patagonia text-white text-sm font-bold hover:bg-patagonia-dark transition-colors">
+      <i class="fas fa-compass"></i> Ver mis embarques
+    </a>
+  </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function () {
+  const filters = document.querySelectorAll('.alertas-filter');
+  const cards = document.querySelectorAll('.alertas-card');
+  const emptyFilter = document.getElementById('alertas-empty-filter');
+  const lista = document.getElementById('tour-lista');
+
+  if (!filters.length) return;
+
+  filters.forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      const cat = btn.dataset.filter;
+      filters.forEach(function (b) {
+        b.classList.toggle('active', b === btn);
+        if (b === btn) {
+          b.classList.remove('text-ink-muted');
+        } else {
+          b.classList.add('text-ink-muted');
+        }
+      });
+
+      let visible = 0;
+      cards.forEach(function (card) {
+        const match = cat === 'todas' || card.dataset.categoria === cat;
+        card.classList.toggle('hidden-card', !match);
+        if (match) visible++;
+      });
+
+      if (emptyFilter && lista) {
+        emptyFilter.classList.toggle('hidden', visible > 0);
+        lista.classList.toggle('hidden', visible === 0);
+      }
+    });
+  });
+})();
+</script>
+{% endblock %}

@@ -30,6 +30,9 @@ def delete_export_document(stored_filename):
     path = os.path.join(documents_disk_path(), stored_filename)
     if os.path.isfile(path):
         os.remove(path)
+    backup = path + ".orig"
+    if os.path.isfile(backup):
+        os.remove(backup)
 
 
 def document_file_path(stored_filename):

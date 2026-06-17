@@ -1,142 +1,162 @@
-{% extends "admin_layout.html" %}
+{% extends "admin_layout_tw.html" %}
 {% block title %}Reportes{% endblock %}
 {% block topbar_title %}Reportes e indicadores{% endblock %}
-{% block topbar_subtitle %}KPIs estratégicos para decisiones de exportación{% endblock %}
+{% block topbar_subtitle %}KPIs estratégicos: ventas, rentabilidad por embarque y desempeño por mercado{% endblock %}
 
 {% block content %}
-<div class="kpi-grid">
-  <div class="kpi-card green">
-    <div class="kpi-icon"><i class="fas fa-dollar-sign"></i></div>
-    <div class="kpi-label">Ventas del mes</div>
-    <div class="kpi-value" style="font-size:1.4rem;">${{ "{:,.0f}".format(reportes.monto_mes) }}</div>
-    <div class="kpi-sub">{{ reportes.pedidos_mes }} pedidos</div>
+<p class="text-sm text-ink-muted mb-6 max-w-3xl">
+  Vista analítica para decisiones de exportación: volumen por país y producto, ranking de clientes y margen real por contenedor embarcado.
+</p>
+
+<div id="tour-kpis" class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+  <div class="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm">
+    <div class="w-10 h-10 rounded-xl bg-green-50 text-green-700 flex items-center justify-center mb-3"><i class="fas fa-dollar-sign"></i></div>
+    <p class="text-2xl font-extrabold text-ink">${{ "{:,.0f}".format(reportes.monto_mes) }}</p>
+    <p class="text-xs font-semibold text-ink-muted uppercase tracking-wider mt-1">Ventas del mes</p>
+    <p class="text-[11px] text-patagonia mt-1">{{ reportes.pedidos_mes }} pedidos</p>
   </div>
-  <div class="kpi-card blue">
-    <div class="kpi-icon"><i class="fas fa-users"></i></div>
-    <div class="kpi-label">Clientes activos</div>
-    <div class="kpi-value">{{ reportes.clientes_activos }}</div>
-    <div class="kpi-sub">{{ reportes.cotizaciones_abiertas }} cotizaciones abiertas</div>
+  <div class="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm">
+    <div class="w-10 h-10 rounded-xl bg-blue-50 text-blue-700 flex items-center justify-center mb-3"><i class="fas fa-users"></i></div>
+    <p class="text-2xl font-extrabold text-ink">{{ reportes.clientes_activos }}</p>
+    <p class="text-xs font-semibold text-ink-muted uppercase tracking-wider mt-1">Clientes activos</p>
+    <p class="text-[11px] text-ink-muted mt-1">{{ reportes.cotizaciones_abiertas }} cotiz. abiertas</p>
   </div>
-  <div class="kpi-card orange">
-    <div class="kpi-icon"><i class="fas fa-ship"></i></div>
-    <div class="kpi-label">Contenedores enviados</div>
-    <div class="kpi-value">{{ reportes.contenedores_enviados }}</div>
-    <div class="kpi-sub">{{ reportes.embarques_retraso }} con retraso</div>
+  <div class="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm">
+    <div class="w-10 h-10 rounded-xl bg-sunset/10 text-sunset flex items-center justify-center mb-3"><i class="fas fa-ship"></i></div>
+    <p class="text-2xl font-extrabold text-ink">{{ reportes.contenedores_enviados }}</p>
+    <p class="text-xs font-semibold text-ink-muted uppercase tracking-wider mt-1">Contenedores enviados</p>
+    <p class="text-[11px] text-red-600 mt-1">{{ reportes.embarques_retraso }} con retraso</p>
   </div>
-  <div class="kpi-card dark">
-    <div class="kpi-icon"><i class="fas fa-chart-pie"></i></div>
-    <div class="kpi-label">Margen global</div>
-    <div class="kpi-value" style="font-size:1.2rem;color:{% if reportes.margen_global < 0 %}var(--red){% else %}inherit{% endif %};">${{ "{:,.0f}".format(reportes.margen_global) }}</div>
-    <div class="kpi-sub">Costo prom: ${{ "{:,.0f}".format(reportes.costo_promedio) }}</div>
+  <div class="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm">
+    <div class="w-10 h-10 rounded-xl bg-ink/5 text-ink flex items-center justify-center mb-3"><i class="fas fa-chart-pie"></i></div>
+    <p class="text-2xl font-extrabold {% if reportes.margen_global < 0 %}text-red-600{% else %}text-ink{% endif %}">${{ "{:,.0f}".format(reportes.margen_global) }}</p>
+    <p class="text-xs font-semibold text-ink-muted uppercase tracking-wider mt-1">Margen global</p>
+    <p class="text-[11px] text-ink-muted mt-1">Costo prom. ${{ "{:,.0f}".format(reportes.costo_promedio) }}</p>
   </div>
 </div>
 
-<div class="grid-2">
-  <div class="panel">
-    <div class="panel-header"><h3><i class="fas fa-globe" style="color:var(--accent);margin-right:.4rem;"></i>Ventas por país</h3></div>
-    <div class="chart-bars">
+<div id="tour-ventas" class="grid grid-cols-1 xl:grid-cols-2 gap-6 mb-6">
+  <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+    <div class="px-6 py-4 border-b border-gray-100"><h2 class="font-bold text-ink flex items-center gap-2"><i class="fas fa-globe text-patagonia"></i> Ventas por país</h2></div>
+    <div class="p-6 space-y-3">
       {% if reportes.ventas_por_pais %}
         {% set max_v = reportes.ventas_por_pais|map(attribute='2')|max %}
         {% for pais, count, total in reportes.ventas_por_pais %}
-        <div class="bar-row">
-          <span class="bar-label">{{ pais }}</span>
-          <div class="bar-track"><div class="bar-fill" style="width:{{ ((total or 0) / max_v * 100)|int if max_v else 0 }}%;background:var(--orange);"></div></div>
-          <span class="bar-num">${{ "{:,.0f}".format(total or 0) }}</span>
+        <div class="flex items-center gap-3">
+          <span class="text-xs font-semibold w-24 truncate">{{ pais }}</span>
+          <div class="flex-1 h-2 rounded-full bg-gray-100 overflow-hidden"><div class="h-full bg-sunset rounded-full" style="width:{{ ((total or 0) / max_v * 100)|int if max_v else 0 }}%;"></div></div>
+          <span class="text-xs font-bold w-20 text-right">${{ "{:,.0f}".format(total or 0) }}</span>
         </div>
         {% endfor %}
       {% else %}
-        <p style="padding:1rem;color:var(--gray);">Sin datos de ventas por país.</p>
+        <p class="text-sm text-ink-muted">Sin datos de ventas por país.</p>
       {% endif %}
     </div>
   </div>
-  <div class="panel">
-    <div class="panel-header"><h3><i class="fas fa-seedling" style="color:var(--accent);margin-right:.4rem;"></i>Ventas por producto</h3></div>
-    <div class="chart-bars">
+  <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+    <div class="px-6 py-4 border-b border-gray-100"><h2 class="font-bold text-ink flex items-center gap-2"><i class="fas fa-seedling text-patagonia"></i> Ventas por producto</h2></div>
+    <div class="p-6 space-y-3">
       {% if reportes.ventas_por_producto %}
         {% set max_p = reportes.ventas_por_producto|map(attribute='1')|max %}
         {% for nombre, total, count in reportes.ventas_por_producto %}
-        <div class="bar-row">
-          <span class="bar-label">{{ nombre }}</span>
-          <div class="bar-track"><div class="bar-fill" style="width:{{ ((total or 0) / max_p * 100)|int if max_p else 0 }}%;"></div></div>
-          <span class="bar-num">${{ "{:,.0f}".format(total or 0) }}</span>
+        <div class="flex items-center gap-3">
+          <span class="text-xs font-semibold w-28 truncate">{{ nombre }}</span>
+          <div class="flex-1 h-2 rounded-full bg-gray-100 overflow-hidden"><div class="h-full bg-patagonia rounded-full" style="width:{{ ((total or 0) / max_p * 100)|int if max_p else 0 }}%;"></div></div>
+          <span class="text-xs font-bold w-20 text-right">${{ "{:,.0f}".format(total or 0) }}</span>
         </div>
         {% endfor %}
       {% else %}
-        <p style="padding:1rem;color:var(--gray);">Sin líneas de pedido con producto.</p>
+        <p class="text-sm text-ink-muted">Sin líneas de pedido con producto.</p>
       {% endif %}
     </div>
   </div>
 </div>
 
-<div class="grid-2" style="margin-top:1.25rem;">
-  <div class="panel">
-    <div class="panel-header"><h3><i class="fas fa-calendar" style="color:var(--accent);margin-right:.4rem;"></i>Exportaciones por mes</h3></div>
-    <div class="chart-bars">
+<div id="tour-analisis" class="grid grid-cols-1 xl:grid-cols-2 gap-6 mb-6">
+  <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+    <div class="px-6 py-4 border-b border-gray-100"><h2 class="font-bold text-ink flex items-center gap-2"><i class="fas fa-calendar text-blue-600"></i> Exportaciones por mes</h2></div>
+    <div class="p-6 space-y-3">
       {% set max_e = reportes.exportaciones_mes|map(attribute='count')|max if reportes.exportaciones_mes else 1 %}
       {% for m in reportes.exportaciones_mes %}
-      <div class="bar-row">
-        <span class="bar-label">{{ m.label }}</span>
-        <div class="bar-track"><div class="bar-fill" style="width:{{ (m.count / max_e * 100)|int if max_e else 0 }}%;background:#2563eb;"></div></div>
-        <span class="bar-num">{{ m.count }}</span>
+      <div class="flex items-center gap-3">
+        <span class="text-xs font-semibold w-20">{{ m.label }}</span>
+        <div class="flex-1 h-2 rounded-full bg-gray-100 overflow-hidden"><div class="h-full bg-blue-500 rounded-full" style="width:{{ (m.count / max_e * 100)|int if max_e else 0 }}%;"></div></div>
+        <span class="text-xs font-bold w-8 text-right">{{ m.count }}</span>
       </div>
       {% endfor %}
     </div>
   </div>
-  <div class="panel">
-    <div class="panel-header"><h3><i class="fas fa-trophy" style="color:var(--accent);margin-right:.4rem;"></i>Ranking clientes</h3></div>
-    <table class="data-table">
-      <thead><tr><th>Cliente</th><th>País</th><th>Pedidos</th><th>Total</th></tr></thead>
-      <tbody>
-        {% for nombre, pais, count, total in reportes.ranking_clientes %}
-        <tr>
-          <td><strong>{{ nombre }}</strong></td>
-          <td style="font-size:.8rem;">{{ pais or '—' }}</td>
-          <td>{{ count }}</td>
-          <td><strong>${{ "{:,.0f}".format(total or 0) }}</strong></td>
+  <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+    <div class="px-6 py-4 border-b border-gray-100"><h2 class="font-bold text-ink flex items-center gap-2"><i class="fas fa-trophy text-sunset"></i> Ranking clientes</h2></div>
+    <div class="overflow-x-auto">
+      <table class="w-full text-sm">
+        <thead><tr class="bg-gray-50/80 text-left">
+          <th class="px-4 py-3 text-[11px] font-bold uppercase text-ink-muted">Cliente</th>
+          <th class="px-4 py-3 text-[11px] font-bold uppercase text-ink-muted">País</th>
+          <th class="px-4 py-3 text-[11px] font-bold uppercase text-ink-muted">Pedidos</th>
+          <th class="px-4 py-3 text-[11px] font-bold uppercase text-ink-muted">Total</th>
+        </tr></thead>
+        <tbody class="divide-y divide-gray-50">
+          {% for nombre, pais, count, total in reportes.ranking_clientes %}
+          <tr class="hover:bg-cream/30">
+            <td class="px-4 py-3 font-semibold">{{ nombre }}</td>
+            <td class="px-4 py-3 text-xs text-ink-muted">{{ pais or '—' }}</td>
+            <td class="px-4 py-3">{{ count }}</td>
+            <td class="px-4 py-3 font-bold">${{ "{:,.0f}".format(total or 0) }}</td>
+          </tr>
+          {% else %}
+          <tr><td colspan="4" class="px-4 py-10 text-center text-ink-muted">Sin pedidos registrados.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div id="tour-rentabilidad" class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden mb-6">
+  <div class="px-6 py-4 border-b border-gray-100"><h2 class="font-bold text-ink flex items-center gap-2"><i class="fas fa-percent text-patagonia"></i> Rentabilidad por embarque</h2></div>
+  {% if reportes.rentabilidad_embarques %}
+  <div class="overflow-x-auto">
+    <table class="w-full text-sm">
+      <thead><tr class="bg-gray-50/80 text-left">
+        <th class="px-4 py-3 text-[11px] font-bold uppercase text-ink-muted">Embarque</th>
+        <th class="px-4 py-3 text-[11px] font-bold uppercase text-ink-muted">Cliente</th>
+        <th class="px-4 py-3 text-[11px] font-bold uppercase text-ink-muted">Venta</th>
+        <th class="px-4 py-3 text-[11px] font-bold uppercase text-ink-muted">Costo</th>
+        <th class="px-4 py-3 text-[11px] font-bold uppercase text-ink-muted">Margen</th>
+        <th class="px-4 py-3 text-[11px] font-bold uppercase text-ink-muted">%</th>
+      </tr></thead>
+      <tbody class="divide-y divide-gray-50">
+        {% for r in reportes.rentabilidad_embarques %}
+        <tr class="hover:bg-cream/30">
+          <td class="px-4 py-3"><a href="{{ url_for('admin.embarque_detalle', id=r.embarque.id) }}" class="font-bold text-patagonia hover:underline">{{ r.embarque.numero }}</a></td>
+          <td class="px-4 py-3 text-xs text-ink-muted">{{ r.embarque.cliente_nombre }}</td>
+          <td class="px-4 py-3">${{ "{:,.0f}".format(r.venta) }}</td>
+          <td class="px-4 py-3">${{ "{:,.0f}".format(r.costo) }}</td>
+          <td class="px-4 py-3 font-bold {% if r.margen < 0 %}text-red-600{% else %}text-green-700{% endif %}">${{ "{:,.0f}".format(r.margen) }}</td>
+          <td class="px-4 py-3">{% if r.pct is not none %}{{ r.pct }}%{% else %}—{% endif %}</td>
         </tr>
-        {% else %}
-        <tr><td colspan="4" style="text-align:center;color:var(--gray);padding:2rem;">Sin pedidos registrados.</td></tr>
         {% endfor %}
       </tbody>
     </table>
   </div>
-</div>
-
-<div class="panel" style="margin-top:1.25rem;">
-  <div class="panel-header"><h3><i class="fas fa-percent" style="color:var(--accent);margin-right:.4rem;"></i>Rentabilidad por embarque</h3></div>
-  {% if reportes.rentabilidad_embarques %}
-  <table class="data-table">
-    <thead><tr><th>Embarque</th><th>Cliente</th><th>Venta</th><th>Costo</th><th>Margen</th><th>%</th></tr></thead>
-    <tbody>
-      {% for r in reportes.rentabilidad_embarques %}
-      <tr>
-        <td><a href="{{ url_for('admin.embarque_detalle', id=r.embarque.id) }}" class="link-row">{{ r.embarque.numero }}</a></td>
-        <td style="font-size:.8rem;">{{ r.embarque.cliente_nombre }}</td>
-        <td>${{ "{:,.0f}".format(r.venta) }}</td>
-        <td>${{ "{:,.0f}".format(r.costo) }}</td>
-        <td style="color:{% if r.margen < 0 %}var(--red){% else %}var(--green-ok){% endif %};font-weight:700;">${{ "{:,.0f}".format(r.margen) }}</td>
-        <td>{% if r.pct is not none %}{{ r.pct }}%{% else %}—{% endif %}</td>
-      </tr>
-      {% endfor %}
-    </tbody>
-  </table>
   {% else %}
-  <div class="empty-state" style="padding:2rem;"><p>Registra costos en embarques para ver rentabilidad.</p></div>
+  <div class="p-12 text-center text-sm text-ink-muted">Registra costos en embarques para ver rentabilidad.</div>
   {% endif %}
 </div>
 
-<div class="kpi-grid" style="margin-top:1.25rem;grid-template-columns:repeat(3,1fr);">
-  <div class="kpi-card orange">
-    <div class="kpi-label">Documentos vencidos</div>
-    <div class="kpi-value">{{ reportes.documentos_vencidos }}</div>
+<div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+  <div class="bg-white rounded-2xl border border-gray-100 p-4 shadow-sm text-center">
+    <p class="text-2xl font-extrabold text-sunset">{{ reportes.documentos_vencidos }}</p>
+    <p class="text-xs text-ink-muted font-medium">Documentos vencidos</p>
   </div>
-  <div class="kpi-card blue">
-    <div class="kpi-label">Contratos por vencer (30d)</div>
-    <div class="kpi-value">{{ reportes.contratos_por_vencer }}</div>
+  <div class="bg-white rounded-2xl border border-gray-100 p-4 shadow-sm text-center">
+    <p class="text-2xl font-extrabold text-blue-700">{{ reportes.contratos_por_vencer }}</p>
+    <p class="text-xs text-ink-muted font-medium">Contratos por vencer (30d)</p>
   </div>
-  <div class="kpi-card green">
-    <div class="kpi-label">Tiempo prom. entrega</div>
-    <div class="kpi-value" style="font-size:1.2rem;">{% if reportes.tiempo_promedio_entrega %}{{ reportes.tiempo_promedio_entrega }} días{% else %}—{% endif %}</div>
+  <div class="bg-white rounded-2xl border border-gray-100 p-4 shadow-sm text-center">
+    <p class="text-2xl font-extrabold text-patagonia">{% if reportes.tiempo_promedio_entrega %}{{ reportes.tiempo_promedio_entrega }} d{% else %}—{% endif %}</p>
+    <p class="text-xs text-ink-muted font-medium">Tiempo prom. entrega</p>
   </div>
 </div>
 {% endblock %}

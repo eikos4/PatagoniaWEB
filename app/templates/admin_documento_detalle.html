@@ -143,6 +143,26 @@
   </div>
 </div>
 
+<!-- Firmas digitales -->
+<div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden mb-6">
+  <div class="px-6 py-4 border-b border-gray-100 flex flex-wrap items-center justify-between gap-3">
+    <h2 class="font-bold text-ink flex items-center gap-2"><i class="fas fa-file-signature text-patagonia"></i> Firmas digitales</h2>
+    {% if firma_status.completo %}
+    <span class="text-xs font-bold px-3 py-1 rounded-full bg-green-50 text-green-800"><i class="fas fa-circle-check mr-1"></i> Doble firma completa</span>
+    {% elif firma_status.pendiente_exportador and puede_editar %}
+    <a href="{{ url_for('admin.documento_firmar', id=doc.id) }}" class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-patagonia text-white text-xs font-bold hover:bg-patagonia-dark transition-colors">
+      <i class="fas fa-pen-nib"></i> Firmar (Patagonia Sur)
+    </a>
+    {% endif %}
+  </div>
+  <div class="p-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+    {% from "partials/firma_card.html" import firma_card %}
+    {{ firma_card(firma_status.exportador, firma_partes.exportador) }}
+    {{ firma_card(firma_status.importador, firma_partes.importador) }}
+  </div>
+  <p class="px-6 pb-5 text-xs text-ink-muted">Cada firma genera un token público verificable en <span class="font-mono bg-gray-100 px-1 rounded">/verificar-firma/TOKEN</span></p>
+</div>
+
 {% if doc.tiene_archivo %}
 <div class="bg-gradient-to-r from-patagonia-50 to-cream rounded-2xl border border-patagonia/20 p-6 flex flex-wrap items-center justify-between gap-4">
   <div class="flex items-center gap-4">

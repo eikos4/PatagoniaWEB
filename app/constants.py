@@ -552,4 +552,10 @@ AUDIT_ACCIONES = {
     "aprobar": "Aprobación",
     "estado": "Cambio de estado",
     "tracking": "Actualización seguimiento",
+    "firmar": "Firma digital",
+}
+
+FIRMA_PARTES = {
+    "exportador": "Patagonia Sur (exportador)",
+    "importador": "Cliente importador",
 }

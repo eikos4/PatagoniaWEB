@@ -1,49 +1,91 @@
-{% extends "admin_layout.html" %}
+{% extends "admin_layout_tw.html" %}
+{% from "admin_macros_tw.html" import producto_icon %}
 {% block title %}Productos{% endblock %}
 {% block topbar_title %}Catálogo de productos{% endblock %}
-{% block topbar_subtitle %}Líneas de exportación: frutas, mariscos, vinos{% endblock %}
+{% block topbar_subtitle %}Líneas de exportación: frutas, mariscos, vinos y procesados{% endblock %}
 {% block topbar_actions %}
-  <a href="{{ url_for('admin.producto_nuevo') }}" class="btn-top accent"><i class="fas fa-plus"></i> Nuevo producto</a>
+  <a href="{{ url_for('admin.producto_nuevo') }}" id="tour-btn-nuevo" class="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-patagonia text-white text-sm font-bold hover:bg-patagonia-dark transition-colors">
+    <i class="fas fa-plus text-xs"></i> Nuevo producto
+  </a>
 {% endblock %}
 
 {% block content %}
-<div class="panel">
-  <div class="panel-header">
-    <h3><i class="fas fa-boxes-stacked" style="color:var(--accent);margin-right:.5rem;"></i>{{ productos|length }} productos</h3>
+<p class="text-sm text-ink-muted mb-6 max-w-3xl">
+  Cada producto define categoría, formato de venta, temperatura y dimensiones de caja. Alimenta cotizaciones, requisitos por país y la calculadora de contenedores.
+</p>
+
+<div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden" id="tour-lista">
+  <div class="px-4 sm:px-6 py-4 border-b border-gray-100 flex items-center justify-between">
+    <h2 class="font-bold text-ink flex items-center gap-2"><i class="fas fa-boxes-stacked text-patagonia"></i> {{ productos|length }} productos</h2>
   </div>
   {% if productos %}
-  <table class="data-table">
-    <thead>
-      <tr><th>Producto</th><th>Categoría</th><th>Clientes</th><th>Abonos</th><th>Estado</th><th>Orden</th><th></th></tr>
-    </thead>
-    <tbody>
-      {% for p in productos %}
-      <tr>
-        <td><a href="{{ url_for('admin.producto_detalle', id=p.id) }}" class="link-row">{{ p.nombre }}</a>
-          {% if not p.tiene_ficha %}<span style="font-size:.65rem;color:var(--orange);"><i class="fas fa-exclamation-triangle"></i> Sin ficha</span>{% endif %}
-        </td>
-        <td><span class="badge" style="background:var(--accent-light);color:var(--accent-dark);">{{ producto_categorias.get(p.categoria, p.categoria) }}</span></td>
-        <td>{{ p.clientes|length }}</td>
-        <td>{{ p.abonos|length }}</td>
-        <td>{% if p.activo %}<span style="color:var(--green-ok);font-weight:600;">Activo</span>{% else %}<span style="color:var(--gray);">Inactivo</span>{% endif %}</td>
-        <td>{{ p.orden }}</td>
-        <td>
-          <div style="display:flex;gap:.4rem;">
-            <a href="{{ url_for('admin.producto_detalle', id=p.id) }}" class="btn-icon" title="Ver ficha"><i class="fas fa-eye"></i></a>
-            <a href="{{ url_for('admin.producto_editar', id=p.id) }}" class="btn-icon" title="Editar"><i class="fas fa-pen"></i></a>
-            <form method="POST" action="{{ url_for('admin.producto_toggle', id=p.id) }}">
-              <button type="submit" class="btn-icon" title="Activar/Desactivar"><i class="fas fa-power-off"></i></button>
-            </form>
-          </div>
-        </td>
-      </tr>
-      {% endfor %}
-    </tbody>
-  </table>
+  <div class="hidden md:block overflow-x-auto">
+    <table class="w-full text-sm">
+      <thead>
+        <tr class="bg-gray-50/80 text-left">
+          <th class="px-4 py-3 text-[11px] font-bold uppercase text-ink-muted">Producto</th>
+          <th class="px-4 py-3 text-[11px] font-bold uppercase text-ink-muted">Categoría</th>
+          <th class="px-4 py-3 text-[11px] font-bold uppercase text-ink-muted">Clientes</th>
+          <th class="px-4 py-3 text-[11px] font-bold uppercase text-ink-muted">Abonos</th>
+          <th class="px-4 py-3 text-[11px] font-bold uppercase text-ink-muted">Estado</th>
+          <th class="px-4 py-3 text-[11px] font-bold uppercase text-ink-muted">Orden</th>
+          <th class="px-4 py-3"></th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-gray-50">
+        {% for p in productos %}
+        <tr class="hover:bg-cream/30 group">
+          <td class="px-4 py-4">
+            <div class="flex items-center gap-3">
+              {{ producto_icon(p.categoria) }}
+              <div>
+                <a href="{{ url_for('admin.producto_detalle', id=p.id) }}" class="font-bold text-patagonia hover:underline">{{ p.nombre }}</a>
+                {% if not p.tiene_ficha %}<p class="text-[10px] text-sunset font-semibold"><i class="fas fa-exclamation-triangle"></i> Sin ficha</p>{% endif %}
+              </div>
+            </div>
+          </td>
+          <td class="px-4 py-4"><span class="text-xs font-semibold px-2 py-0.5 rounded-full bg-patagonia-50 text-patagonia">{{ producto_categorias.get(p.categoria, p.categoria) }}</span></td>
+          <td class="px-4 py-4">{{ p.clientes|length }}</td>
+          <td class="px-4 py-4">{{ p.abonos|length }}</td>
+          <td class="px-4 py-4">{% if p.activo %}<span class="text-xs font-bold text-green-700">Activo</span>{% else %}<span class="text-xs text-ink-muted">Inactivo</span>{% endif %}</td>
+          <td class="px-4 py-4 text-ink-muted">{{ p.orden }}</td>
+          <td class="px-4 py-4">
+            <div class="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+              <a href="{{ url_for('admin.producto_detalle', id=p.id) }}" class="w-8 h-8 rounded-lg border border-gray-200 flex items-center justify-center text-ink-muted hover:text-patagonia hover:border-patagonia transition-colors"><i class="fas fa-eye text-xs"></i></a>
+              <a href="{{ url_for('admin.producto_editar', id=p.id) }}" class="w-8 h-8 rounded-lg border border-gray-200 flex items-center justify-center text-ink-muted hover:text-patagonia hover:border-patagonia transition-colors"><i class="fas fa-pen text-xs"></i></a>
+              <form method="POST" action="{{ url_for('admin.producto_toggle', id=p.id) }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button type="submit" class="w-8 h-8 rounded-lg border border-gray-200 flex items-center justify-center text-ink-muted hover:text-sunset hover:border-sunset transition-colors"><i class="fas fa-power-off text-xs"></i></button>
+              </form>
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <div class="md:hidden divide-y divide-gray-50">
+    {% for p in productos %}
+    <a href="{{ url_for('admin.producto_detalle', id=p.id) }}" class="flex items-start gap-3 p-4 hover:bg-cream/30 transition-colors">
+      {{ producto_icon(p.categoria) }}
+      <div class="flex-1 min-w-0">
+        <p class="font-bold text-patagonia">{{ p.nombre }}</p>
+        <p class="text-xs text-ink-muted mt-0.5">{{ producto_categorias.get(p.categoria, p.categoria) }}</p>
+        <div class="flex flex-wrap gap-2 mt-2 text-[11px]">
+          <span class="px-2 py-0.5 rounded-full bg-gray-100 text-ink-muted">{{ p.clientes|length }} clientes</span>
+          {% if p.activo %}<span class="text-green-700 font-bold">Activo</span>{% else %}<span class="text-ink-muted">Inactivo</span>{% endif %}
+        </div>
+      </div>
+      <i class="fas fa-chevron-right text-gray-300 text-xs mt-1 shrink-0"></i>
+    </a>
+    {% endfor %}
+  </div>
   {% else %}
-  <div class="empty-state">
-    <i class="fas fa-box"></i>
-    <p>No hay productos. <a href="{{ url_for('admin.producto_nuevo') }}">Crear el primero</a></p>
+  <div class="p-12 text-center">
+    <i class="fas fa-box text-5xl text-gray-200 mb-4"></i>
+    <p class="text-ink-muted mb-4">No hay productos en el catálogo.</p>
+    <a href="{{ url_for('admin.producto_nuevo') }}" class="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-patagonia text-white text-sm font-bold">Crear el primero</a>
   </div>
   {% endif %}
 </div>

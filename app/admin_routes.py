@@ -1,4 +1,5 @@
 import os
+import json
 from datetime import datetime
 
 from flask import (
@@ -10,6 +11,7 @@ from flask import (
     flash,
     send_from_directory,
     send_file,
+    session,
 )
 from flask_login import login_user, logout_user, login_required, current_user
 from werkzeug.utils import secure_filename
@@ -42,7 +44,7 @@ from app.constants import (
     CONTENEDOR_TIPOS, COSTO_TIPOS, COSTO_TIPO_ICONS,
     CONTRATO_ESTADOS, CONTRATO_ESTADO_COLORS, PLANTILLA_TIPOS,
     AUDIT_ENTIDADES, AUDIT_ACCIONES, CLIENTE_TIPOS, PRODUCTO_FORMATOS,
-    MERCADOS_PESO,
+    MERCADOS_PESO, FIRMA_PARTES,
 )
 from app.alertas import get_alertas
 from app.permissions import role_required, edit_required
@@ -60,6 +62,14 @@ from app.pedido_utils import next_pedido_numero, apply_lineas as apply_pedido_li
 from app.embarque_utils import next_embarque_numero, embarque_from_pedido, sync_pedido_estado, init_shipment_milestones, embarques_activos_filter
 from app.pdf_cotizacion import generar_pdf_cotizacion
 from app.seed import seed_default_products, seed_default_countries
+from app.tutorial_data import IMPORT_GUIDE, MODULE_TOURS
+from app.document_checklist_utils import get_embarque_document_checklist
+from app.signature_utils import (
+    document_signing_status,
+    register_document_signature,
+    parse_geo_form,
+)
+from app.pdf_signature import apply_signatures_to_pdf
 
 admin = Blueprint("admin", __name__, template_folder="templates")
 
@@ -127,6 +137,10 @@ def inject_admin_sidebar():
             ).count(),
             "cliente_tipos": CLIENTE_TIPOS,
             "producto_formatos": PRODUCTO_FORMATOS,
+            "import_guide": IMPORT_GUIDE,
+            "module_tours_json": json.dumps(MODULE_TOURS, ensure_ascii=False),
+            "show_welcome_guide": session.pop("show_welcome_guide", False),
+            "firma_partes": FIRMA_PARTES,
         }
     return {}
 
@@ -254,6 +268,7 @@ def login():
                 flash("Tu cuenta está desactivada. Contacta al administrador.", "danger")
             else:
                 login_user(user)
+                session["show_welcome_guide"] = True
                 flash("Bienvenido al panel de Patagonia Sur", "success")
                 return redirect(url_for("admin.dashboard"))
         flash("Usuario o contraseña incorrectos", "danger")
@@ -269,6 +284,12 @@ def dashboard():
     seed_default_countries()
     kpis = get_dashboard_kpis()
     return render_template("admin_dashboard.html", kpis=kpis, active_nav="resumen")
+
+
+@admin.route("/guia-importacion")
+@login_required
+def guia_importacion():
+    return render_template("admin_guia_importacion.html", active_nav="guia")
 
 
 # ── Mensajes ──────────────────────────────────────────────────────
@@ -986,9 +1007,11 @@ def embarques():
     if estado and estado in EMBARQUE_ESTADOS:
         q = q.filter_by(estado=estado)
     lista = q.order_by(Shipment.created_at.desc()).all()
+    checklists = {e.id: get_embarque_document_checklist(e) for e in lista}
     return render_template(
         "admin_embarques.html",
         embarques=lista,
+        checklists=checklists,
         filtro_estado=estado,
         active_nav="embarques",
     )
@@ -1050,12 +1073,14 @@ def embarque_detalle(id):
     tracking_form.ultima_ubicacion.data = emb.ultima_ubicacion or ""
     tareas_emb = InternalTask.query.filter_by(shipment_id=emb.id).order_by(InternalTask.fecha_limite).all()
     costo_form = CostoForm()
+    doc_checklist = get_embarque_document_checklist(emb)
     return render_template(
         "admin_embarque_detalle.html",
         emb=emb,
         tracking_form=tracking_form,
         costo_form=costo_form,
         tareas_emb=tareas_emb,
+        doc_checklist=doc_checklist,
         active_nav="embarques",
     )
 
@@ -1401,7 +1426,71 @@ def documento_detalle(id):
     if doc.esta_vencido and doc.estado not in ("aprobado", "vencido"):
         doc.estado = "vencido"
         db.session.commit()
-    return render_template("admin_documento_detalle.html", doc=doc, active_nav="documentos")
+    return render_template(
+        "admin_documento_detalle.html",
+        doc=doc,
+        firma_status=document_signing_status(doc),
+        active_nav="documentos",
+    )
+
+
+@admin.route("/documentos/<int:id>/firmar", methods=["GET", "POST"])
+@login_required
+@edit_required
+def documento_firmar(id):
+    doc = ExportDocument.query.get_or_404(id)
+    if doc.firma_exportador:
+        flash("Este documento ya fue firmado por Patagonia Sur.", "info")
+        return redirect(url_for("admin.documento_detalle", id=doc.id))
+
+    if request.method == "POST":
+        lat, lng, loc = parse_geo_form(request.form)
+        firma, err = register_document_signature(
+            doc,
+            "exportador",
+            request.form.get("signer_name") or (current_user.nombre or current_user.username),
+            request.form.get("signer_email") or current_user.username,
+            request.form.get("signature_data"),
+            admin_user_id=current_user.id,
+            latitude=lat,
+            longitude=lng,
+            location_label=loc,
+        )
+        if err:
+            flash(err, "danger")
+            return render_template(
+                "admin_documento_firmar.html",
+                doc=doc,
+                parte="exportador",
+                parte_label=FIRMA_PARTES["exportador"],
+                active_nav="documentos",
+            )
+        db.session.flush()
+        pdf_err = apply_signatures_to_pdf(doc)
+        if pdf_err:
+            db.session.rollback()
+            flash(pdf_err, "danger")
+            return render_template(
+                "admin_documento_firmar.html",
+                doc=doc,
+                parte="exportador",
+                parte_label=FIRMA_PARTES["exportador"],
+                active_nav="documentos",
+            )
+        log_activity("firmar", "documento", doc.id, doc.titulo, f"Exportador · token {firma.token}")
+        db.session.commit()
+        flash("Documento firmado por Patagonia Sur. Token: " + firma.token, "success")
+        return redirect(url_for("admin.documento_detalle", id=doc.id))
+
+    return render_template(
+        "admin_documento_firmar.html",
+        doc=doc,
+        parte="exportador",
+        parte_label=FIRMA_PARTES["exportador"],
+        signer_name=current_user.nombre or "",
+        signer_email=current_user.username,
+        active_nav="documentos",
+    )
 
 
 @admin.route("/documentos/<int:id>/editar", methods=["GET", "POST"])

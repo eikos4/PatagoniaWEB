@@ -1,8 +1,10 @@
 <!DOCTYPE html>
-<html lang="es" class="h-full">
+<html lang="es" class="h-full overflow-x-clip">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  {% include "partials/ps_loading_head.html" %}
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#587232">
   <title>{% block title %}Admin{% endblock %} · {{ config.STORE_NAME or 'Patagonia Sur' }}</title>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌿</text></svg>">
   <script src="https://cdn.tailwindcss.com"></script>
@@ -21,9 +23,7 @@
             nav: { bg: '#FFFFFF', hover: '#F0F6EA', active: '#E8F2DC', border: '#D8E8C8' },
           },
           fontFamily: { sans: ['Inter', 'system-ui', 'sans-serif'] },
-          boxShadow: {
-            'nav': '4px 0 24px rgba(88, 114, 50, 0.06)',
-          },
+          boxShadow: { 'nav': '4px 0 24px rgba(88, 114, 50, 0.06)' },
         },
       },
     };
@@ -32,28 +32,51 @@
     #sidebar nav { scrollbar-width: thin; scrollbar-color: #DCE8D0 transparent; }
     #sidebar nav::-webkit-scrollbar { width: 5px; }
     #sidebar nav::-webkit-scrollbar-thumb { background: #DCE8D0; border-radius: 99px; }
-    #sidebar nav::-webkit-scrollbar-thumb:hover { background: #C5D9B0; }
+    .driver-active-element { border-radius: 12px !important; }
+    .mobile-table-scroll { -webkit-overflow-scrolling: touch; }
+    .mobile-table-scroll table { min-width: 640px; }
+    .topbar-actions-scroll { -webkit-overflow-scrolling: touch; scrollbar-width: none; }
+    .topbar-actions-scroll::-webkit-scrollbar { display: none; }
+    @supports (padding-bottom: env(safe-area-inset-bottom)) {
+      .admin-main-pad { padding-bottom: max(1rem, env(safe-area-inset-bottom)); }
+    }
+    @media (max-width: 1023px) {
+      .opacity-0.group-hover\:opacity-100 { opacity: 1; }
+    }
+    @media (max-width: 639px) {
+      .kpi-card { padding: 1rem; }
+      .kpi-card .text-3xl { font-size: 1.5rem; line-height: 2rem; }
+      .kpi-card .text-2xl { font-size: 1.25rem; line-height: 1.75rem; }
+    }
   </style>
   {% block extra_head %}{% endblock %}
 </head>
-<body class="h-full font-sans bg-[#F4F8F0] text-ink antialiased">
+<body class="h-full font-sans bg-[#F4F8F0] text-ink antialiased"
+      data-active-nav="{{ active_nav or '' }}"
+      data-user-id="{{ current_user.id if current_user.is_authenticated else 0 }}"
+      data-show-welcome="{{ '1' if show_welcome_guide else '0' }}">
+
+{% include "partials/ps_loading_body.html" %}
 
 <div class="min-h-full flex">
-  <!-- Sidebar blanco + verde claro -->
-  <aside id="sidebar" class="fixed inset-y-0 left-0 z-50 w-[268px] bg-white flex flex-col border-r border-nav-border shadow-nav transform -translate-x-full lg:translate-x-0 transition-transform duration-300">
+  <aside id="sidebar" class="fixed inset-y-0 left-0 z-50 w-[min(100vw-3rem,268px)] bg-white flex flex-col border-r border-nav-border shadow-nav transform -translate-x-full lg:translate-x-0 transition-transform duration-300">
 
-    <!-- Brand -->
-    <a href="{{ url_for('admin.dashboard') }}" class="flex items-center gap-3 px-5 py-5 bg-gradient-to-br from-patagonia-50 via-white to-white border-b border-nav-border shrink-0">
-      <span class="w-11 h-11 rounded-2xl bg-gradient-to-br from-patagonia to-patagonia-dark flex items-center justify-center font-extrabold text-sm text-white shadow-md shadow-patagonia/25 ring-2 ring-patagonia-50">PS</span>
-      <div>
-        <div class="font-extrabold text-sm text-patagonia-dark">Patagonia Sur</div>
-        <div class="text-[10px] text-patagonia/70 uppercase tracking-widest font-semibold">Exportadora</div>
-      </div>
-    </a>
+    <div class="flex items-center justify-between px-4 py-4 bg-gradient-to-br from-patagonia-50 via-white to-white border-b border-nav-border shrink-0">
+      <a href="{{ url_for('admin.dashboard') }}" class="flex items-center gap-3 min-w-0">
+        <span class="w-10 h-10 sm:w-11 sm:h-11 rounded-2xl bg-gradient-to-br from-patagonia to-patagonia-dark flex items-center justify-center font-extrabold text-sm text-white shadow-md shadow-patagonia/25 shrink-0">PS</span>
+        <div class="min-w-0">
+          <div class="font-extrabold text-sm text-patagonia-dark truncate">Patagonia Sur</div>
+          <div class="text-[10px] text-patagonia/70 uppercase tracking-widest font-semibold">Exportadora</div>
+        </div>
+      </a>
+      <button type="button" id="sidebarClose" class="lg:hidden w-9 h-9 rounded-lg border border-nav-border text-ink-muted flex items-center justify-center shrink-0" aria-label="Cerrar menú">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
 
-    <nav class="flex-1 min-h-0 overflow-y-auto overflow-x-hidden py-4 px-3">
+    <nav class="flex-1 min-h-0 overflow-y-auto overflow-x-hidden py-3 px-2 sm:px-3">
       {% macro nav_link(key, endpoint, icon, label, badge=none, badge_style='bg-patagonia text-white') %}
-      <a href="{{ url_for(endpoint) }}"
+      <a href="{{ url_for(endpoint) }}" data-admin-nav
          class="group flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium mb-0.5 transition-all border-l-[3px]
                 {% if active_nav == key %}
                   bg-nav-active text-patagonia border-patagonia font-semibold shadow-sm shadow-patagonia/5
@@ -64,34 +87,42 @@
                      {% if active_nav == key %}bg-patagonia text-white{% else %}bg-patagonia-50 text-patagonia group-hover:bg-patagonia-100{% endif %}">
           <i class="fas {{ icon }} text-xs"></i>
         </span>
-        <span class="flex-1 leading-tight">{{ label }}</span>
+        <span class="flex-1 leading-tight truncate">{{ label }}</span>
         {% if badge %}
-        <span class="{{ badge_style }} text-[10px] font-bold min-w-[1.25rem] h-5 px-1.5 rounded-full flex items-center justify-center">{{ badge }}</span>
+        <span class="{{ badge_style }} text-[10px] font-bold min-w-[1.25rem] h-5 px-1.5 rounded-full flex items-center justify-center shrink-0">{{ badge }}</span>
         {% endif %}
       </a>
       {% endmacro %}
 
       {% macro nav_link_ext(url, icon, label, external=false) %}
-      <a href="{{ url }}" {% if external %}target="_blank"{% endif %}
+      <a href="{{ url }}" {% if external %}target="_blank"{% endif %} data-admin-nav
          class="group flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium mb-0.5 transition-all border-l-[3px] border-transparent text-ink-muted hover:bg-nav-hover hover:text-patagonia hover:border-patagonia-100">
         <span class="w-8 h-8 rounded-lg bg-gray-50 text-ink-muted flex items-center justify-center shrink-0 group-hover:bg-patagonia-50 group-hover:text-patagonia transition-colors">
           <i class="fas {{ icon }} text-xs"></i>
         </span>
-        <span class="flex-1">{{ label }}</span>
-        {% if external %}<i class="fas fa-arrow-up-right-from-square text-[9px] text-patagonia/40"></i>{% endif %}
+        <span class="flex-1 truncate">{{ label }}</span>
+        {% if external %}<i class="fas fa-arrow-up-right-from-square text-[9px] text-patagonia/40 shrink-0"></i>{% endif %}
       </a>
       {% endmacro %}
 
       {% macro nav_label(text) %}
-      <p class="text-[10px] font-bold uppercase tracking-widest text-patagonia/45 px-3 mt-5 mb-2 first:mt-1 flex items-center gap-2">
+      <p class="text-[10px] font-bold uppercase tracking-widest text-patagonia/45 px-3 mt-4 mb-2 first:mt-1 flex items-center gap-2">
         <span class="h-px flex-1 bg-patagonia-50"></span>
-        <span>{{ text }}</span>
+        <span class="shrink-0">{{ text }}</span>
         <span class="h-px flex-1 bg-patagonia-50"></span>
       </p>
       {% endmacro %}
 
       {{ nav_label('Panel') }}
       {{ nav_link('resumen', 'admin.dashboard', 'fa-chart-pie', 'Resumen') }}
+      <a href="{{ url_for('admin.guia_importacion') }}" id="nav-guia-importacion" data-admin-nav
+         class="group flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium mb-0.5 transition-all border-l-[3px]
+                {% if active_nav == 'guia' %}bg-nav-active text-patagonia border-patagonia font-semibold shadow-sm shadow-patagonia/5{% else %}border-transparent text-ink-muted hover:bg-nav-hover hover:text-patagonia hover:border-patagonia-100{% endif %}">
+        <span class="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 transition-colors {% if active_nav == 'guia' %}bg-patagonia text-white{% else %}bg-patagonia-50 text-patagonia group-hover:bg-patagonia-100{% endif %}">
+          <i class="fas fa-graduation-cap text-xs"></i>
+        </span>
+        <span class="flex-1 leading-tight truncate">Guía importación</span>
+      </a>
 
       {{ nav_label('Comercial') }}
       {{ nav_link('clientes', 'admin.clientes', 'fa-users', 'Clientes', carteras_count if carteras_count else none) }}
@@ -101,7 +132,7 @@
 
       {{ nav_label('Cumplimiento') }}
       {{ nav_link('documentos', 'admin.documentos', 'fa-folder-open', 'Documentación', documentos_count if documentos_count else none, 'bg-sunset text-white') }}
-      {{ nav_link('paises', 'admin.paises', 'fa-globe-americas', 'Países y requisitos') }}
+      {{ nav_link('paises', 'admin.paises', 'fa-globe-americas', 'Países') }}
       {{ nav_link('alertas', 'admin.alertas', 'fa-bell', 'Alertas', alertas_count if alertas_count else none, 'bg-red-500 text-white') }}
 
       {{ nav_label('Operaciones') }}
@@ -130,7 +161,7 @@
     </nav>
 
     <div class="p-3 border-t border-nav-border bg-patagonia-50/40 shrink-0">
-      <a href="{{ url_for('admin.logout') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold text-red-600 hover:bg-red-50 border border-transparent hover:border-red-100 transition-all">
+      <a href="{{ url_for('admin.logout') }}" data-admin-nav class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold text-red-600 hover:bg-red-50 border border-transparent hover:border-red-100 transition-all">
         <span class="w-8 h-8 rounded-lg bg-white border border-red-100 text-red-500 flex items-center justify-center shrink-0">
           <i class="fas fa-right-from-bracket text-xs"></i>
         </span>
@@ -139,41 +170,57 @@
     </div>
   </aside>
 
-  <div id="overlay" class="fixed inset-0 bg-patagonia-dark/20 backdrop-blur-sm z-40 hidden lg:hidden"></div>
+  <div id="overlay" class="fixed inset-0 bg-patagonia-dark/25 backdrop-blur-sm z-40 hidden lg:hidden"></div>
 
-  <!-- Main -->
-  <div class="flex-1 lg:ml-[268px] flex flex-col min-h-screen">
-    <header class="sticky top-0 z-30 bg-white/95 backdrop-blur-md border-b border-nav-border px-4 sm:px-6 lg:px-8 py-4 flex flex-wrap items-center justify-between gap-4 shadow-sm shadow-patagonia/5">
-      <div class="flex items-center gap-3">
-        <button id="menuToggle" class="lg:hidden w-10 h-10 rounded-xl border border-nav-border bg-patagonia-50 text-patagonia flex items-center justify-center hover:bg-patagonia-100 transition-colors" aria-label="Menú">
+  <div class="flex-1 lg:ml-[268px] flex flex-col min-h-screen w-full min-w-0">
+    <header class="sticky top-0 z-30 bg-white/95 backdrop-blur-md border-b border-nav-border shadow-sm shadow-patagonia/5 shrink-0">
+      <div class="px-3 sm:px-6 lg:px-8 py-3 flex items-start sm:items-center gap-2 sm:gap-3">
+        <button id="menuToggle" type="button" class="lg:hidden w-10 h-10 rounded-xl border border-nav-border bg-patagonia-50 text-patagonia flex items-center justify-center hover:bg-patagonia-100 transition-colors shrink-0 mt-0.5" aria-label="Menú">
           <i class="fas fa-bars"></i>
         </button>
-        <div>
-          <div class="text-lg font-bold text-patagonia-dark flex items-center flex-wrap gap-2">{% block topbar_title %}Panel{% endblock %}</div>
-          <p class="text-sm text-ink-muted mt-0.5">{% block topbar_subtitle %}{% endblock %}</p>
+        <div class="flex-1 min-w-0">
+          <div class="text-base sm:text-lg font-bold text-patagonia-dark leading-tight">{% block topbar_title %}Panel{% endblock %}</div>
+          {% block topbar_subtitle_wrap %}
+          <p class="text-xs sm:text-sm text-ink-muted mt-0.5 line-clamp-2 sm:line-clamp-none">{% block topbar_subtitle %}{% endblock %}</p>
+          {% endblock %}
         </div>
       </div>
-      <div class="flex flex-wrap items-center gap-2">
-        {% block topbar_actions %}
-        <a href="{{ url_for('main.index') }}" target="_blank" class="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-nav-border bg-white text-sm font-semibold text-ink-muted hover:border-patagonia hover:text-patagonia hover:bg-patagonia-50 transition-colors">
-          <i class="fas fa-external-link-alt text-xs"></i> Sitio
+      <div class="px-3 sm:px-6 lg:px-8 pb-3 flex gap-2 overflow-x-auto topbar-actions-scroll">
+        {% set tour_modules = ['resumen','clientes','cotizaciones','pedidos','embarques','documentos','guia','paises','alertas','tareas','calculadora','productos','mensajes','notificaciones','reportes','contratos','plantillas','historial','usuarios'] %}
+        {% if active_nav in tour_modules %}
+        <button type="button" id="btnTourModulo" title="Tutorial"
+          class="inline-flex items-center gap-2 px-3 py-2 rounded-full border border-nav-border bg-white text-sm font-semibold text-patagonia hover:bg-patagonia-50 transition-colors shrink-0 whitespace-nowrap">
+          <i class="fas fa-circle-question text-xs"></i>
+          <span class="hidden xs:inline sm:inline">Tutorial</span>
+        </button>
+        {% endif %}
+        <a href="{{ url_for('admin.guia_importacion') }}"
+          class="inline-flex items-center gap-2 px-3 py-2 rounded-full border border-nav-border bg-white text-sm font-semibold text-ink-muted hover:border-patagonia hover:text-patagonia hover:bg-patagonia-50 transition-colors shrink-0 whitespace-nowrap {% if active_nav == 'guia' %}!border-patagonia !text-patagonia !bg-patagonia-50{% endif %}">
+          <i class="fas fa-book-open text-xs"></i>
+          <span class="hidden sm:inline">Guía</span>
         </a>
-        <a href="{{ url_for('admin.logout') }}" class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-patagonia text-white text-sm font-semibold hover:bg-patagonia-dark shadow-md shadow-patagonia/20 transition-colors">
-          <i class="fas fa-sign-out-alt text-xs"></i> Salir
-        </a>
-        {% endblock %}
+        <div class="flex items-center gap-2 shrink-0">
+          {% block topbar_actions %}
+          <a href="{{ url_for('main.index') }}" target="_blank" class="inline-flex items-center gap-2 px-3 sm:px-4 py-2 rounded-full border border-nav-border bg-white text-sm font-semibold text-ink-muted hover:border-patagonia hover:text-patagonia hover:bg-patagonia-50 transition-colors whitespace-nowrap">
+            <i class="fas fa-external-link-alt text-xs"></i> <span class="hidden sm:inline">Sitio</span>
+          </a>
+          <a href="{{ url_for('admin.logout') }}" class="inline-flex items-center gap-2 px-3 sm:px-4 py-2 rounded-full bg-patagonia text-white text-sm font-semibold hover:bg-patagonia-dark shadow-md shadow-patagonia/20 transition-colors whitespace-nowrap">
+            <i class="fas fa-sign-out-alt text-xs"></i> <span class="hidden sm:inline">Salir</span>
+          </a>
+          {% endblock %}
+        </div>
       </div>
     </header>
 
-    <main class="flex-1 p-4 sm:p-6 lg:p-8 max-w-7xl w-full">
+    <main class="flex-1 p-3 sm:p-6 lg:p-8 max-w-7xl w-full min-w-0 admin-main-pad">
       {% with messages = get_flashed_messages(with_categories=true) %}
         {% for category, message in messages %}
-        <div class="mb-5 flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium
+        <div class="mb-4 sm:mb-5 flex items-start gap-3 px-3 sm:px-4 py-3 rounded-xl text-sm font-medium
           {% if category == 'success' %}bg-patagonia-50 text-patagonia-dark border border-patagonia-100
           {% elif category in ['danger','error'] %}bg-red-50 text-red-800 border border-red-200
           {% else %}bg-white text-ink-muted border border-nav-border{% endif %}">
-          <i class="fas fa-{% if category == 'success' %}circle-check{% elif category in ['error','danger'] %}circle-exclamation{% else %}circle-info{% endif %}"></i>
-          {{ message }}
+          <i class="fas fa-{% if category == 'success' %}circle-check{% elif category in ['error','danger'] %}circle-exclamation{% else %}circle-info{% endif %} mt-0.5 shrink-0"></i>
+          <span class="break-words min-w-0">{{ message }}</span>
         </div>
         {% endfor %}
       {% endwith %}
@@ -186,17 +233,25 @@
   (function () {
     const sidebar = document.getElementById('sidebar');
     const overlay = document.getElementById('overlay');
-    const toggle = document.getElementById('menuToggle');
-    toggle?.addEventListener('click', () => {
-      sidebar.classList.toggle('-translate-x-full');
-      overlay.classList.toggle('hidden');
-    });
-    overlay?.addEventListener('click', () => {
-      sidebar.classList.add('-translate-x-full');
-      overlay.classList.add('hidden');
+    const open = () => { sidebar?.classList.remove('-translate-x-full'); overlay?.classList.remove('hidden'); document.body.classList.add('overflow-hidden'); };
+    const close = () => { sidebar?.classList.add('-translate-x-full'); overlay?.classList.add('hidden'); document.body.classList.remove('overflow-hidden'); };
+    document.getElementById('menuToggle')?.addEventListener('click', open);
+    document.getElementById('sidebarClose')?.addEventListener('click', close);
+    overlay?.addEventListener('click', close);
+    document.querySelectorAll('[data-admin-nav]').forEach(a => a.addEventListener('click', () => { if (window.innerWidth < 1024) close(); }));
+
+    document.querySelectorAll('main table').forEach(table => {
+      if (table.closest('.mobile-table-scroll') || table.closest('.lg\\:hidden')) return;
+      const parent = table.parentElement;
+      if (parent && parent.classList.contains('overflow-x-auto')) return;
+      const wrap = document.createElement('div');
+      wrap.className = 'mobile-table-scroll overflow-x-auto -mx-3 sm:mx-0 px-3 sm:px-0';
+      table.parentNode.insertBefore(wrap, table);
+      wrap.appendChild(table);
     });
   })();
   {% block extra_js %}{% endblock %}
 </script>
+{% include "partials/admin_tutorial_assets.html" %}
 </body>
 </html>

@@ -1,53 +1,68 @@
-{% extends "admin_layout.html" %}
+{% extends "admin_layout_tw.html" %}
 {% block title %}Plantillas{% endblock %}
 {% block topbar_title %}Biblioteca de plantillas{% endblock %}
-{% block topbar_subtitle %}Formatos internos: facturas, packing, contratos, procedimientos{% endblock %}
+{% block topbar_subtitle %}Formatos internos: facturas, packing lists, contratos y procedimientos{% endblock %}
 {% block topbar_actions %}
   {% if puede_editar %}
-  <a href="{{ url_for('admin.plantilla_nueva') }}" class="btn-top accent"><i class="fas fa-plus"></i> Nueva plantilla</a>
+  <a href="{{ url_for('admin.plantilla_nueva') }}" id="tour-btn-nuevo" class="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-patagonia text-white text-sm font-bold hover:bg-patagonia-dark transition-colors">
+    <i class="fas fa-plus text-xs"></i> Nueva plantilla
+  </a>
   {% endif %}
 {% endblock %}
 
 {% block content %}
-<div class="panel">
-  <div class="panel-header">
-    <h3><i class="fas fa-book" style="color:var(--accent);margin-right:.5rem;"></i>{{ plantillas|length }} plantilla{% if plantillas|length != 1 %}s{% endif %}</h3>
+<p id="tour-intro" class="text-sm text-ink-muted mb-6 max-w-3xl">
+  Repositorio de documentos modelo que el equipo usa para estandarizar facturación, packing y comunicación con clientes.
+</p>
+
+<div id="tour-lista" class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+  <div class="px-6 py-4 border-b border-gray-100">
+    <h2 class="font-bold text-ink flex items-center gap-2"><i class="fas fa-book text-patagonia"></i> {{ plantillas|length }} plantilla{% if plantillas|length != 1 %}s{% endif %}</h2>
   </div>
-  <div class="filter-bar">
-    <a href="{{ url_for('admin.plantillas') }}" class="filter-chip {% if not filtro_tipo %}active{% endif %}">Todas</a>
+  <div id="tour-filtros" class="px-5 py-4 border-b border-gray-100 flex flex-wrap gap-2">
+    <a href="{{ url_for('admin.plantillas') }}" class="inline-flex px-3.5 py-1.5 rounded-full text-xs font-semibold {% if not filtro_tipo %}bg-patagonia text-white{% else %}bg-gray-50 text-ink-muted hover:bg-gray-100{% endif %}">Todas</a>
     {% for key, label in plantilla_tipos.items() %}
-    <a href="{{ url_for('admin.plantillas', tipo=key) }}" class="filter-chip {% if filtro_tipo == key %}active{% endif %}">{{ label }}</a>
+    <a href="{{ url_for('admin.plantillas', tipo=key) }}" class="inline-flex px-3.5 py-1.5 rounded-full text-xs font-semibold {% if filtro_tipo == key %}bg-patagonia text-white{% else %}bg-gray-50 text-ink-muted hover:bg-gray-100{% endif %}">{{ label }}</a>
     {% endfor %}
   </div>
   {% if plantillas %}
-  <table class="data-table">
-    <thead><tr><th>Título</th><th>Tipo</th><th>Archivo</th><th>Estado</th><th></th></tr></thead>
-    <tbody>
-      {% for p in plantillas %}
-      <tr>
-        <td>
-          <strong>{{ p.titulo }}</strong>
-          {% if p.descripcion %}<div style="font-size:.75rem;color:var(--gray);">{{ p.descripcion[:60] }}{% if p.descripcion|length > 60 %}…{% endif %}</div>{% endif %}
-        </td>
-        <td style="font-size:.8rem;">{{ plantilla_tipos.get(p.tipo) }}</td>
-        <td style="font-size:.8rem;">{{ p.original_filename or '—' }}</td>
-        <td>
-          {% if p.activo %}
-          <span class="estado-badge" style="background:#ecfdf5;color:var(--green-ok);">Activa</span>
-          {% else %}
-          <span class="estado-badge" style="background:#f3f4f6;color:var(--gray);">Inactiva</span>
-          {% endif %}
-        </td>
-        <td>
-          {% if p.tiene_archivo %}<a href="{{ url_for('admin.plantilla_descargar', id=p.id) }}" class="btn-icon dl"><i class="fas fa-download"></i></a>{% endif %}
-          {% if puede_editar %}<a href="{{ url_for('admin.plantilla_editar', id=p.id) }}" class="btn-icon"><i class="fas fa-pen"></i></a>{% endif %}
-        </td>
-      </tr>
-      {% endfor %}
-    </tbody>
-  </table>
+  <div class="overflow-x-auto">
+    <table class="w-full text-sm">
+      <thead>
+        <tr class="bg-gray-50/80 text-left">
+          <th class="px-4 py-3 text-[11px] font-bold uppercase text-ink-muted">Título</th>
+          <th class="px-4 py-3 text-[11px] font-bold uppercase text-ink-muted">Tipo</th>
+          <th class="px-4 py-3 text-[11px] font-bold uppercase text-ink-muted">Archivo</th>
+          <th class="px-4 py-3 text-[11px] font-bold uppercase text-ink-muted">Estado</th>
+          <th class="px-4 py-3"></th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-gray-50">
+        {% for p in plantillas %}
+        <tr class="hover:bg-cream/30">
+          <td class="px-4 py-4">
+            <p class="font-bold text-ink">{{ p.titulo }}</p>
+            {% if p.descripcion %}<p class="text-xs text-ink-muted mt-0.5">{{ p.descripcion[:60] }}{% if p.descripcion|length > 60 %}…{% endif %}</p>{% endif %}
+          </td>
+          <td class="px-4 py-4 text-xs">{{ plantilla_tipos.get(p.tipo) }}</td>
+          <td class="px-4 py-4 text-xs font-mono text-ink-muted">{{ p.original_filename or '—' }}</td>
+          <td class="px-4 py-4">
+            {% if p.activo %}<span class="text-xs font-bold px-2 py-0.5 rounded-full bg-green-50 text-green-700">Activa</span>
+            {% else %}<span class="text-xs font-bold px-2 py-0.5 rounded-full bg-gray-100 text-ink-muted">Inactiva</span>{% endif %}
+          </td>
+          <td class="px-4 py-4">
+            <div class="flex gap-1">
+              {% if p.tiene_archivo %}<a href="{{ url_for('admin.plantilla_descargar', id=p.id) }}" class="w-8 h-8 rounded-lg border border-gray-200 flex items-center justify-center text-patagonia hover:bg-patagonia-50 transition-colors"><i class="fas fa-download text-xs"></i></a>{% endif %}
+              {% if puede_editar %}<a href="{{ url_for('admin.plantilla_editar', id=p.id) }}" class="w-8 h-8 rounded-lg border border-gray-200 flex items-center justify-center text-ink-muted hover:text-patagonia transition-colors"><i class="fas fa-pen text-xs"></i></a>{% endif %}
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
   {% else %}
-  <div class="empty-state"><i class="fas fa-book"></i><p>Sin plantillas{% if filtro_tipo %} de este tipo{% endif %}.</p></div>
+  <div class="p-12 text-center"><i class="fas fa-book text-5xl text-gray-200 mb-4"></i><p class="text-ink-muted">Sin plantillas{% if filtro_tipo %} de este tipo{% endif %}.</p></div>
   {% endif %}
 </div>
 {% endblock %}

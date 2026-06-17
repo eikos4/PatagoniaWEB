@@ -189,7 +189,9 @@
     {% block extra_css %}{% endblock %}
   </style>
 </head>
-<body>
+<body data-active-nav="{{ active_nav or '' }}"
+      data-user-id="{{ current_user.id if current_user.is_authenticated else 0 }}"
+      data-show-welcome="{{ '1' if show_welcome_guide else '0' }}">
 
   <aside class="sidebar" id="sidebar">
     <a href="{{ url_for('main.index') }}" class="sidebar-brand">
@@ -203,6 +205,9 @@
       <p class="nav-label">Panel</p>
       <a href="{{ url_for('admin.dashboard') }}" class="nav-item {% if active_nav == 'resumen' %}active{% endif %}">
         <i class="fas fa-chart-pie"></i> Resumen
+      </a>
+      <a href="{{ url_for('admin.guia_importacion') }}" id="nav-guia-importacion" class="nav-item {% if active_nav == 'guia' %}active{% endif %}">
+        <i class="fas fa-graduation-cap"></i> Guía importación
       </a>
 
       <p class="nav-label" style="margin-top:1rem;">Comercial</p>
@@ -305,6 +310,13 @@
         </div>
       </div>
       <div class="topbar-actions">
+        {% set tour_modules = ['resumen','clientes','cotizaciones','pedidos','embarques','documentos','guia'] %}
+        {% if active_nav in tour_modules %}
+        <button type="button" id="btnTourModulo" class="ps-tour-btn" title="Tutorial de este módulo">
+          <i class="fas fa-circle-question"></i> Tutorial
+        </button>
+        {% endif %}
+        <a href="{{ url_for('admin.guia_importacion') }}" class="ps-tour-btn"><i class="fas fa-book-open"></i> Guía</a>
         {% block topbar_actions %}
         <a href="{{ url_for('main.index') }}" target="_blank" class="btn-top ghost"><i class="fas fa-external-link-alt"></i> Sitio</a>
         <a href="{{ url_for('admin.logout') }}" class="btn-top primary"><i class="fas fa-sign-out-alt"></i> Salir</a>
@@ -337,5 +349,6 @@
     })();
     {% block extra_js %}{% endblock %}
   </script>
+  {% include "partials/admin_tutorial_assets.html" %}
 </body>
 </html>

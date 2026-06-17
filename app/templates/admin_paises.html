@@ -4,14 +4,14 @@
 {% block topbar_title %}Países y requisitos{% endblock %}
 {% block topbar_subtitle %}Requisitos fitosanitarios, documentales y normativas por mercado{% endblock %}
 {% block topbar_actions %}
-  <a href="{{ url_for('admin.pais_nuevo') }}" class="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-sunset text-white text-sm font-bold hover:bg-sunset-dark shadow-lg shadow-sunset/25 transition-all">
+  <a href="{{ url_for('admin.pais_nuevo') }}" id="tour-btn-nuevo" class="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-sunset text-white text-sm font-bold hover:bg-sunset-dark shadow-lg shadow-sunset/25 transition-all">
     <i class="fas fa-plus text-xs"></i> Nuevo país
   </a>
 {% endblock %}
 
 {% block content %}
 <!-- Stats -->
-<div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+<div id="tour-kpis" class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
   <div class="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm">
     <div class="flex items-center gap-3">
       <span class="w-10 h-10 rounded-xl bg-patagonia-50 text-patagonia flex items-center justify-center"><i class="fas fa-globe-americas"></i></span>
@@ -55,6 +55,7 @@
 </div>
 
 {% if paises %}
+<div id="tour-lista">
 <!-- Desktop table -->
 <div class="hidden md:block bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
   <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
@@ -137,9 +138,10 @@
   </a>
   {% endfor %}
 </div>
+</div>
 
 {% else %}
-<div class="bg-white rounded-2xl border border-gray-100 p-12 text-center shadow-sm">
+<div id="tour-lista" class="bg-white rounded-2xl border border-gray-100 p-12 text-center shadow-sm">
   <div class="w-16 h-16 rounded-2xl bg-patagonia-50 text-patagonia flex items-center justify-center mx-auto mb-4 text-2xl">
     <i class="fas fa-globe"></i>
   </div>

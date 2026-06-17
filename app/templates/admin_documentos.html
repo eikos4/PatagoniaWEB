@@ -4,7 +4,7 @@
 {% block topbar_title %}Gestión documental{% endblock %}
 {% block topbar_subtitle %}Certificados, BL, facturas, packing list y documentos de exportación{% endblock %}
 {% block topbar_actions %}
-  <a href="{{ url_for('admin.documento_nuevo') }}" class="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-sunset text-white text-sm font-bold hover:bg-sunset-dark shadow-lg shadow-sunset/25 transition-all">
+  <a href="{{ url_for('admin.documento_nuevo') }}" id="tour-btn-nuevo" class="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-sunset text-white text-sm font-bold hover:bg-sunset-dark shadow-lg shadow-sunset/25 transition-all">
     <i class="fas fa-file-circle-plus text-xs"></i> Nuevo documento
   </a>
 {% endblock %}
@@ -18,7 +18,7 @@
 {% set hay_filtro = filtro_estado or filtro_tipo %}
 
 <!-- KPIs -->
-<div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+<div id="tour-kpis" class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
   <div class="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm">
     <div class="flex items-center gap-3">
       <span class="w-10 h-10 rounded-xl bg-patagonia-50 text-patagonia flex items-center justify-center"><i class="fas fa-folder-open"></i></span>
@@ -58,7 +58,7 @@
 </div>
 
 <!-- Filtros estado -->
-<div class="bg-white rounded-2xl border border-gray-100 shadow-sm mb-4 overflow-hidden">
+<div id="tour-filtros-estado" class="bg-white rounded-2xl border border-gray-100 shadow-sm mb-4 overflow-hidden">
   <div class="px-5 py-3 border-b border-gray-100 flex items-center gap-2">
     <i class="fas fa-filter text-patagonia text-sm"></i>
     <span class="text-sm font-semibold text-ink">Estado</span>
@@ -85,7 +85,7 @@
 </div>
 
 <!-- Filtros tipo -->
-<div class="bg-white rounded-2xl border border-gray-100 shadow-sm mb-6 overflow-hidden">
+<div id="tour-filtros-tipo" class="bg-white rounded-2xl border border-gray-100 shadow-sm mb-6 overflow-hidden">
   <div class="px-5 py-3 border-b border-gray-100 flex items-center gap-2">
     <i class="fas fa-tag text-sunset text-sm"></i>
     <span class="text-sm font-semibold text-ink">Tipo de documento</span>
@@ -102,7 +102,7 @@
 </div>
 
 {% if documentos %}
-<div class="hidden md:block bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+<div id="tour-lista" class="hidden md:block bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
   <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
     <h2 class="font-bold text-ink flex items-center gap-2">
       <i class="fas fa-file-lines text-patagonia"></i> Expediente documental

@@ -33,7 +33,7 @@ def create_app():
     os.makedirs(app.config["UPLOAD_FOLDER"], exist_ok=True)
 
     with app.app_context():
-        from .models import AdminUser, ContactMessage, ClientFolder, ClientFile, Product, ClientAbono, Quotation, Order, Shipment, Country, CountryRequirement, ExportDocument, ShipmentCost, Contract, DocumentTemplate, ActivityLog, NotificationLog
+        from .models import AdminUser, ContactMessage, ClientFolder, ClientFile, Product, ClientAbono, Quotation, Order, Shipment, Country, CountryRequirement, ExportDocument, DocumentSignature, ShipmentCost, Contract, DocumentTemplate, ActivityLog, NotificationLog
         from .seed import seed_default_admin, seed_default_products, seed_default_countries
 
         seed_default_admin()

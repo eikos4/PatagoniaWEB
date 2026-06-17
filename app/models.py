@@ -555,6 +555,24 @@ class ExportDocument(db.Model):
     pais = db.relationship("Country", back_populates="documentos")
     producto = db.relationship("Product", backref="documentos")
     uploaded_by = db.relationship("AdminUser", backref="documentos_subidos")
+    firmas = db.relationship(
+        "DocumentSignature",
+        back_populates="documento",
+        cascade="all, delete-orphan",
+        order_by="DocumentSignature.signed_at",
+    )
+
+    @property
+    def firma_exportador(self):
+        return next((f for f in self.firmas if f.parte == "exportador"), None)
+
+    @property
+    def firma_importador(self):
+        return next((f for f in self.firmas if f.parte == "importador"), None)
+
+    @property
+    def firmado_completo(self):
+        return bool(self.firma_exportador and self.firma_importador)
 
     @property
     def tiene_archivo(self):
@@ -571,6 +589,34 @@ class ExportDocument(db.Model):
         if not self.fecha_vencimiento:
             return None
         return (self.fecha_vencimiento - datetime.utcnow()).days
+
+
+class DocumentSignature(db.Model):
+    """Firma digital de un documento por exportador (Patagonia) o importador (cliente)."""
+    __tablename__ = "document_signatures"
+    __table_args__ = (
+        db.UniqueConstraint("document_id", "parte", name="uq_document_signature_parte"),
+    )
+
+    id = db.Column(db.Integer, primary_key=True)
+    document_id = db.Column(db.Integer, db.ForeignKey("export_documents.id", ondelete="CASCADE"), nullable=False)
+    parte = db.Column(db.String(20), nullable=False)  # exportador | importador
+    signer_name = db.Column(db.String(200), nullable=False)
+    signer_email = db.Column(db.String(200), nullable=False)
+    signature_data = db.Column(db.Text, nullable=False)
+    signed_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    token = db.Column(db.String(64), unique=True, nullable=False, index=True)
+    ip_address = db.Column(db.String(64))
+    user_agent = db.Column(db.String(500))
+    latitude = db.Column(db.Float)
+    longitude = db.Column(db.Float)
+    location_label = db.Column(db.String(300))
+    admin_user_id = db.Column(db.Integer, db.ForeignKey("admin_users.id"))
+    client_folder_id = db.Column(db.Integer, db.ForeignKey("client_folders.id"))
+
+    documento = db.relationship("ExportDocument", back_populates="firmas")
+    admin_user = db.relationship("AdminUser", backref="firmas_documentos")
+    cliente = db.relationship("ClientFolder", backref="firmas_documentos")
 
 
 class ShipmentCost(db.Model):

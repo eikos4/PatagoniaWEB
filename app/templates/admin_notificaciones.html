@@ -1,51 +1,67 @@
-{% extends "admin_layout.html" %}
+{% extends "admin_layout_tw.html" %}
 {% block title %}Notificaciones{% endblock %}
 {% block topbar_title %}Notificaciones{% endblock %}
-{% block topbar_subtitle %}Alertas por email y registro de envíos{% endblock %}
+{% block topbar_subtitle %}Envío de resúmenes por email y registro de alertas enviadas{% endblock %}
 {% block topbar_actions %}
-  <form method="POST" action="{{ url_for('admin.notificaciones_enviar_resumen') }}" style="display:inline;">
+  <form method="POST" action="{{ url_for('admin.notificaciones_enviar_resumen') }}">
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-    <button type="submit" class="btn-top accent"><i class="fas fa-paper-plane"></i> Enviar resumen alertas</button>
+    <button type="submit" id="tour-btn-enviar" class="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-sunset text-white text-sm font-bold hover:bg-sunset-dark transition-colors">
+      <i class="fas fa-paper-plane text-xs"></i> Enviar resumen alertas
+    </button>
   </form>
 {% endblock %}
 
 {% block content %}
+<p class="text-sm text-ink-muted mb-6 max-w-3xl">
+  Configura SMTP en variables de entorno para recibir resúmenes automáticos. Aquí ves el historial de cada envío al equipo comercial.
+</p>
+
 {% if not smtp_configurado %}
-<div class="alert-panel warn" style="margin-bottom:1.25rem;">
-  <i class="fas fa-envelope"></i>
-  <span>SMTP no configurado. Define <strong>SMTP_HOST</strong>, <strong>SMTP_FROM</strong> y credenciales en variables de entorno para enviar emails. Destino por defecto: {{ notify_email }}</span>
+<div id="tour-smtp" class="mb-6 flex items-start gap-3 px-5 py-4 rounded-2xl bg-amber-50 border border-amber-200 text-amber-900 text-sm">
+  <i class="fas fa-envelope mt-0.5 text-sunset"></i>
+  <span>SMTP no configurado. Define <strong>SMTP_HOST</strong>, <strong>SMTP_FROM</strong> y credenciales. Destino por defecto: <strong>{{ notify_email }}</strong></span>
 </div>
 {% else %}
-<div class="alert-panel info" style="margin-bottom:1.25rem;">
-  <i class="fas fa-circle-check"></i>
+<div id="tour-smtp" class="mb-6 flex items-start gap-3 px-5 py-4 rounded-2xl bg-green-50 border border-green-200 text-green-900 text-sm">
+  <i class="fas fa-circle-check mt-0.5 text-green-600"></i>
   <span>Email configurado. Resúmenes se envían a <strong>{{ notify_email }}</strong></span>
 </div>
 {% endif %}
 
-<div class="panel">
-  <div class="panel-header"><h3><i class="fas fa-list" style="color:var(--accent);margin-right:.4rem;"></i>Historial de notificaciones</h3></div>
+<div id="tour-lista" class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+  <div class="px-6 py-4 border-b border-gray-100">
+    <h2 class="font-bold text-ink flex items-center gap-2"><i class="fas fa-list text-patagonia"></i> Historial de notificaciones</h2>
+  </div>
   {% if logs %}
-  <table class="data-table">
-    <thead><tr><th>Fecha</th><th>Tipo</th><th>Destinatario</th><th>Título</th><th>Estado</th></tr></thead>
-    <tbody>
-      {% for l in logs %}
-      <tr>
-        <td style="font-size:.78rem;">{{ l.created_at.strftime('%d/%m/%Y %H:%M') }}</td>
-        <td style="font-size:.8rem;">{{ l.tipo }}</td>
-        <td>{{ l.destinatario }}</td>
-        <td style="font-size:.85rem;">{{ l.titulo }}</td>
-        <td>
-          <span class="estado-badge" style="background:{% if l.estado == 'enviado' %}#ecfdf5;color:#15803d{% else %}#fff1f2;color:#be123c{% endif %};">
-            {{ l.estado }}
-          </span>
-          {% if l.error_detalle %}<div style="font-size:.7rem;color:var(--gray);">{{ l.error_detalle[:80] }}</div>{% endif %}
-        </td>
-      </tr>
-      {% endfor %}
-    </tbody>
-  </table>
+  <div class="overflow-x-auto">
+    <table class="w-full text-sm">
+      <thead>
+        <tr class="bg-gray-50/80 text-left">
+          <th class="px-4 py-3 text-[11px] font-bold uppercase text-ink-muted">Fecha</th>
+          <th class="px-4 py-3 text-[11px] font-bold uppercase text-ink-muted">Tipo</th>
+          <th class="px-4 py-3 text-[11px] font-bold uppercase text-ink-muted">Destinatario</th>
+          <th class="px-4 py-3 text-[11px] font-bold uppercase text-ink-muted">Título</th>
+          <th class="px-4 py-3 text-[11px] font-bold uppercase text-ink-muted">Estado</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-gray-50">
+        {% for l in logs %}
+        <tr class="hover:bg-cream/30">
+          <td class="px-4 py-3 text-xs text-ink-muted whitespace-nowrap">{{ l.created_at.strftime('%d/%m/%Y %H:%M') }}</td>
+          <td class="px-4 py-3 text-xs">{{ l.tipo }}</td>
+          <td class="px-4 py-3">{{ l.destinatario }}</td>
+          <td class="px-4 py-3 text-sm">{{ l.titulo }}</td>
+          <td class="px-4 py-3">
+            <span class="text-xs font-bold px-2.5 py-1 rounded-full {% if l.estado == 'enviado' %}bg-green-50 text-green-700{% else %}bg-red-50 text-red-700{% endif %}">{{ l.estado }}</span>
+            {% if l.error_detalle %}<p class="text-[10px] text-ink-muted mt-1 max-w-xs truncate">{{ l.error_detalle[:80] }}</p>{% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
   {% else %}
-  <div class="empty-state" style="padding:2rem;"><p>Sin notificaciones enviadas aún.</p></div>
+  <div class="p-12 text-center text-sm text-ink-muted">Sin notificaciones enviadas aún.</div>
   {% endif %}
 </div>
 {% endblock %}
