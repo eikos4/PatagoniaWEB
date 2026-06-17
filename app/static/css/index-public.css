@@ -1,0 +1,68 @@
+/* Sitio público index — responsivo tipo app, sin desbordes horizontales */
+
+html.public-site #header {
+  padding-top: env(safe-area-inset-top, 0px);
+}
+
+html.public-site #mobileMenu {
+  max-height: calc(100dvh - 4.5rem - env(safe-area-inset-top, 0px));
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+html.public-site img,
+html.public-site video {
+  max-width: 100%;
+  height: auto;
+}
+
+html.public-site .break-anywhere {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+/* Evita que animaciones reveal generen scroll horizontal */
+html.public-site .reveal.from-left,
+html.public-site .reveal.from-right {
+  --reveal-x: 0;
+}
+
+@media (max-width: 639px) {
+  html.public-site .reveal.from-left,
+  html.public-site .reveal.from-right {
+    transform: translateY(32px);
+  }
+
+  html.public-site .reveal.from-left.is-visible,
+  html.public-site .reveal.from-right.is-visible {
+    transform: translateY(0);
+  }
+
+  html.public-site #inicio h1 {
+    font-size: clamp(1.75rem, 8vw, 2.25rem);
+    line-height: 1.1;
+  }
+
+  html.public-site #heroTag {
+    max-width: 100%;
+    white-space: normal;
+    text-align: center;
+    line-height: 1.35;
+  }
+
+  html.public-site .sim-preset {
+    flex: 1 1 calc(50% - 0.25rem);
+    min-width: 0;
+    text-align: center;
+  }
+}
+
+@media (max-width: 380px) {
+  html.public-site #header .h-\[72px\] {
+    height: 4rem;
+  }
+
+  html.public-site #inicio {
+    padding-top: 4rem;
+  }
+}

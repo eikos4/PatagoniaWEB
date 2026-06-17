@@ -10,6 +10,12 @@ body {
   overscroll-behavior: none;
 }
 
+html.public-site,
+html.public-site body {
+  overflow-x: clip;
+  max-width: 100%;
+}
+
 input,
 select,
 textarea,
