@@ -19,10 +19,14 @@
     </div>
 
     <button type="button" id="ps-pwa-install-btn"
-      class="hidden mt-4 w-full flex items-center justify-center gap-2 py-3.5 rounded-xl bg-patagonia text-white text-sm font-bold shadow-lg shadow-patagonia/25 hover:bg-patagonia-dark transition-all">
+      class="mt-4 w-full flex items-center justify-center gap-2 py-3.5 rounded-xl bg-patagonia text-white text-sm font-bold shadow-lg shadow-patagonia/25 hover:bg-patagonia-dark transition-all">
       <i class="fas fa-download"></i>
       Instalar aplicación
     </button>
+
+    <p id="ps-pwa-android-wait" class="hidden mt-3 text-center text-xs text-ink-muted">
+      <i class="fas fa-spinner fa-spin mr-1"></i> Preparando instalación en Android…
+    </p>
 
     <div id="ps-pwa-desktop-hint" class="hidden mt-4 p-3 rounded-xl bg-cream border border-gray-200 text-xs text-ink-muted leading-relaxed">
       <p class="font-bold text-ink mb-1"><i class="fas fa-desktop mr-1"></i> Computador</p>
@@ -40,4 +44,19 @@
     </div>
   </div>
 </div>
-<script src="{{ url_for('static', filename='js/pwa-install.js') }}?v=1"></script>
+
+{# Barra fija inferior — Android #}
+<div id="ps-pwa-android-bar" class="ps-pwa-android-bar" role="dialog" aria-label="Instalar Patagonia Export">
+  <div class="ps-pwa-android-bar__inner">
+    <img id="ps-pwa-android-bar-icon" src="{{ url_for('static', filename='img/pwa/ship-admin-192.png' if pwa_profile == 'admin' else 'img/pwa/ship-portal-192.png') }}" alt="" width="40" height="40" class="w-10 h-10 rounded-xl shrink-0 object-cover">
+    <div class="ps-pwa-android-bar__text">
+      <strong>Patagonia Export</strong>
+      Instala la app para acceso rápido desde tu teléfono.
+    </div>
+    <button type="button" id="ps-pwa-android-bar-btn" class="ps-pwa-android-bar__btn">
+      <i class="fas fa-download"></i> Instalar
+    </button>
+  </div>
+</div>
+
+<script src="{{ url_for('static', filename='js/pwa-install.js') }}?v=2"></script>

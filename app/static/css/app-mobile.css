@@ -1,0 +1,96 @@
+/* Comportamiento tipo app nativa — sin zoom ni doble-tap */
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+html,
+body {
+  touch-action: manipulation;
+  overscroll-behavior: none;
+}
+
+input,
+select,
+textarea,
+button {
+  font-size: 16px;
+  touch-action: manipulation;
+}
+
+@media (display-mode: standalone) {
+  html,
+  body {
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+/* Banner instalar Android */
+.ps-pwa-android-bar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 99990;
+  padding: 0.75rem 1rem calc(0.75rem + env(safe-area-inset-bottom, 0px));
+  background: linear-gradient(180deg, transparent 0%, rgba(17, 17, 17, 0.06) 12%, #fff 28%);
+  pointer-events: none;
+  opacity: 0;
+  transform: translateY(100%);
+  transition: opacity 0.3s ease, transform 0.35s ease;
+}
+
+.ps-pwa-android-bar.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+.ps-pwa-android-bar__inner {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  max-width: 28rem;
+  margin: 0 auto;
+  padding: 0.65rem 0.75rem;
+  border-radius: 1rem;
+  background: #fff;
+  border: 1px solid rgba(88, 114, 50, 0.25);
+  box-shadow: 0 8px 32px rgba(17, 17, 17, 0.12);
+}
+
+.ps-pwa-android-bar__btn {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  padding: 0.65rem 1rem;
+  border: none;
+  border-radius: 0.75rem;
+  background: linear-gradient(135deg, #587232, #465c28);
+  color: #fff;
+  font-size: 0.8rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+
+.ps-pwa-android-bar__btn:active {
+  transform: scale(0.98);
+}
+
+.ps-pwa-android-bar__text {
+  min-width: 0;
+  font-size: 0.72rem;
+  line-height: 1.35;
+  color: #6b7280;
+}
+
+.ps-pwa-android-bar__text strong {
+  display: block;
+  color: #111;
+  font-size: 0.82rem;
+  margin-bottom: 0.1rem;
+}
